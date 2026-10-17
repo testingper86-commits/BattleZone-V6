@@ -1,0 +1,88 @@
+name: Build BattleZone Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '**/*.zip'
+      - '**/settings.gradle'
+      - '**/settings.gradle.kts'
+      - '**/build.gradle'
+      - '**/build.gradle.kts'
+      - '**/gradlew'
+      - '**/gradle-wrapper.properties'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Unpack uploaded project ZIPs if needed
+        shell: bash
+        run: |
+          shopt -s nullglob
+          zips=( *.zip )
+          if [ ! -f settings.gradle ] && [ ! -f settings.gradle.kts ] && [ ${#zips[@]} -gt 0 ]; then
+            mkdir -p _cloud_source
+            for archive in "${zips[@]}"; do
+              unzip -oq "$archive" -d _cloud_source
+            done
+          fi
+
+      - name: Locate Android Gradle project
+        id: project
+        shell: bash
+        run: |
+          set -euo pipefail
+          settings_file="$(find . -type f \( -name settings.gradle -o -name settings.gradle.kts \) -not -path './.git/*' -not -path './.gradle/*' | head -n 1)"
+          if [ -z "$settings_file" ]; then
+            echo "No settings.gradle or settings.gradle.kts found. Upload the Android Studio project files or its ZIP to the repository root."
+            exit 1
+          fi
+          project_dir="$(dirname "$settings_file")"
+          if [ ! -d "$project_dir/app" ]; then
+            echo "Found Gradle settings at $project_dir but no app/ module beside it."
+            find "$project_dir" -maxdepth 2 -type f | head -n 80
+            exit 1
+          fi
+          echo "dir=$project_dir" >> "$GITHUB_OUTPUT"
+          echo "Project root: $project_dir"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build debug APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "${{ steps.project.outputs.dir }}"
+          if [ -f ./gradlew ]; then
+            chmod +x ./gradlew
+            ./gradlew --no-daemon :app:assembleDebug
+          else
+            gradle --no-daemon :app:assembleDebug
+          fi
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BattleZone-debug-APK
+          path: |
+            ${{ steps.project.outputs.dir }}/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
+          
