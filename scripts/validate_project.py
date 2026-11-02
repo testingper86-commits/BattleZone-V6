@@ -10,6 +10,8 @@ import re
 import shutil
 import subprocess
 import sys
+from html.parser import HTMLParser
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parent
 HTML = ROOT / 'app/src/main/assets/www/index.html'
@@ -50,9 +52,69 @@ checks = {
     'network permissions removed': not any(token in manifest for token in ['android.permission.INTERNET', 'ACCESS_NETWORK_STATE', 'ACCESS_WIFI_STATE', 'CHANGE_WIFI_MULTICAST_STATE']),
     'network runtime source removed': not (ASSET_DIR / 'js/netplay.js').exists() and './js/netplay.js' not in source,
     'network protocol docs retired': not (ROOT / 'NETWORK_PROTOCOL.md').exists() and not (ROOT / 'MULTIPLAYER_IMPLEMENTATION_STATUS.md').exists(),
+    'Kenney character model and four skins': all((ASSET_DIR / p).is_file() for p in [
+        'models/characters/kenney/Model/characterMedium.fbx',
+        'models/characters/kenney/Skins/skaterMaleA.png',
+        'models/characters/kenney/Skins/criminalMaleA.png',
+        'models/characters/kenney/Skins/cyborgFemaleA.png',
+        'models/characters/kenney/Skins/skaterFemaleA.png']),
+    'Kenney idle/run/jump clips': all((ASSET_DIR / p).is_file() for p in [
+        'models/characters/kenney/Animations/idle.fbx',
+        'models/characters/kenney/Animations/run.fbx',
+        'models/characters/kenney/Animations/jump.fbx']),
+    'Three.js r128 and helper loaders pinned in Gradle': all(token in gradle for token in [
+        'downloadThreeJs', 'downloadOptionalLibs', 'three@0.128.0', 'GLTFLoader.js', 'FBXLoader.js', 'SkeletonUtils.js', 'fflate.min.js']),
+    'asset library README matches active model loader': 'FBXLoader' in (ASSET_DIR / 'libs/README.txt').read_text(encoding='utf-8') and 'js/models.js' in (ASSET_DIR / 'libs/README.txt').read_text(encoding='utf-8') and 'all characters are built procedurally' not in (ASSET_DIR / 'libs/README.txt').read_text(encoding='utf-8'),
 }
+
+# Resolve every static local resource declared by HTML tags and CSS url() calls.
+# Ignore remote/data/blob/hash URLs and template expressions that are generated at runtime.
+class ResourceParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.refs = []
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        for attr in ('src', 'href', 'poster'):
+            if attrs.get(attr):
+                self.refs.append((f'<{tag} {attr}>', attrs[attr]))
+
+parser = ResourceParser()
+parser.feed(source)
+resource_refs = list(parser.refs)
+for css_file in ASSET_DIR.rglob('*.css'):
+    css_text = css_file.read_text(encoding='utf-8', errors='ignore')
+    resource_refs.extend((str(css_file.relative_to(ASSET_DIR)), m.group(1).strip().strip('\"\''))
+                         for m in re.finditer(r'url\((?:\s*[\"\']?)(.*?)(?:[\"\']?\s*)\)', css_text, re.I))
+missing_resources = []
+checked_resources = set()
+for origin, ref in resource_refs:
+    ref = ref.strip()
+    if not ref or ref.startswith(('data:', 'blob:', '#', 'https:', 'http:', '//', 'javascript:', 'mailto:', 'tel:')):
+        continue
+    path = urlsplit(ref).path
+    normalized_path = path[2:] if path.startswith('./') else path
+    if not path or any(token in path for token in ('${', '{', '*', '%')):
+        continue
+    target = (ASSET_DIR / path.lstrip('/')).resolve()
+    if not target.is_relative_to(ASSET_DIR.resolve()):
+        missing_resources.append((origin, ref, 'path escapes asset root'))
+    elif target.is_file():
+        checked_resources.add((origin, ref))
+    elif normalized_path.startswith('libs/') and Path(path).name in {'three.min.js', 'GLTFLoader.js', 'FBXLoader.js', 'SkeletonUtils.js', 'fflate.min.js'} and 'downloadThreeJs' in gradle and 'downloadOptionalLibs' in gradle:
+        # These pinned runtime libraries are intentionally fetched by Gradle before preBuild.
+        checked_resources.add((origin, ref))
+    else:
+        missing_resources.append((origin, ref, str(target.relative_to(ASSET_DIR.resolve()))))
+checks['static HTML/CSS resource paths resolve'] = not missing_resources
+
 for label, passed in checks.items():
     print(('PASS' if passed else 'MISSING/NEEDS ACTION') + '  ' + label)
+if missing_resources:
+    for origin, ref, target in missing_resources:
+        print(f'FAIL  missing local resource from {origin}: {ref} -> {target}')
+else:
+    print(f'PASS  static local resource paths ({len(checked_resources)} references)')
 
 node = shutil.which('node')
 if not node:

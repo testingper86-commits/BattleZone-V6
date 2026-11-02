@@ -4,8 +4,29 @@ import shutil
 import sys
 
 root=Path(sys.argv[1] if len(sys.argv)>1 else '.').resolve()
+
+def fix_runtime_asset_readme(root):
+    path=root/'app/src/main/assets/www/libs/README.txt'
+    if path.exists():
+        path.write_text("""Battle Zone V6 Offline — runtime asset loading
+
+The canonical source archive intentionally does not include the large runtime JavaScript libraries in this folder. Gradle fetches the pinned classic builds before preBuild:
+- Three.js r128 via the downloadThreeJs task (required).
+- FBXLoader, GLTFLoader, fflate and SkeletonUtils r128 via downloadOptionalLibs (optional downloads, used by the rigged-character loader).
+
+The downloaded libraries are packaged into the APK. The installed Offline game serves these files locally through AndroidX WebViewAssetLoader; runtime network permission is not required.
+
+Character integration:
+- js/models.js uses the Kenney FBX character model, four Kenney skin textures and idle/run/jump FBX clips.
+- If model loading fails, the game keeps its procedural characters.
+- The optional soldier.glb fallback is referenced by js/models.js but is absent from the canonical archive. downloadSoldierModels is a manual optional task and is not a preBuild dependency; do not assume that fallback is present in the APK.
+
+Do not rename a module build to three.min.js or substitute a different Three.js revision. Keep the runtime libraries and examples/loader files on revision r128.
+""",encoding='utf-8')
+
 marker=root/'OFFLINE_PAIRING_REMOVAL.md'
 if marker.exists():
+    fix_runtime_asset_readme(root)
     html=(root/'app/src/main/assets/www/index.html').read_text(encoding='utf-8')
     activity=(root/'app/src/main/java/com/example/battlezone/MainActivity.kt').read_text(encoding='utf-8')
     if any(token in html for token in ['BattleNetwork','BattleZoneMultiplayer','bzRemotePlayers','bzNetActive','bz-net-open']) or any(token in activity for token in ['GameNetworkBridge','BattleNetwork','WifiManager','ServerSocket','DatagramSocket']):
@@ -274,6 +295,9 @@ for name,pairs in doc_changes.items():
             raise SystemExit(f'Expected documentation text missing in {name}: {old[:90]}')
         content=content.replace(old,new,1)
     path.write_text(content,encoding='utf-8')
+
+# Correct the stale runtime README that contradicted the active rigged-character loader.
+fix_runtime_asset_readme(root)
 
 # Copy reviewed project documentation, validator and this reproducible patcher into the source root.
 for name in ['README.md','validate_project.py','OFFLINE_PAIRING_REMOVAL.md','ASSET_INVENTORY.md','ANDROID_GAMEPLAY_QA_MATRIX.md']:
