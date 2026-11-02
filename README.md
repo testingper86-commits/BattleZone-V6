@@ -15,6 +15,12 @@ The workflow extracts only the canonical Actions archive, then runs `scripts/app
 
 The patch script also copies a source README, validator, and removal record into the patched Android project. It is safe to run a second time on an already patched source tree.
 
+## Verified preparation documents
+
+- `scripts/ASSET_INVENTORY.md` records the original asset tree, runtime references, SHA-256 duplicates and license/provenance gaps.
+- `scripts/ANDROID_GAMEPLAY_QA_MATRIX.md` defines the physical Android release test matrix.
+- The patcher copies both documents into the patched Android source artifact so they travel with the APK source.
+
 ## CI outputs
 
 A successful GitHub Actions run publishes two artifacts:

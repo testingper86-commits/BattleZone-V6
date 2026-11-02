@@ -43,3 +43,8 @@ The GitHub Actions workflow uses only `BattleZone_V6_GitHub_Actions_Ready.zip` a
 A successful Gradle build proves APK assembly, not gameplay correctness. Physical-device testing is required for WebGL/GPU compatibility, controls, AI behavior, performance, memory, thermal behavior and stability.
 
 Original Battle Zone models, maps, weapons, textures, effects, animations, audio and UI should be preserved wherever possible. Third-party assets are gap-fillers only; verify each exact asset's license and retain its license/attribution notice.
+
+## Preparation records
+
+- `ASSET_INVENTORY.md` — verified original source inventory, runtime references, duplicate hashes and license/provenance gaps.
+- `ANDROID_GAMEPLAY_QA_MATRIX.md` — physical-device offline gameplay and performance release gate.

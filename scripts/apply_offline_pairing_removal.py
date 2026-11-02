@@ -10,7 +10,7 @@ if marker.exists():
     activity=(root/'app/src/main/java/com/example/battlezone/MainActivity.kt').read_text(encoding='utf-8')
     if any(token in html for token in ['BattleNetwork','BattleZoneMultiplayer','bzRemotePlayers','bzNetActive','bz-net-open']) or any(token in activity for token in ['GameNetworkBridge','BattleNetwork','WifiManager','ServerSocket','DatagramSocket']):
         raise SystemExit('Removal marker exists but network code is still present; refusing an unsafe re-apply.')
-    for name in ['README.md','validate_project.py','OFFLINE_PAIRING_REMOVAL.md']:
+    for name in ['README.md','validate_project.py','OFFLINE_PAIRING_REMOVAL.md','ASSET_INVENTORY.md','ANDROID_GAMEPLAY_QA_MATRIX.md']:
         source=Path(__file__).with_name(name); destination=root/name
         if source.resolve()!=destination.resolve(): shutil.copy2(source,destination)
     source=Path(__file__); destination=root/'apply_offline_pairing_removal.py'
@@ -276,7 +276,7 @@ for name,pairs in doc_changes.items():
     path.write_text(content,encoding='utf-8')
 
 # Copy reviewed project documentation, validator and this reproducible patcher into the source root.
-for name in ['README.md','validate_project.py','OFFLINE_PAIRING_REMOVAL.md']:
+for name in ['README.md','validate_project.py','OFFLINE_PAIRING_REMOVAL.md','ASSET_INVENTORY.md','ANDROID_GAMEPLAY_QA_MATRIX.md']:
     source=Path(__file__).with_name(name); destination=root/name
     if source.resolve()!=destination.resolve(): shutil.copy2(source,destination)
 source=Path(__file__); destination=root/'apply_offline_pairing_removal.py'
