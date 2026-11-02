@@ -1,17 +1,14 @@
-name: Build BattleZone Android APK
+name: Build BattleZone Offline Android APK
 
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, feature/offline-pairing-removal]
     paths:
       - '**/*.zip'
-      - '**/settings.gradle'
-      - '**/settings.gradle.kts'
-      - '**/build.gradle'
-      - '**/build.gradle.kts'
-      - '**/gradlew'
-      - '**/gradle-wrapper.properties'
+      - '.github/workflows/**'
+      - 'scripts/**'
+      - 'README.md'
 
 permissions:
   contents: read
@@ -29,32 +26,37 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Unpack uploaded project ZIPs if needed
+      - name: Extract canonical source and remove local pairing
+        id: source
         shell: bash
         run: |
-          shopt -s nullglob
-          zips=( *.zip )
-          if [ ! -f settings.gradle ] && [ ! -f settings.gradle.kts ] && [ ${#zips[@]} -gt 0 ]; then
-            mkdir -p _cloud_source
-            for archive in "${zips[@]}"; do
-              unzip -oq "$archive" -d _cloud_source
-            done
+          set -euo pipefail
+          archive="BattleZone_V6_GitHub_Actions_Ready.zip"
+          if [ ! -f "$archive" ]; then
+            echo "Required canonical source archive not found: $archive"
+            exit 1
           fi
+          rm -rf _cloud_source
+          mkdir -p _cloud_source
+          unzip -oq "$archive" -d _cloud_source
+          python3 scripts/apply_offline_pairing_removal.py _cloud_source
+          echo "dir=_cloud_source" >> "$GITHUB_OUTPUT"
+          echo "Canonical source extracted and offline-only patch applied."
 
       - name: Locate Android Gradle project
         id: project
         shell: bash
         run: |
           set -euo pipefail
-          settings_file="$(find . -type f \( -name settings.gradle -o -name settings.gradle.kts \) -not -path './.git/*' -not -path './.gradle/*' | head -n 1)"
+          source_dir="${{ steps.source.outputs.dir }}"
+          settings_file="$(find "$source_dir" -type f \( -name settings.gradle -o -name settings.gradle.kts \) | head -n 1)"
           if [ -z "$settings_file" ]; then
-            echo "No settings.gradle or settings.gradle.kts found. Upload the Android Studio project files or its ZIP to the repository root."
+            echo "No settings.gradle or settings.gradle.kts found in $source_dir."
             exit 1
           fi
           project_dir="$(dirname "$settings_file")"
           if [ ! -d "$project_dir/app" ]; then
             echo "Found Gradle settings at $project_dir but no app/ module beside it."
-            find "$project_dir" -maxdepth 2 -type f | head -n 80
             exit 1
           fi
           echo "dir=$project_dir" >> "$GITHUB_OUTPUT"
@@ -65,24 +67,45 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Build debug APK
+      - name: Run static source validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "${{ steps.project.outputs.dir }}"
+          python3 validate_project.py
+
+      - name: Run unit tests and build debug APK
         shell: bash
         run: |
           set -euo pipefail
           cd "${{ steps.project.outputs.dir }}"
           if [ -f ./gradlew ]; then
             chmod +x ./gradlew
-            ./gradlew --no-daemon :app:assembleDebug
+            ./gradlew --no-daemon :app:testDebugUnitTest :app:assembleDebug
           else
-            gradle --no-daemon :app:assembleDebug
+            gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug
           fi
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: BattleZone-debug-APK
-          path: |
-            ${{ steps.project.outputs.dir }}/app/build/outputs/apk/debug/*.apk
+          path: ${{ steps.project.outputs.dir }}/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
-          
+
+      - name: Package patched Android source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "${{ steps.project.outputs.dir }}"
+          zip -qr "$GITHUB_WORKSPACE/BattleZone_V6_Offline_Patched_Source.zip" . \
+            -x '**/build/**' '**/.gradle/**' '.git/**' '*/.git/*'
+
+      - name: Upload patched source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: BattleZone-Offline-Patched-Source
+          path: BattleZone_V6_Offline_Patched_Source.zip
+          if-no-files-found: error
+          retention-days: 14
