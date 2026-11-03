@@ -72,6 +72,16 @@ checks = {
     'touch cancellation and focus recovery': 'lostpointercapture' in source and 'clearGameplayInputs' in source,
     'frame pacing after stalls': 'Math.min((n-last)/1000,.1)' in source,
     'mobile GPU budget': 'Math.min(devicePixelRatio,1.25)' in source and 'sun.shadow.mapSize.set(512,512)' in source,
+    'gameplay quality V2 patch marker': 'BATTLE_ZONE_GAMEPLAY_QUALITY_V2' in source,
+    'hot-loop actor concatenations removed': 'bots.concat(al)' not in source and 'bots.concat' not in models,
+    'allocation-free actor iteration': 'function forEachActor(fn)' in source and 'const eachActor=fn=>' in models,
+    'HUD and minimap throttled': 'hudRefresh=.12' in source and 'drawMM()' in source,
+    'minimap water and POI overlays': all(token in source for token in ['poiColors','lake.r*s','rv.w*s','MAP_POIS.forEach']),
+    'procedural jump/shoot/reload poses': all(token in source for token in ['airPose','parachutePose','actionT','reloadW','fireW']),
+    'weapon retained during airborne movement': 'pm.hand.visible=true' in source,
+    'rigged jump/freefall animation': 'P.air===1||P.air===3' in models,
+    'enemy and ally firing animations': "b.sc.action='shoot'" in source and "a.sc.action='shoot'" in source,
+    'transport bot index reuse': 'botIndex%5' in source and 'bots.indexOf(b)' not in source,
 }
 
 # Resolve every static local resource declared by HTML tags and CSS url() calls.

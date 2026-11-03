@@ -49,3 +49,15 @@ At minimum: one low-memory Android device, one mid-range device, and one higher-
 | QA-26 | Mobile rendering | Test high-density devices with battery saver on/off. | Pixel ratio and shadow budget remain within configured caps; no corrupted or missing rendering. | Screenshots + profiler |
 
 The source patch and static validator cover code-level invariants only. QA-19 through QA-26 require physical-device execution before release approval.
+
+
+## Gameplay quality V2 regression gate
+
+| ID | Area | Test | Expected result | Evidence |
+|---|---|---|---|---|
+| QA-27 | Character actions | Third-person player and AI: run, jump, freefall, parachute, fire and reload. | Arms/legs transition smoothly; recoil and reload poses play; weapon remains attached/visible during airborne movement. | 60 fps screen recording |
+| QA-28 | Minimap | Visit lake, river crossing and all five named POIs; move and rotate camera. | Water, bridge and landmark markers align with the 3D world and update with player movement. | Map screenshots + coordinates |
+| QA-29 | Frame pacing | Compare 10-minute matches before/after V2 on the same low/mid-range device. | No actor-array concatenation in frame/AI loops; HUD/minimap updates remain responsive with lower CPU overhead. | Perfetto trace + FPS capture |
+| QA-30 | Squad AI animation | TDM allies and enemy bots acquire targets, fire, follow and revive/support. | Combat actions animate without breaking movement, targeting or teammate behavior. | Match recording + combat log |
+
+V2 static checks verify source invariants only. QA-27 through QA-30 require physical-device gameplay verification.

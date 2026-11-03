@@ -29,3 +29,7 @@ A successful GitHub Actions run publishes two artifacts:
 - `BattleZone-Offline-Patched-Source` — the canonical source archive after the offline-only patch and dependency preparation.
 
 A successful build proves compilation and packaging only. Physical Android device tests are still required for offline launch, gameplay, WebGL/GPU behavior, controls, performance, memory and thermal stability.
+
+## Gameplay quality V2
+
+The Android workflow now applies a second guarded quality patch after the offline-removal and V1 gameplay patches. V2 removes hot-loop actor-array allocations, throttles HUD/minimap rendering, adds water/river/POI minimap detail, and adds procedural jump, parachute, firing and reload poses. The validator enforces these source invariants; physical-device performance and animation QA remain required.
