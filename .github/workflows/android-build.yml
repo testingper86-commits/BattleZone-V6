@@ -40,6 +40,7 @@ jobs:
           mkdir -p _cloud_source
           unzip -oq "$archive" -d _cloud_source
           python3 scripts/apply_offline_pairing_removal.py _cloud_source
+          python3 scripts/apply_gameplay_overhaul.py _cloud_source
           echo "dir=_cloud_source" >> "$GITHUB_OUTPUT"
           echo "Canonical source extracted and offline-only patch applied."
 

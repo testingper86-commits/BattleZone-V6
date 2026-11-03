@@ -33,3 +33,19 @@ At minimum: one low-memory Android device, one mid-range device, and one higher-
 - Performance thresholds must be recorded per device; do not average away a failing low-end device.
 - Keep screenshots, video, logcat and profiler evidence tied to the exact APK SHA-256.
 - The release cannot be marked device-verified until all blocker tests pass on the declared device matrix.
+
+
+## Gameplay repair regression gate
+
+| ID | Area | Test | Expected result | Evidence |
+|---|---|---|---|---|
+| QA-19 | Water | Remain fully submerged, then leave water; repeat while in a vehicle. | Health decreases at 7 HP/second only while the player is swimming; no vehicle damage. | Video + health HUD + logcat |
+| QA-20 | Vehicles | Shoot each vehicle type repeatedly, then test nearby vehicles and player after destruction. | Bullet hits reduce vehicle health; destroyed vehicle explodes, stops moving and can no longer be entered. | Video + vehicle state |
+| QA-21 | Squad | Fresh install, then existing saved Solo and Duo profiles. | New installs default to Squad; saved Solo/Duo selection is preserved. | Settings screenshots + localStorage state |
+| QA-22 | Ally combat | TDM match with three AI allies against enemy bots. | Allies follow, acquire nearby enemies and land shots more consistently without targeting teammates. | Video + combat log |
+| QA-23 | Ally medical support | Take damage while an ally is nearby; separately test downed-player revive. | Nearby ally restores health over time; existing revive flow still works. | Video + health HUD |
+| QA-24 | Touch recovery | Interrupt joystick, camera drag and held action/vehicle controls using cancel, lost capture, app background and window focus loss. | All held inputs release; player/vehicle does not continue moving or firing. | Screen recording + logcat |
+| QA-25 | Frame pacing | Resume after a frame stall and play a sustained match. | No large movement/physics jump after stalls; stable sustained frame pacing. | Perfetto / Android GPU profiler |
+| QA-26 | Mobile rendering | Test high-density devices with battery saver on/off. | Pixel ratio and shadow budget remain within configured caps; no corrupted or missing rendering. | Screenshots + profiler |
+
+The source patch and static validator cover code-level invariants only. QA-19 through QA-26 require physical-device execution before release approval.

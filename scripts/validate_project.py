@@ -65,6 +65,13 @@ checks = {
     'Three.js r128 and helper loaders pinned in Gradle': all(token in gradle for token in [
         'downloadThreeJs', 'downloadOptionalLibs', 'three@0.128.0', 'GLTFLoader.js', 'FBXLoader.js', 'SkeletonUtils.js', 'fflate.min.js']),
     'asset library README matches active model loader': 'FBXLoader' in (ASSET_DIR / 'libs/README.txt').read_text(encoding='utf-8') and 'js/models.js' in (ASSET_DIR / 'libs/README.txt').read_text(encoding='utf-8') and 'all characters are built procedurally' not in (ASSET_DIR / 'libs/README.txt').read_text(encoding='utf-8'),
+    'underwater health damage': 'P.waterDamage' in source and 'dmg(7)' in source,
+    'vehicle shooting and destruction': 'vehicleRoot' in source and '...veh],true' in source and "msg('Vehicle destroyed!')" in source,
+    'new-install squad default': "SQ=[0,1,3][+(sg('bzs')??2)]" in source,
+    'ally medical support': 'u.healT' in source and 'P.hp<70' in source,
+    'touch cancellation and focus recovery': 'lostpointercapture' in source and 'clearGameplayInputs' in source,
+    'frame pacing after stalls': 'Math.min((n-last)/1000,.1)' in source,
+    'mobile GPU budget': 'Math.min(devicePixelRatio,1.25)' in source and 'sun.shadow.mapSize.set(512,512)' in source,
 }
 
 # Resolve every static local resource declared by HTML tags and CSS url() calls.
