@@ -82,6 +82,9 @@ checks = {
     'rigged jump/freefall animation': 'P.air===1||P.air===3' in models,
     'enemy and ally firing animations': "b.sc.action='shoot'" in source and "a.sc.action='shoot'" in source,
     'transport bot index reuse': 'botIndex%5' in source and 'bots.indexOf(b)' not in source,
+    'offline hub career pages': all(token in source for token in ['BATTLE_ZONE_OFFLINE_HUB_COMPLETION_V1', "['statistics','Statistics']", "['history','Match History']"]),
+    'match history uses actual local match results': 'bzOfflineMatchHistory' in source and 'window.__bzHistoryRecorder' in source,
+    'no fabricated replay playback': 'Replay playback is not available' in source,
 }
 
 # Resolve every static local resource declared by HTML tags and CSS url() calls.

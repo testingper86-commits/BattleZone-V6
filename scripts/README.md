@@ -48,3 +48,7 @@ Original Battle Zone models, maps, weapons, textures, effects, animations, audio
 
 - `ASSET_INVENTORY.md` — verified original source inventory, runtime references, duplicate hashes and license/provenance gaps.
 - `ANDROID_GAMEPLAY_QA_MATRIX.md` — physical-device offline gameplay and performance release gate.
+
+## Player hub career screens
+
+The build applies `apply_offline_hub_completion.py` after the offline/gameplay patches. It adds device-local career statistics and a 50-match history sourced from actual match-completion counters. Replay playback is explicitly unavailable until deterministic replay recording exists.
