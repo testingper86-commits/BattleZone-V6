@@ -53,7 +53,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          source_dir="\${{ steps.source.outputs.dir }}"
+          source_dir="${{ steps.source.outputs.dir }}"
           settings_file="$(find "$source_dir" -type f \( -name settings.gradle -o -name settings.gradle.kts \) | head -n 1)"
           if [ -z "$settings_file" ]; then
             echo "No settings.gradle or settings.gradle.kts found in $source_dir."
@@ -76,14 +76,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cd "\${{ steps.project.outputs.dir }}"
+          cd "${{ steps.project.outputs.dir }}"
           python3 validate_project.py
 
       - name: Run unit tests and build debug APK
         shell: bash
         run: |
           set -euo pipefail
-          cd "\${{ steps.project.outputs.dir }}"
+          cd "${{ steps.project.outputs.dir }}"
           if [ -f ./gradlew ]; then
             chmod +x ./gradlew
             ./gradlew --no-daemon :app:testDebugUnitTest :app:assembleDebug
@@ -95,7 +95,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: BattleZone-debug-APK
-          path: \${{ steps.project.outputs.dir }}/app/build/outputs/apk/debug/*.apk
+          path: ${{ steps.project.outputs.dir }}/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
 
@@ -103,7 +103,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cd "\${{ steps.project.outputs.dir }}"
+          cd "${{ steps.project.outputs.dir }}"
           zip -qr "$GITHUB_WORKSPACE/BattleZone_V6_Offline_Patched_Source.zip" . \
             -x '**/build/**' '**/.gradle/**' '.git/**' '*/.git/*'
 
