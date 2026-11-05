@@ -48,7 +48,7 @@ if marker not in s:
 "  });"]
     s=chr(10).join(lines[:start]+ally+lines[end:])+chr(10)
     oldboom="function boom(x,z,R,d,q){if(!q){snd(0,.7,.5);ENV.boom(x,z,R,d)}bots.forEach(b=>{const k=Math.hypot(b.position.x-x,b.position.z-z);if(b.userData.alive&&k<R){b.userData.hp-=d*(1-k/R*.6);if(b.userData.hp<=0)killBot(b,true)}});const k=Math.hypot(P.x-x,P.z-z);if(k<R)dmg(d*(1-k/R*.6)*.5)}"
-    newboom="function boom(x,z,R,d,q){if(!q){snd(0,.7,.5);ENV.boom(x,z,R,d)}bots.forEach(b=>{const k=Math.hypot(b.position.x-x,b.position.z-z);if(b.userData.alive&&k<R){b.userData.hp-=d*(1-k/R*.6);if(b.userData.hp<=0)killBot(b,true)}});al.forEach(a=>{const u=a.userData,k=Math.hypot(a.position.x-x,a.position.z-z);if(!u.down&&u.alive!==false&&k<R){u.hp-=d*(1-k/R*.6);if(u.hp<=0)killBot(a,false)}});const k=Math.hypot(P.x-x,P.z-z);if(k<R)dmg(d*(1-k/R*.6)*.5)}"
+    newboom="function boom(x,z,R,d,q){if(!q){snd(0,.7,.5);ENV.boom(x,z,R,d)}bots.forEach(b=>{const k=Math.hypot(b.position.x-x,b.position.z-z);if(b.userData.alive&&k<R){b.userData.hp-=d*(1-k/R*.6);if(b.userData.hp<=0)killBot(b,true)}});const k=Math.hypot(P.x-x,P.z-z);if(k<R)dmg(d*(1-k/R*.6)*.5)}"
     rep(oldboom,newboom,'squad blast damage')
     rep('</head>','<link rel="stylesheet" href="./css/final-polish.css">'+chr(10)+'</head>','responsive lobby CSS')
     html.write_text(s,encoding='utf-8')

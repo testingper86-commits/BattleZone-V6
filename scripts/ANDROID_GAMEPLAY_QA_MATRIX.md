@@ -59,5 +59,6 @@ The source patch and static validator cover code-level invariants only. QA-19 th
 | QA-28 | Minimap | Visit lake, river crossing and all five named POIs; move and rotate camera. | Water, bridge and landmark markers align with the 3D world and update with player movement. | Map screenshots + coordinates |
 | QA-29 | Frame pacing | Compare 10-minute matches before/after V2 on the same low/mid-range device. | No actor-array concatenation in frame/AI loops; HUD/minimap updates remain responsive with lower CPU overhead. | Perfetto trace + FPS capture |
 | QA-30 | Squad AI animation | TDM allies and enemy bots acquire targets, fire, follow and revive/support. | Combat actions animate without breaking movement, targeting or teammate behavior. | Match recording + combat log |
+| QA-31 | Explosions / squad safety | Detonate frag and Molotov explosions inside the blast radius of AI allies and enemy bots in TDM; repeat at several distances. | AI teammates take no explosion damage and are never downed/killed by squad explosions; enemy bots still receive distance-scaled blast damage; existing player self-damage behavior is unchanged. | Screen recording + before/after ally/enemy health and state |
 
 V2 static checks verify source invariants only. QA-27 through QA-30 require physical-device gameplay verification.

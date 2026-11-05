@@ -81,6 +81,7 @@ checks = {
     'weapon retained during airborne movement': 'pm.hand.visible=true' in source,
     'rigged jump/freefall animation': 'P.air===1||P.air===3' in models,
     'enemy and ally firing animations': "b.sc.action='shoot'" in source and "a.sc.action='shoot'" in source,
+    'explosions do not damage squad allies': 'function boom(x,z,R,d,q)' in source and 'function thr()' in source and 'al.forEach' not in source.split('function boom(x,z,R,d,q)',1)[1].split('function thr()',1)[0],
     'transport bot index reuse': 'botIndex%5' in source and 'bots.indexOf(b)' not in source,
     'offline hub career pages': all(token in source for token in ['BATTLE_ZONE_OFFLINE_HUB_COMPLETION_V1', "['statistics','Statistics']", "['history','Match History']"]),
     'match history uses actual local match results': 'bzOfflineMatchHistory' in source and 'window.__bzHistoryRecorder' in source,
