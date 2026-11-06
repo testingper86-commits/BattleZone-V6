@@ -12,7 +12,7 @@ checks = {
     "recovery listener is attached only to the gameplay canvas": "var cv=r.domElement;if(cv&&cv.id==='c'){" in html,
     "preview renderer keeps its intentional context release outside game recovery": "if(cv&&cv.id==='c')" in html and "lr.forceContextLoss()" in html,
     "context loss is prevented and recovery is awaited": "e.preventDefault();window.__bzWebglContextLost=true" in html and "waiting for WebGL restoration" in html,
-    "context restore clears timeout and reloads clean game resources": "webglcontextrestored" in html and "clearTimeout(window.__bzWebglRecoveryTimer)" in html and "setTimeout(function(){location.reload()},250)" in html,
+    "context restore clears timeout and preserves the active match": "webglcontextrestored" in html and "clearTimeout(window.__bzWebglRecoveryTimer)" in html and "r.setSize(window.innerWidth,window.innerHeight,false)" in html and "without resetting the match" in html and "setTimeout(function(){location.reload()},250)" not in html,
     "failed GPU restoration has bounded fatal fallback": "},10000);" in html and "Graphics context could not recover" in html,
     "fullscreen is feature-detected": "document.fullscreenEnabled&&document.documentElement&&typeof document.documentElement.requestFullscreen==='function'" in html,
     "fullscreen Promise rejection is handled": "bzFullscreenPromise.catch" in html and "Fullscreen unavailable:" in html,

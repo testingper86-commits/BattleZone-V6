@@ -1,0 +1,87 @@
+/* Battle Zone V6 lobby: one final, viewport-aware layout authority. */
+#lobby{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;min-height:0!important;box-sizing:border-box!important;overflow:hidden!important;isolation:isolate!important;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)!important}
+#lobby>*{box-sizing:border-box}
+#lb-top{position:absolute!important;top:max(8px,env(safe-area-inset-top,0px) + 6px)!important;left:max(10px,env(safe-area-inset-left,0px) + 10px)!important;right:max(10px,env(safe-area-inset-right,0px) + 10px)!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;z-index:40!important;pointer-events:none}
+#lb-top .pf,#lb-top .cur{max-width:min(42vw,300px)!important;min-width:0!important;pointer-events:auto!important}
+#lb-top .pi{min-width:0!important}#lb-top .pr{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important}#lb-top .pr b{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;max-width:25vw!important}
+#logo{position:absolute!important;top:max(9px,env(safe-area-inset-top,0px) + 7px)!important;left:50%!important;transform:translateX(-50%)!important;z-index:32!important;max-width:28vw!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:clamp(12px,1.35vw,18px)!important;letter-spacing:clamp(1px,.22vw,4px)!important}
+#bz-v6-hero{position:absolute!important;left:50%!important;top:clamp(48px,9vh,76px)!important;transform:translateX(-50%)!important;width:min(40vw,520px)!important;max-width:calc(100vw - clamp(190px,24vw,310px) - clamp(190px,24vw,310px))!important;min-width:240px!important;max-height:24vh!important;overflow:hidden!important;padding:7px 14px!important;gap:3px!important;z-index:24!important}
+#bz-v6-hero-title{font-size:clamp(12px,1.45vw,18px)!important;line-height:1.15!important;white-space:normal!important}
+#bz-v6-hero-meta{font-size:clamp(7px,.72vw,9px)!important;line-height:1.2!important;overflow-wrap:anywhere!important}
+.bz-v6-local{font-size:7px!important}
+#lb-l{position:absolute!important;left:max(10px,env(safe-area-inset-left,0px) + 10px)!important;right:auto!important;top:clamp(112px,18vh,138px)!important;bottom:clamp(66px,11vh,88px)!important;width:clamp(205px,22vw,292px)!important;max-width:27vw!important;max-height:none!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;z-index:20!important}
+#lb-l::before{flex:0 0 auto!important;white-space:nowrap!important;font-size:8px!important;letter-spacing:.12em!important}
+#lb-l #setc{width:100%!important;min-width:0!important;max-height:100%!important;min-height:0!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;scrollbar-width:thin!important;box-sizing:border-box!important}
+#lb-l .card,#lb-l #more .card{width:100%!important;min-width:0!important;min-height:clamp(34px,5.4vh,46px)!important;max-width:100%!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:7px!important;padding:7px 10px!important;white-space:normal!important;overflow-wrap:anywhere!important;line-height:1.2!important;font-size:clamp(9px,.9vw,11px)!important}
+#lb-l .card>*{min-width:0!important}#lb-l .card .v{margin-left:auto!important;text-align:right!important;white-space:nowrap!important}
+#lb-l #more{display:none!important;flex-direction:column!important;flex-wrap:nowrap!important;gap:3px!important;min-width:0!important}
+#lb-l #more.open{display:flex!important}
+#maps{position:absolute!important;left:auto!important;right:max(10px,env(safe-area-inset-right,0px) + 10px)!important;top:clamp(112px,18vh,138px)!important;bottom:clamp(66px,11vh,88px)!important;width:clamp(210px,23vw,300px)!important;max-width:27vw!important;max-height:none!important;min-height:0!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:6px!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;scrollbar-width:thin!important;padding:9px!important;box-sizing:border-box!important;z-index:20!important}
+#maps::before{position:relative!important;left:auto!important;top:auto!important;display:block!important;flex:0 0 auto!important;padding:1px 3px 4px!important;white-space:nowrap!important}
+#maps .mc{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;flex:0 0 auto!important;width:100%!important;min-width:0!important;min-height:48px!important;max-width:100%!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;gap:4px!important;padding:7px!important;overflow:hidden!important}
+#maps .mc .th{width:100%!important;height:clamp(22px,4vh,36px)!important;min-height:22px!important;flex:0 0 auto!important;margin:0!important}
+#maps .mc b,#maps .mc small{max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#char{position:absolute!important;left:50%!important;top:54%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%)!important;width:clamp(126px,15vw,202px)!important;height:clamp(176px,42vh,280px)!important;max-width:22vw!important;z-index:8!important;pointer-events:none!important}
+#char canvas{width:100%!important;height:100%!important;display:block!important}
+#char::before{max-width:100%!important;max-height:100%!important;pointer-events:none!important}
+#skp{position:absolute!important;left:calc(50% - clamp(112px,12vw,156px))!important;right:auto!important;top:54%!important;transform:translateY(-50%)!important;max-width:clamp(88px,11vw,132px)!important;max-height:100px!important;overflow:hidden!important;z-index:16!important}
+#lo{position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:clamp(66px,11vh,88px)!important;transform:translateX(-50%)!important;max-width:clamp(104px,13vw,150px)!important;min-height:38px!important;padding:6px 10px!important;z-index:18!important;white-space:nowrap!important}
+#lbl{position:absolute!important;left:50%!important;right:auto!important;top:auto!important;bottom:clamp(48px,8vh,64px)!important;transform:translateX(-50%)!important;max-width:min(34vw,340px)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;z-index:17!important}
+#go2{position:absolute!important;left:max(10px,env(safe-area-inset-left,0px) + 10px)!important;right:auto!important;top:auto!important;bottom:max(10px,env(safe-area-inset-bottom,0px) + 10px)!important;transform:none!important;width:clamp(190px,22vw,292px)!important;max-width:27vw!important;min-width:0!important;min-height:48px!important;padding:8px 14px!important;white-space:nowrap!important;z-index:42!important}
+#go2::after{max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#lb-nav{position:absolute!important;left:auto!important;right:max(10px,env(safe-area-inset-right,0px) + 10px)!important;top:auto!important;bottom:max(10px,env(safe-area-inset-bottom,0px) + 10px)!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;gap:clamp(4px,.55vw,8px)!important;width:max-content!important;max-width:58vw!important;min-width:0!important;overflow-x:auto!important;overflow-y:visible!important;scrollbar-width:none!important;z-index:42!important}
+#lb-nav::before{top:-14px!important;right:0!important;white-space:nowrap!important}
+#lb-nav b{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;width:clamp(40px,4.3vw,64px)!important;min-width:40px!important;flex:0 1 64px!important;min-height:clamp(42px,7vh,58px)!important;padding:5px 2px!important;box-sizing:border-box!important;overflow:hidden!important;white-space:nowrap!important;text-overflow:ellipsis!important;font-size:clamp(7px,.75vw,9px)!important}
+#lb-nav b::before{width:clamp(14px,1.3vw,20px)!important;height:clamp(14px,1.3vw,20px)!important;flex:0 0 auto!important}
+#warroomBrief{position:absolute!important;left:max(10px,env(safe-area-inset-left,0px) + 10px)!important;right:auto!important;top:auto!important;bottom:clamp(64px,10vh,82px)!important;max-width:clamp(190px,22vw,292px)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;z-index:22!important}
+#pvbtn{position:fixed!important;left:50%!important;right:auto!important;bottom:max(12px,env(safe-area-inset-bottom,0px) + 12px)!important;transform:translateX(-50%)!important;display:flex!important;gap:10px!important;z-index:100!important}
+#pvback,#pvgo{min-width:clamp(112px,16vw,180px)!important;min-height:46px!important}
+#go2,#lb-nav b,#lo{touch-action:manipulation!important;-webkit-user-select:none!important;user-select:none!important}
+#rot{z-index:1000!important}
+#lb-l .card:focus-visible,#maps .mc:focus-visible,#lb-nav b:focus-visible,#go2:focus-visible,#lo:focus-visible{outline:2px solid #72dce7!important;outline-offset:2px!important}
+@media (orientation:landscape) and (max-height:560px){
+ #logo{top:7px!important}
+ #lb-top{top:6px!important}
+ #bz-v6-hero{top:clamp(40px,8vh,54px)!important;max-height:20vh!important;padding:5px 10px!important;gap:2px!important}
+ #lb-l,#maps{top:clamp(92px,17vh,112px)!important;bottom:clamp(60px,10vh,70px)!important}
+ #lb-l{width:clamp(180px,22vw,252px)!important;max-width:25vw!important}
+ #maps{width:clamp(184px,22vw,252px)!important;max-width:25vw!important}
+ #lb-l .card{min-height:clamp(30px,5.2vh,38px)!important;padding:5px 8px!important}
+ #maps .mc{min-height:38px!important;padding:5px!important}
+ #maps .mc .th{height:20px!important}
+ #char{top:52%!important;width:clamp(116px,14vw,164px)!important;height:clamp(154px,38vh,208px)!important;max-width:19vw!important}
+ #skp{left:calc(50% - clamp(90px,10vw,118px))!important;top:51%!important;max-width:clamp(78px,9vw,104px)!important}
+ #lo{bottom:clamp(66px,11vh,80px)!important;min-height:34px!important}
+ #lbl{bottom:clamp(42px,7vh,52px)!important;font-size:8px!important}
+ #go2{width:clamp(180px,22vw,252px)!important;max-width:25vw!important;min-height:42px!important;bottom:6px!important;font-size:13px!important}
+ #lb-nav{width:max-content!important;max-width:58vw!important;bottom:6px!important;gap:4px!important}
+ #lb-nav b{min-height:38px!important;padding:3px 1px!important}
+ #warroomBrief{bottom:clamp(54px,9vh,64px)!important;font-size:8px!important}
+}
+@media (orientation:landscape) and (max-width:760px){
+ #lb-top{left:max(6px,env(safe-area-inset-left,0px) + 5px)!important;right:max(6px,env(safe-area-inset-right,0px) + 5px)!important}
+ #lb-l{left:max(6px,env(safe-area-inset-left,0px) + 5px)!important;width:clamp(124px,22vw,160px)!important;max-width:24vw!important}
+ #maps{right:max(6px,env(safe-area-inset-right,0px) + 5px)!important;width:clamp(124px,22vw,160px)!important;max-width:24vw!important}
+ #lb-l .card{font-size:8px!important;padding:5px 6px!important}
+ #maps .mc{font-size:8px!important}
+ #char{width:clamp(94px,16vw,124px)!important;height:clamp(132px,38vh,168px)!important}
+ #skp{left:calc(50% - clamp(72px,12vw,88px))!important;max-width:74px!important}
+ #go2{width:clamp(116px,22vw,158px)!important;max-width:24vw!important;min-height:36px!important;padding:6px 8px!important;font-size:11px!important}
+ #lb-nav{width:max-content!important;max-width:58vw!important}
+ #lb-nav b{min-height:34px!important;font-size:6px!important}
+ #lb-nav b::before{width:13px!important;height:13px!important}
+ #warroomBrief{max-width:24vw!important;font-size:7px!important}
+ #lo{min-height:30px!important;padding:4px 7px!important}
+}
+@media (orientation:landscape) and (max-height:390px){
+ #lb-l,#maps{top:76px!important;bottom:48px!important}
+ #bz-v6-hero{top:36px!important;padding:3px 8px!important}
+ #lb-l .card{min-height:28px!important}
+ #maps .mc{min-height:32px!important}
+ #char{top:51%!important;height:148px!important}
+ #lo{bottom:58px!important}
+ #lbl{bottom:36px!important}
+ #go2,#lb-nav{bottom:4px!important}
+ #lb-nav b{min-height:30px!important}
+}
+@media (prefers-reduced-motion:reduce){#lb-nav b,#maps .mc,#go2,#lo{animation:none!important;transition:none!important}}

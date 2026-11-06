@@ -70,3 +70,10 @@ The final CI transformation adds four persistent offline squad commands: Regroup
 `apply_v6_gpu_recovery.py` attaches `webglcontextlost` and `webglcontextrestored` handlers only to the main gameplay canvas (`#c`). The lobby character preview uses a separate renderer and intentionally calls `forceContextLoss()` when deployment starts to return GPU resources. Treating every renderer's context-loss event as a game failure caused a false fatal screen on deployment. The focused regression test now asserts the gameplay-canvas guard and preserves the preview renderer's intentional release.
 
 Android owns the landscape orientation through `android:screenOrientation="landscape"` in the manifest. The game page no longer calls `screen.orientation.lock()`, which is unsupported or rejected on some WebView/device combinations.
+
+
+## Final lobby alignment
+
+`apply_v6_lobby_alignment.py` is the last UI transformation in CI. It copies `v6-lobby-alignment.css` into the packaged game and links it after all existing lobby styles, giving the viewport/safe-area layout a single final cascade authority. It aligns the player/status header, central command hero, left configuration, right battlefield list, character preview, skins action, deploy button and the operator-service rail, including both the original four-item layout and the seven-item layout shown in device captures. Dedicated compact-landscape, short-height and narrow-width rules constrain overflow and preserve touch access. `test_v6_lobby_alignment.py` checks these invariants and stylesheet ordering.
+
+The GPU recovery handler now preserves the current match when WebGL reports a restored context: it resizes the renderer and lets Three.js rebuild GPU resources instead of reloading the document. The 10-second failure fallback is retained only for a context that does not return.

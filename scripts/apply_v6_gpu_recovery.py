@@ -34,8 +34,8 @@ new_context = """var cv=r.domElement;if(cv&&cv.id==='c'){
    cv.addEventListener('webglcontextrestored',function(){
     window.__bzWebglContextLost=false;
     if(window.__bzWebglRecoveryTimer)clearTimeout(window.__bzWebglRecoveryTimer);
-    window.__bzNote&&window.__bzNote('Game GPU context restored; reloading game resources');
-    setTimeout(function(){location.reload()},250);
+    try{r.setSize(window.innerWidth,window.innerHeight,false);window.dispatchEvent(new Event('resize'));}catch(err){window.__bzNote&&window.__bzNote('Renderer resize after GPU restoration: '+(err&&err.message||err));}
+    window.__bzNote&&window.__bzNote('Game GPU context restored; renderer resources will be rebuilt without resetting the match');
    });
   }"""
 replace_once(old_context, new_context, "gameplay-canvas-only WebGL context-loss recovery handler")
