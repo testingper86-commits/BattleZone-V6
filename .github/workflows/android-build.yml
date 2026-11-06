@@ -48,6 +48,7 @@ jobs:
           python3 scripts/apply_battlezone_feedback_completion.py _cloud_source
           python3 scripts/apply_battlezone_v6_enhancement.py _cloud_source
           python3 scripts/apply_v6_runtime_reliability.py _cloud_source
+          python3 scripts/apply_v6_voice_startup_fix.py _cloud_source
           echo "dir=_cloud_source" >> "$GITHUB_OUTPUT"
           echo "Canonical source extracted and offline-only patches applied."
 
@@ -83,6 +84,7 @@ jobs:
           python3 validate_project.py
           python3 "$GITHUB_WORKSPACE/scripts/test_battlezone_v6_enhancement.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_runtime_reliability.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_voice_startup_fix.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
 
       - name: Run unit tests and build debug APK
         shell: bash
