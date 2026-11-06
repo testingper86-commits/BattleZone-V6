@@ -65,3 +65,14 @@ The source patch and static validator cover code-level invariants only. QA-19 th
 | QA-34 | Jump weapon animation | Jump, freefall, open parachute, land, aim and fire in first- and third-person views. | Equipped weapon and hand remain visible and follow jump/aim/fire poses; weapon is hidden only during plane transport and vehicles. | 60 fps screen recording |
 
 V2 and feedback-completion static checks verify source invariants only. QA-27 through QA-34 require physical-device gameplay verification.
+
+
+## V6 command-deck and AI efficiency regression gate
+
+| ID | Area | Test | Expected result | Evidence |
+|---|---|---|---|---|
+| QA-35 | Lobby rendering | Leave the lobby open for 5 minutes, open/close the operator hub, then deploy. | Operator preview stays capped near 20 fps, stops when hidden/deployed, and releases its WebGL context; no second-context leak or visual freeze. | GPU profiler + screen recording |
+| QA-36 | Squad tactics | Observe assault, support and flank allies with enemies near/far from the player, including target death and no-target intervals. | Roles select targets with distinct priorities, cached target scans refresh at 160 ms, line-of-sight is checked only when firing, and allies regroup/heal/revive as before. | Match recording + CPU trace + combat log |
+| QA-37 | Lobby accessibility | Navigate lobby settings, map cards and dock controls using keyboard Enter/Space and touch. | Interactive controls expose button semantics, receive visible focus, and retain their original actions. | Accessibility scan + screen recording |
+
+QA-35 through QA-37 require physical-device verification. CI checks the source invariants and JavaScript syntax only.

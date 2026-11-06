@@ -52,3 +52,8 @@ Original Battle Zone models, maps, weapons, textures, effects, animations, audio
 ## Player hub career screens
 
 The build applies `apply_offline_hub_completion.py` after the offline/gameplay patches. It adds device-local career statistics and a 50-match history sourced from actual match-completion counters. Replay playback is explicitly unavailable until deterministic replay recording exists.
+
+
+## V6 command-deck enhancement
+
+The `feature/battlezone-v6-enhancement` branch layers a responsive command-deck home/lobby redesign over the existing V6 controls, caps the lobby operator preview at 20 fps and releases its WebGL context at deployment, and reduces squad AI overhead by caching target acquisition and moving LOS checks into firing cooldowns. Assault, support and flank roles use different target priorities. The patch does not replace the Android/WebView/Three.js architecture or change offline-only behavior.
