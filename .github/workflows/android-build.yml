@@ -57,7 +57,7 @@ jobs:
         run: |
           set -euo pipefail
           source_dir="${{ steps.source.outputs.dir }}"
-          settings_file="$(find "$source_dir" -type f \\( -name settings.gradle -o -name settings.gradle.kts \\) | head -n 1)"
+          settings_file="$(find "$source_dir" -type f \( -name settings.gradle -o -name settings.gradle.kts \) | head -n 1)"
           if [ -z "$settings_file" ]; then
             echo "No settings.gradle or settings.gradle.kts found in $source_dir."
             exit 1
@@ -109,7 +109,7 @@ jobs:
         run: |
           set -euo pipefail
           cd "${{ steps.project.outputs.dir }}"
-          zip -qr "$GITHUB_WORKSPACE/BattleZone_V6_Offline_Patched_Source.zip" . \\
+          zip -qr "$GITHUB_WORKSPACE/BattleZone_V6_Offline_Patched_Source.zip" . \
             -x '**/build/**' '**/.gradle/**' '.git/**' '*/.git/*'
 
       - name: Upload patched source archive
