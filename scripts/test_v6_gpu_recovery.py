@@ -9,13 +9,14 @@ if len(files) != 1:
 html = files[0].read_text(encoding="utf-8")
 checks = {
     "GPU recovery marker present": "BATTLEZONE_V6_GPU_RECOVERY_V1" in html,
+    "recovery listener is attached only to the gameplay canvas": "var cv=r.domElement;if(cv&&cv.id==='c'){" in html,
+    "preview renderer keeps its intentional context release outside game recovery": "if(cv&&cv.id==='c')" in html and "lr.forceContextLoss()" in html,
     "context loss is prevented and recovery is awaited": "e.preventDefault();window.__bzWebglContextLost=true" in html and "waiting for WebGL restoration" in html,
     "context restore clears timeout and reloads clean game resources": "webglcontextrestored" in html and "clearTimeout(window.__bzWebglRecoveryTimer)" in html and "setTimeout(function(){location.reload()},250)" in html,
     "failed GPU restoration has bounded fatal fallback": "},10000);" in html and "Graphics context could not recover" in html,
     "fullscreen is feature-detected": "document.fullscreenEnabled&&document.documentElement&&typeof document.documentElement.requestFullscreen==='function'" in html,
     "fullscreen Promise rejection is handled": "bzFullscreenPromise.catch" in html and "Fullscreen unavailable:" in html,
-    "orientation lock is feature-detected": "screen.orientation&&typeof screen.orientation.lock==='function'" in html,
-    "orientation lock Promise rejection is handled": "bzOrientationPromise.catch" in html and "Orientation lock unavailable:" in html,
+    "web orientation lock is not called when Android manifest owns landscape": "screen.orientation.lock(" not in html and "Landscape orientation is controlled by the Android activity manifest" in html,
     "old immediate fatal context-loss handler is removed": "window.bzFatal('Graphics context lost'" not in html,
     "old unguarded fullscreen call is removed": "document.documentElement.requestFullscreen();screen.orientation.lock('landscape')" not in html,
 }

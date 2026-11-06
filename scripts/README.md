@@ -37,7 +37,7 @@ The GitHub Actions workflow uses only `BattleZone_V6_GitHub_Actions_Ready.zip` a
 - Test movement, camera, firing, reload, weapon switching and touch controls.
 - Test AI enemies, TDM allies, respawn, revive, safe-zone phases and match completion.
 - Test sound, localStorage progression and settings persistence.
-- Test orientation, pause/resume, WebView renderer recovery, frame pacing, memory and thermal behavior on physical Android devices.
+- Test orientation, pause/resume, WebView renderer recovery, frame pacing, memory and thermal behavior on physical Android devices. Verify that releasing the lobby preview WebGL context at deployment does not trigger the gameplay GPU-loss screen.
 - Confirm no pairing, LAN discovery, room-hosting or room-joining UI or runtime code remains.
 
 A successful Gradle build proves APK assembly, not gameplay correctness. Physical-device testing is required for WebGL/GPU compatibility, controls, AI behavior, performance, memory, thermal behavior and stability.
@@ -63,3 +63,10 @@ The `feature/battlezone-v6-enhancement` branch layers a responsive command-deck 
 The final CI transformation adds four persistent offline squad commands: Regroup, Focus, Flank and Hold. Focus selects the nearest living enemy within 120 world units and directs allies to that shared target; if no target is in range, the order safely falls back to Regroup. Regroup pulls distant allies back before they resume combat, Flank applies flank movement to the squad, and Hold stops idle allies from drifting while preserving engagement behavior. The compact touch controls use safe-area insets, visible focus states and reduced-motion-aware styling. The selection is stored locally as `bzSquadOrder`.
 
 `apply_v6_squad_command_system.py` is idempotent and fails closed if any required source anchor changes. `test_v6_squad_command_system.py` verifies the UI, persistence and AI integration.
+
+
+## Gameplay GPU context ownership
+
+`apply_v6_gpu_recovery.py` attaches `webglcontextlost` and `webglcontextrestored` handlers only to the main gameplay canvas (`#c`). The lobby character preview uses a separate renderer and intentionally calls `forceContextLoss()` when deployment starts to return GPU resources. Treating every renderer's context-loss event as a game failure caused a false fatal screen on deployment. The focused regression test now asserts the gameplay-canvas guard and preserves the preview renderer's intentional release.
+
+Android owns the landscape orientation through `android:screenOrientation="landscape"` in the manifest. The game page no longer calls `screen.orientation.lock()`, which is unsupported or rejected on some WebView/device combinations.

@@ -12,6 +12,12 @@
 - Hides controls unless an active match has a living squad member.
 - Provides touch-sized controls, keyboard focus visibility, mobile safe-area support and reduced-motion-aware styling.
 
+### Gameplay GPU lifecycle correction
+- Restricts WebGL context-loss and context-restoration handling to the main gameplay canvas (`#c`).
+- Prevents the lobby character-preview renderer's intentional `forceContextLoss()` during deployment from being misreported as a failed gameplay GPU context.
+- Removes the browser orientation-lock request; Android's manifest already owns landscape orientation, avoiding unsupported WebView API warnings.
+- Extends `scripts/test_v6_gpu_recovery.py` to guard renderer ownership and the orientation contract.
+
 ## Architecture and integration
 
 The Android/Kotlin + WebView + Three.js architecture is retained. The feature is delivered as a deterministic, idempotent source transformation in `scripts/apply_v6_squad_command_system.py`, applied after progression integrity in the canonical GitHub Actions pipeline. No new runtime library or network permission is introduced.

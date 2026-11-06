@@ -22,7 +22,7 @@ def replace_once(old, new, label):
     source = source.replace(old, new, 1)
 
 old_context = """var cv=r.domElement;if(cv){cv.addEventListener('webglcontextlost',function(e){e.preventDefault();window.bzFatal('Graphics context lost','<p>The GPU reset the 3D view (low memory or the app was backgrounded for a long time). Tap RETRY to reload.</p>')});}"""
-new_context = """var cv=r.domElement;if(cv){
+new_context = """var cv=r.domElement;if(cv&&cv.id==='c'){
    cv.addEventListener('webglcontextlost',function(e){
     e.preventDefault();window.__bzWebglContextLost=true;
     if(window.__bzWebglRecoveryTimer)clearTimeout(window.__bzWebglRecoveryTimer);
@@ -38,14 +38,12 @@ new_context = """var cv=r.domElement;if(cv){
     setTimeout(function(){location.reload()},250);
    });
   }"""
-replace_once(old_context, new_context, "WebGL context-loss recovery handler")
+replace_once(old_context, new_context, "gameplay-canvas-only WebGL context-loss recovery handler")
 old_fullscreen = "document.documentElement.requestFullscreen();screen.orientation.lock('landscape')"
 new_fullscreen = """if(document.fullscreenEnabled&&document.documentElement&&typeof document.documentElement.requestFullscreen==='function'){
   try{var bzFullscreenPromise=document.documentElement.requestFullscreen();if(bzFullscreenPromise&&typeof bzFullscreenPromise.catch==='function')bzFullscreenPromise.catch(function(e){window.__bzNote&&window.__bzNote('Fullscreen unavailable: '+(e&&e.message||e))})}catch(e){window.__bzNote&&window.__bzNote('Fullscreen unavailable: '+(e&&e.message||e))}
  }
- if(screen.orientation&&typeof screen.orientation.lock==='function'){
-  try{var bzOrientationPromise=screen.orientation.lock('landscape');if(bzOrientationPromise&&typeof bzOrientationPromise.catch==='function')bzOrientationPromise.catch(function(e){window.__bzNote&&window.__bzNote('Orientation lock unavailable: '+(e&&e.message||e))})}catch(e){window.__bzNote&&window.__bzNote('Orientation lock unavailable: '+(e&&e.message||e))}
- }"""
+ window.__bzNote&&window.__bzNote('Landscape orientation is controlled by the Android activity manifest');"""
 replace_once(old_fullscreen, new_fullscreen, "fullscreen and orientation request")
 source = source.replace("</body>", "<!-- " + marker + " -->\n</body>", 1)
 if marker not in source:

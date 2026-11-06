@@ -30,7 +30,7 @@ The release artifact is intentionally unsigned because no production keystore is
 
 ## Gameplay quality and reliability
 
-The Android workflow applies guarded quality and reliability transformations after offline removal. These include allocation-free actor iteration, throttled HUD/minimap rendering, terrain/POI map detail, procedural combat poses, startup and renderer recovery, safe immersive-mode requests, and bounded lobby preview rendering.
+The Android workflow applies guarded quality and reliability transformations after offline removal. These include allocation-free actor iteration, throttled HUD/minimap rendering, terrain/POI map detail, procedural combat poses, startup and renderer recovery, safe immersive-mode requests, and bounded lobby preview rendering. GPU-loss recovery is scoped strictly to the gameplay canvas: the lobby preview deliberately releases its own WebGL context at deployment, and that intentional release must never be treated as a gameplay GPU failure. Landscape orientation is owned by the Android activity manifest; the Web page does not call the unsupported browser orientation-lock API.
 
 ## Progression and local data integrity
 
