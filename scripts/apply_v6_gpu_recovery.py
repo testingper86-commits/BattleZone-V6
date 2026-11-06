@@ -47,8 +47,7 @@ new_fullscreen = """if(document.fullscreenEnabled&&document.documentElement&&typ
   try{var bzOrientationPromise=screen.orientation.lock('landscape');if(bzOrientationPromise&&typeof bzOrientationPromise.catch==='function')bzOrientationPromise.catch(function(e){window.__bzNote&&window.__bzNote('Orientation lock unavailable: '+(e&&e.message||e))})}catch(e){window.__bzNote&&window.__bzNote('Orientation lock unavailable: '+(e&&e.message||e))}
  }"""
 replace_once(old_fullscreen, new_fullscreen, "fullscreen and orientation request")
-source = source.replace("</body>", "<!-- " + marker + " -->
-</body>", 1)
+source = source.replace("</body>", "<!-- " + marker + " -->\n</body>", 1)
 if marker not in source:
     raise SystemExit("Could not write V6 GPU recovery marker")
 path.write_text(source, encoding="utf-8")
