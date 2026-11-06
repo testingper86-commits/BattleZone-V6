@@ -57,3 +57,9 @@ The build applies `apply_offline_hub_completion.py` after the offline/gameplay p
 ## V6 command-deck enhancement
 
 The `feature/battlezone-v6-enhancement` branch layers a responsive command-deck home/lobby redesign over the existing V6 controls, caps the lobby operator preview at 20 fps and releases its WebGL context at deployment, and reduces squad AI overhead by caching target acquisition and moving LOS checks into firing cooldowns. Assault, support and flank roles use different target priorities. The patch does not replace the Android/WebView/Three.js architecture or change offline-only behavior.
+
+## Live squad orders
+
+The final CI transformation adds four persistent offline squad commands: Regroup, Focus, Flank and Hold. Focus selects the nearest living enemy within 120 world units and directs allies to that shared target; if no target is in range, the order safely falls back to Regroup. Regroup pulls distant allies back before they resume combat, Flank applies flank movement to the squad, and Hold stops idle allies from drifting while preserving engagement behavior. The compact touch controls use safe-area insets, visible focus states and reduced-motion-aware styling. The selection is stored locally as `bzSquadOrder`.
+
+`apply_v6_squad_command_system.py` is idempotent and fails closed if any required source anchor changes. `test_v6_squad_command_system.py` verifies the UI, persistence and AI integration.

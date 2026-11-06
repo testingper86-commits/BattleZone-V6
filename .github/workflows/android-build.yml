@@ -3,12 +3,13 @@ name: Build BattleZone Offline Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main, feature/offline-pairing-removal, feature/battlezone-v6-enhancement]
+    branches: [feature/offline-pairing-removal]
     paths:
-      - '**/*.zip'
+      - 'BattleZone_V6_GitHub_Actions_Ready.zip'
       - '.github/workflows/**'
       - 'scripts/**'
       - 'README.md'
+      - 'docs/**'
 
 permissions:
   contents: read
@@ -51,6 +52,7 @@ jobs:
           python3 scripts/apply_v6_voice_startup_fix.py _cloud_source
           python3 scripts/apply_v6_gpu_recovery.py _cloud_source
           python3 scripts/apply_v6_progression_integrity.py _cloud_source
+          python3 scripts/apply_v6_squad_command_system.py _cloud_source
           echo "dir=_cloud_source" >> "$GITHUB_OUTPUT"
           echo "Canonical source extracted and offline-only patches applied."
 
@@ -89,6 +91,7 @@ jobs:
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_voice_startup_fix.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_gpu_recovery.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_progression_integrity.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_squad_command_system.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
 
       - name: Run unit tests and build debug and unsigned release APKs
         shell: bash

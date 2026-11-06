@@ -36,4 +36,4 @@ The Android workflow applies guarded quality and reliability transformations aft
 
 The V6 progression-integrity stage uses one shared local wallet for gameplay and Player Hub, prevents match-start taps from granting rewards, validates imported wallet/profile values, and includes the player profile, offline match history and AI doctrine in backup/restore. All progression remains device-local; there is no account service, remote matchmaking, backend database or online synchronization in this offline build.
 
-The validator and focused regression tests enforce source invariants. Physical-device performance, gameplay and animation behavior still require device QA.
+The validator and focused regression tests enforce source invariants. The new live squad-order system adds persistent Regroup, Focus, Flank and Hold commands to offline AI teammates; commands directly change ally targeting and movement and are hidden when no squad is deployed. Physical-device performance, gameplay and animation behavior still require device QA.
