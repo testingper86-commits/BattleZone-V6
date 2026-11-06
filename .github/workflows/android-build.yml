@@ -50,6 +50,7 @@ jobs:
           python3 scripts/apply_v6_runtime_reliability.py _cloud_source
           python3 scripts/apply_v6_voice_startup_fix.py _cloud_source
           python3 scripts/apply_v6_gpu_recovery.py _cloud_source
+          python3 scripts/apply_v6_progression_integrity.py _cloud_source
           echo "dir=_cloud_source" >> "$GITHUB_OUTPUT"
           echo "Canonical source extracted and offline-only patches applied."
 
@@ -87,17 +88,18 @@ jobs:
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_runtime_reliability.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_voice_startup_fix.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_gpu_recovery.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_progression_integrity.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
 
-      - name: Run unit tests and build debug APK
+      - name: Run unit tests and build debug and unsigned release APKs
         shell: bash
         run: |
           set -euo pipefail
           cd "${{ steps.project.outputs.dir }}"
           if [ -f ./gradlew ]; then
             chmod +x ./gradlew
-            ./gradlew --no-daemon :app:testDebugUnitTest :app:assembleDebug
+            ./gradlew --no-daemon :app:testDebugUnitTest :app:testReleaseUnitTest :app:assembleDebug :app:assembleRelease
           else
-            gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug
+            gradle --no-daemon :app:testDebugUnitTest :app:testReleaseUnitTest :app:assembleDebug :app:assembleRelease
           fi
 
       - name: Upload debug APK
@@ -105,6 +107,14 @@ jobs:
         with:
           name: BattleZone-debug-APK
           path: ${{ steps.project.outputs.dir }}/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload unsigned release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BattleZone-release-unsigned-APK
+          path: ${{ steps.project.outputs.dir }}/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
           retention-days: 14
 
