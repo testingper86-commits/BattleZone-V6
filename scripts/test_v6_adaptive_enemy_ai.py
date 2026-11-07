@@ -37,7 +37,7 @@ function makeContext(mode) {
     zc:{x:0,z:0,r:20},
     P:{alive:true,air:0,x:15,z:0,hp:100},
     DF:1,ENV:{vis:1},BZ_MODE:mode,bot,actors,
-    smk:()=>false,rnd:(a,b)=>{randomCalls++;return(a+b)/2},
+    smk:()=>false,hasClearShot:()=>true,rnd:(a,b)=>{randomCalls++;return(a+b)/2},
     forEachActor:fn=>{scanCalls++;actors.forEach(fn)}
   };
   vm.createContext(sandbox);
