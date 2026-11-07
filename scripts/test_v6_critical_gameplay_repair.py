@@ -26,7 +26,7 @@ window.BZSquadOrders=Object.freeze({get:()=>order,getFocusTarget:focusTarget});
 const role=(window.BZSquadOrders?.get()==='flank'?'flank':u.squadRole||(['assault','support','flank'][i%3])),side=u.squadSide||((i%2)?1:-1),px=P.x,pz=P.z;
 if(window.BZSquadOrders?.get()==='regroup'&&Math.hypot(px-a.position.x,pz-a.position.z)>12)en=null;
 else{u.cd=.22;u.squadThink=0}}
-}else{u.squadTarget=null;u.squadCover=null;const follow=Math.hypot(px-a.position.x,pz-a.position.z);if(follow>34){gx=px;gz=pz;speed=7.8}else if(follow<5){gx=a.position.x;gz=a.position.z;speed=0}else if(follow<10){gx=px+Math.cos(P.yaw)*9+Math.sin(P.yaw)*(i-1)*5;gz=pz-Math.sin(P.yaw)*9+Math.cos(P.yaw)*(i-1)*5;}}
+}else{u.squadTarget=null;u.squadCover=null;const follow=Math.hypot(px-a.position.x,pz-a.position.z);if(window.BZSquadOrders?.get()==='hold'){gx=a.position.x;gz=a.position.z;speed=0}else if(follow>34){gx=px;gz=pz;speed=7.8}else if(follow<5){gx=a.position.x;gz=a.position.z}else if(follow<10){gx=px+Math.cos(P.yaw)*7+Math.sin(P.yaw)*(i-1)*4;gz=pz-Math.sin(P.yaw)*7+Math.cos(P.yaw)*(i-1)*4;}}
 function bzV6TargetIsValid(target){if(target.p)return !!P.alive&&!P.air;const actor=target.o,u=actor&&actor.userData;if(!actor||!u||!u.alive||!actor.position)return false;return BZ_MODE==='TDM'?!!u.ally:!u.ally;}
 const consider=(x,z,candidate,priority,hp)=>{if(!Number.isFinite(x)||!Number.isFinite(z))return;};
 forEachActor(actor=>{if(actor===bot||!actor||!actor.userData||!actor.userData.alive)return;});
@@ -55,7 +55,7 @@ function register(obj,model,opt){
     css = html.parent / "css/v6-critical-gameplay-polish.css"
     assert css.is_file() and "#fire" in css.read_text() and "#bzSquadOrders" in css.read_text()
     assert "v6-critical-gameplay-polish.css" in second
-    for token in ("BATTLEZONE_V6_FINAL_GAMEPLAY_VISUAL_OVERHAUL_V3", "bzOrder==='regroup'", "bzOrder==='hold'", "if(bzOrder==='hold'){gx=a.position.x;gz=a.position.z;speed=0;}else{const follow=", "u.airDrop||u.falling||u.chute", "P.y>(P.gh||1.6)+.22", "bzGroundTexture", "MeshStandardMaterial({color:c,roughness:.82,metalness:.04})"):
+    for token in ("BATTLEZONE_V6_FINAL_GAMEPLAY_VISUAL_OVERHAUL_V3", "bzOrder==='regroup'", "bzOrder==='hold'", "if(bzOrder==='hold'){gx=a.position.x;gz=a.position.z;speed=0}else if(follow>34)", "u.airDrop||u.falling||u.chute", "P.y>(P.gh||1.6)+.22", "bzGroundTexture", "MeshStandardMaterial({color:c,roughness:.82,metalness:.04})"):
         assert token in second, f"missing V3 runtime token: {token}"
     model_text = models.read_text(encoding="utf-8")
     assert "BATTLEZONE_V6_OPERATOR_ARMOR_REDESIGN_V3" in model_text and "bzAttachOperatorGear(model,bones,opt.skinKey||'Recruit')" in model_text and model_text.count("function bzAttachOperatorGear(")==1
