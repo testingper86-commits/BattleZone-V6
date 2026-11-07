@@ -15,10 +15,7 @@ for token in (
     "a.death=act(clips.death)", "function playAction(target,state)",
     "THREE.LoopOnce", "active.getClip().duration", "availableActions",
     "a.cur=null", "e.an.cur=null", "resumeAction:null", "e.an.resumeAction.stop()", "want.a.fadeIn(.12).play()",
-    "death|die|dead|defeat", "BATTLEZONE_V6_ANIMATION_FALLBACK_V1",
-    "a.fallbackTimer=a.fallbackDuration", "fallbackTimer>0",
-    "weaponBasePosition", "weaponBaseRotation", "position.z-=.075*pulse",
-    "rotation.x-=.58*pulse", "fallbackDuration=state==='reload'?1.5:.22",
+    "death|die|dead|defeat",
 ):
     assert token in models, f"missing rigged animation capability or recovery: {token}"
 for token in (

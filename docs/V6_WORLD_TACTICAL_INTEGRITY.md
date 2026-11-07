@@ -25,3 +25,8 @@ The same idempotent source patch also corrects three verified gameplay defects:
 - Vehicle exit now resolves nearby obstacle collision and clamps the resulting player position to the playable world boundary.
 
 The regression test checks all three invariants as well as the original seven world/tactical checks. These are source-level checks; actual touch feel, combat balance and vehicle handling still require Android gameplay QA.
+
+
+## Rigged combat animation fallback
+
+The final-stage integrity patch runs after the multimodel patcher so its anchors target the actual per-rig model registration. If a model family lacks a shoot or reload clip, the action API now runs a bounded procedural fallback instead of silently returning false: shoot lasts 0.22 seconds, reload lasts 1.5 seconds, the weapon mount recoils or tilts, and Kenney arm bones receive a matching two-hand pose when available. Existing rig clips always take precedence. The base weapon mount transform is restored each frame, and the fallback timer expires back into locomotion. This remains source-level verification; actual arm orientation and weapon grip must be checked on Android hardware.

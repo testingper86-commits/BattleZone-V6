@@ -6,6 +6,9 @@ root=Path(sys.argv[1] if len(sys.argv)>1 else '.').resolve()
 paths=list(root.rglob('app/src/main/assets/www/index.html'))
 if len(paths)!=1: raise SystemExit(f'Expected exactly one game index.html, found {len(paths)}')
 s=paths[0].read_text(encoding='utf-8')
+models_paths=list(root.rglob('app/src/main/assets/www/js/models.js'))
+if len(models_paths)!=1: raise SystemExit(f'Expected exactly one models.js, found {len(models_paths)}')
+ms=models_paths[0].read_text(encoding='utf-8')
 checks={
 'cylinder cover raycast blockers':'S.add(m);solid.push(m);return m}' in s,
 'broadleaf trunk occlusion':'S.add(trunk);solid.push(trunk);trunk.castShadow' in s,
@@ -19,6 +22,13 @@ checks={
 'player follows clamped vehicle transform':'g.rotation.y=u.yaw;P.x=g.position.x;P.z=g.position.z;fx=fz=0;' in s,
 'vehicle exit collision and world clamp':'const exit=hit(P.x,P.z,.5,0);[P.x,P.z]=clampWorld(exit[0],exit[1],.8);' in s,
 'combat marker present':'BATTLEZONE_V6_COMBAT_CONTROL_INTEGRITY_V1' in s,
+'animation fallback marker present':'BATTLEZONE_V6_ANIMATION_FALLBACK_V1' in s and 'BATTLEZONE_V6_ANIMATION_FALLBACK_V1' in ms,
+'missing combat clips use procedural fallback':"if(!action){" in ms and 'a.fallbackTimer=a.fallbackDuration' in ms,
+'reload fallback has a bounded duration':"fallbackDuration=state==='reload'?1.5:.22" in ms,
+'weapon mount base transform is preserved':'weaponBasePosition' in ms and 'weaponBaseRotation' in ms,
+'shoot fallback animates weapon recoil':'entry.weaponMount.position.z-=.075*pulse' in ms,
+'reload fallback animates weapon tilt':'entry.weaponMount.rotation.x-=.58*pulse' in ms,
+'fallback timer expires and restores locomotion':'e.an.fallbackTimer=Math.max(0,e.an.fallbackTimer-dt)' in ms and 'const want=pickAct(e,sp)' in ms,
 }
 for name,ok in checks.items(): print(('PASS ' if ok else 'FAIL ')+name)
 if not all(checks.values()): raise SystemExit(f'{sum(not x for x in checks.values())} integrity checks failed')
