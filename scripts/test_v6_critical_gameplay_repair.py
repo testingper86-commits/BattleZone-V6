@@ -61,6 +61,7 @@ function register(obj,model,opt){
     css_text = css.read_text(encoding="utf-8")
     assert "BATTLEZONE_V6_FINAL_UI_OVERHAUL_V3" in css_text
     assert "right:calc(var(--bz-safe-r) + 106px)" in css_text
+    assert "#fire2{left:calc(var(--bz-safe-l) + 154px)" in css_text and "#fire2{left:130px" in css_text
     bad = root / "bad"
     (bad / "app/src/main/assets/www").mkdir(parents=True)
     (bad / "app/src/main/assets/www/index.html").write_text("<html><head></head></html>", encoding="utf-8")

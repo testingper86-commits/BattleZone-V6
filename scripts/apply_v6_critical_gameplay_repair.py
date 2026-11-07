@@ -347,7 +347,7 @@ if v3_css_marker not in css_source:
 #joy{position:fixed!important;left:calc(var(--bz-safe-l) + 14px)!important;right:auto!important;bottom:calc(var(--bz-safe-b) + 14px)!important;width:128px!important;height:128px!important}
 #knob{width:42px!important;height:42px!important;left:calc(50% - 21px)!important;top:calc(50% - 21px)!important}
 #fire{position:fixed!important;right:calc(var(--bz-safe-r) + 16px)!important;bottom:calc(var(--bz-safe-b) + 16px)!important;width:82px!important;height:82px!important;z-index:91!important}
-#fire2{display:none!important}
+#fire2{left:calc(var(--bz-safe-l) + 154px)!important;right:auto!important;bottom:calc(var(--bz-safe-b) + 140px)!important;display:block!important}
 #rel{right:calc(var(--bz-safe-r) + 106px)!important;bottom:calc(var(--bz-safe-b) + 18px)!important}
 #swap{right:calc(var(--bz-safe-r) + 106px)!important;bottom:calc(var(--bz-safe-b) + 80px)!important}
 #thr{right:calc(var(--bz-safe-r) + 168px)!important;bottom:calc(var(--bz-safe-b) + 18px)!important}
@@ -403,6 +403,7 @@ if v3_css_marker not in css_source:
  #drive{left:70px!important;bottom:186px!important}
  #lnl,#lnr{display:none!important}
  #fire{right:10px!important;bottom:10px!important;width:52px!important;height:52px!important}
+ #fire2{left:130px!important;right:auto!important;bottom:180px!important;width:44px!important;height:44px!important}
  #rel{right:66px!important;bottom:10px!important}
  #swap{right:122px!important;bottom:10px!important}
  #scope{right:10px!important;bottom:66px!important}
