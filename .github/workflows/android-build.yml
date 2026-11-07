@@ -89,6 +89,23 @@ jobs:
           echo "dir=$project_dir" >> "$GITHUB_OUTPUT"
           echo "Project root: $project_dir"
 
+      - name: Create per-file asset provenance ledger
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_dir="${{ steps.project.outputs.dir }}"
+          python3 scripts/test_v6_asset_provenance.py
+          if [ "${BATTLEZONE_RELEASE_APPROVED:-false}" = "true" ]; then
+            python3 scripts/create_asset_provenance_ledger.py \
+              --assets-root "$project_dir/app/src/main/assets/www" \
+              --output "$project_dir/app/src/main/assets/ASSET_PROVENANCE_LEDGER.json" \
+              --require-verified
+          else
+            python3 scripts/create_asset_provenance_ledger.py \
+              --assets-root "$project_dir/app/src/main/assets/www" \
+              --output "$project_dir/app/src/main/assets/ASSET_PROVENANCE_LEDGER.json"
+          fi
+
       - name: Create content-addressed source provenance
         id: provenance
         shell: bash
