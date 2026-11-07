@@ -13,7 +13,7 @@ with tempfile.TemporaryDirectory(prefix="bz-critical-repair-") as temp:
 const rootA=new THREE.CylinderGeometry(.035,.17,.78,5),rootB=rootA.clone(),rootC=rootA.clone(),rootD=rootA.clone();rootA.rotation.z=Math.PI/2;rootA.translate(.28,.23,0);rootB.rotation.z=-Math.PI/2;rootB.translate(-.28,.23,0);rootC.rotation.x=Math.PI/2;rootC.translate(0,.23,.28);rootD.rotation.x=-Math.PI/2;rootD.translate(0,.23,-.28);const branchA=new THREE.CylinderGeometry(.045,.1,1.15,5),branchB=branchA.clone(),branchC=branchA.clone();branchA.rotation.z=-.68;branchA.translate(-.34,2.35,.02);branchB.rotation.z=.68;branchB.translate(.34,2.4,-.02);branchC.rotation.x=.68;branchC.translate(.02,2.25,.34);
 Object.entries(bzControlIcons).forEach(([id,v])=>{const e=$(id);if(e)e.innerHTML='<span class=\"bz-control-symbol\">'+v[0]+'</span><small>'+v[1]+'</small>'});
 function hudUpdate(){const w=W[P.w],hp=Math.max(0,Math.ceil(P.hp));$('ht').textContent=hp;const f=$('hpf');f.style.width=Math.min(100,P.hp)+'%';f.style.background=P.hp>60?'green':P.hp>30?'yellow':'red';$('arm').innerHTML='';$('am').innerHTML=w.m;$('thrn').textContent='x1';$('gswn').textContent='Frag'}
-R.setPixelRatio(LQ?.9:Math.min(devicePixelRatio,1.05));R.outputEncoding=THREE.sRGBEncoding;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.08;
+R.setPixelRatio(LQ?.9:Math.min(devicePixelRatio,1.05));R.outputEncoding=THREE.sRGBEncoding;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.08;const ratio=[.82,1,1.2][bzQualityTier];
 const hemi=new THREE.HemisphereLight(0xffffff,0x556633,.95);S.add(hemi);const sun=new THREE.DirectionalLight(0xffffff,.6*(MAP.nt?.25:1));
 window.addEventListener('blur',clearGameplayInputs);document.addEventListener('visibilitychange',()=>{if(document.hidden)clearGameplayInputs()});
 </body></html>""", encoding="utf-8")
@@ -22,7 +22,7 @@ window.addEventListener('blur',clearGameplayInputs);document.addEventListener('v
     subprocess.run([sys.executable, str(patcher), str(root)], check=True)
     second = html.read_text(encoding="utf-8")
     assert first == second, "patcher is not idempotent"
-    for token in ("rootA.rotateZ(Math.PI/2)", "rootB.rotateZ(-Math.PI/2)", "branchC.rotateX(.68)", "id=\"thrn\"", "id=\"gswn\"", "BATTLEZONE_V6_CRITICAL_GAMEPLAY_REPAIR_V1"):
+    for token in ("rootA.rotateZ(Math.PI/2)", "rootB.rotateZ(-Math.PI/2)", "branchC.rotateX(.68)", "id=\"thrn\"", "id=\"gswn\"", "BATTLEZONE_V6_CRITICAL_GAMEPLAY_REPAIR_V2", "R.toneMappingExposure=1.16;", "const ratio=[.88,1.12,1.32][bzQualityTier];"):
         assert token in second, f"missing repaired runtime token: {token}"
     css = html.parent / "css/v6-critical-gameplay-polish.css"
     assert css.is_file() and "#fire" in css.read_text() and "#bzSquadOrders" in css.read_text()

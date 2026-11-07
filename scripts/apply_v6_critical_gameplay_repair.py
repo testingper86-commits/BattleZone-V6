@@ -9,8 +9,8 @@ if len(paths) != 1:
     raise SystemExit(f"Expected exactly one game index.html, found {len(paths)}")
 html = paths[0]
 s = html.read_text(encoding="utf-8")
-marker = "BATTLEZONE_V6_CRITICAL_GAMEPLAY_REPAIR_V1"
-css_marker = "BATTLEZONE_V6_CRITICAL_CONTROLS_GRAPHICS_V1"
+marker = "BATTLEZONE_V6_CRITICAL_GAMEPLAY_REPAIR_V2"
+css_marker = "BATTLEZONE_V6_CRITICAL_CONTROLS_GRAPHICS_V2"
 if marker in s and css_marker in s:
     print("BATTLEZONE_V6_CRITICAL_GAMEPLAY_REPAIR_ALREADY_APPLIED")
     raise SystemExit(0)
@@ -36,6 +36,19 @@ for old, new, label in [
     elif new not in s:
         raise SystemExit(f"{label}: neither original nor repaired anchor exists")
 
+# Improve clarity and color separation while retaining the existing adaptive/battery-saver governor.
+for old, new, label in [
+    ("R.setPixelRatio(LQ?.9:Math.min(devicePixelRatio,1.05));", "R.setPixelRatio(LQ?.9:Math.min(devicePixelRatio||1,1.35));", "base render resolution"),
+    ("R.toneMappingExposure=1.08;", "R.toneMappingExposure=1.16;", "display exposure"),
+    ("new THREE.HemisphereLight(0xffffff,0x556633,.95)", "new THREE.HemisphereLight(0xffffff,0x354c39,1.08)", "ambient light contrast"),
+    ("new THREE.DirectionalLight(0xffffff,.6*(MAP.nt?.25:1))", "new THREE.DirectionalLight(0xffffff,.72*(MAP.nt?.25:1))", "sunlight intensity"),
+    ("const ratio=[.82,1,1.2][bzQualityTier];", "const ratio=[.88,1.12,1.32][bzQualityTier];", "adaptive render sharpness"),
+]:
+    if old in s:
+        s = once(s, old, new, label)
+    elif new not in s:
+        raise SystemExit(f"{label}: expected renderer anchor is missing")
+
 # The final icon pass runs after the initial HUD construction. Preserve the IDs hudUpdate writes.
 old = "Object.entries(bzControlIcons).forEach(([id,v])=>{const e=$(id);if(e)e.innerHTML='<span class=\"bz-control-symbol\">'+v[0]+'</span><small>'+v[1]+'</small>'});"
 new = "Object.entries(bzControlIcons).forEach(([id,v])=>{const e=$(id);if(e){const valueId=id==='thr'?' id=\"thrn\"':id==='gsw'?' id=\"gswn\"':'';e.innerHTML='<span class=\"bz-control-symbol\">'+v[0]+'</span><small'+valueId+'>'+v[1]+'</small>'}});"
@@ -44,7 +57,7 @@ elif "const valueId=id==='thr'?' id=\"thrn\"'" not in s:
     raise SystemExit("Final control icon renderer has an unknown implementation")
 
 # Ship a consistent landscape-first tactical HUD with separated touch targets and responsive safe areas.
-css = r'''/* BATTLEZONE_V6_CRITICAL_CONTROLS_GRAPHICS_V1 */
+css = r'''/* BATTLEZONE_V6_CRITICAL_CONTROLS_GRAPHICS_V2 */
 :root{--bz-safe-l:env(safe-area-inset-left,0px);--bz-safe-r:env(safe-area-inset-right,0px);--bz-safe-t:env(safe-area-inset-top,0px);--bz-safe-b:env(safe-area-inset-bottom,0px);--bz-glass:rgba(7,17,28,.82);--bz-line:rgba(190,220,242,.34);--bz-cyan:#53d9ff;--bz-gold:#ffd45a}
 html,body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
 #c{image-rendering:auto;touch-action:none}
