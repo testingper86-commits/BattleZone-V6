@@ -16,7 +16,34 @@ function hudUpdate(){const w=W[P.w],hp=Math.max(0,Math.ceil(P.hp));$('ht').textC
 R.setPixelRatio(LQ?.9:Math.min(devicePixelRatio,1.05));R.outputEncoding=THREE.sRGBEncoding;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.08;const ratio=[.82,1,1.2][bzQualityTier];
 const hemi=new THREE.HemisphereLight(0xffffff,0x556633,.95);S.add(hemi);const sun=new THREE.DirectionalLight(0xffffff,.6*(MAP.nt?.25:1));
 window.addEventListener('blur',clearGameplayInputs);document.addEventListener('visibilitychange',()=>{if(document.hidden)clearGameplayInputs()});
+const gr=new THREE.Mesh(new THREE.BufferGeometry(),BZMaterial('grass',18,.98));
+const M=c=>new THREE.MeshLambertMaterial({color:c});
+t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(repeat,repeat);t.anisotropy=1;
+const BARK=new THREE.MeshLambertMaterial({map:barkT});
+const wall=new THREE.MeshLambertMaterial({color:c,map:t}),roof=new THREE.MeshLambertMaterial({color:new THREE.Color(c).multiplyScalar(.55)});
+R.toneMappingExposure=1.16;
+new THREE.HemisphereLight(0xffffff,0x354c39,1.08);
+new THREE.DirectionalLight(0xffffff,.72*(MAP.nt?.25:1));
+const setOrder=value=>{if(!allowed.has(value))return;order=value;try{localStorage.setItem('bzSquadOrder',value)}catch(e){};root.querySelectorAll('[data-bz-order]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.bzOrder===order)));};
+window.BZSquadOrders=Object.freeze({get:()=>order,getFocusTarget:focusTarget});
+const role=(window.BZSquadOrders?.get()==='flank'?'flank':u.squadRole||(['assault','support','flank'][i%3])),side=u.squadSide||((i%2)?1:-1),px=P.x,pz=P.z;
+if(window.BZSquadOrders?.get()==='regroup'&&Math.hypot(px-a.position.x,pz-a.position.z)>12)en=null;
+else{u.cd=.22;u.squadThink=0}}
+function bzV6TargetIsValid(target){if(target.p)return !!P.alive&&!P.air;const actor=target.o,u=actor&&actor.userData;if(!actor||!u||!u.alive||!actor.position)return false;return BZ_MODE==='TDM'?!!u.ally:!u.ally;}
+const consider=(x,z,candidate,priority,hp)=>{if(!Number.isFinite(x)||!Number.isFinite(z))return;};
+forEachActor(actor=>{if(actor===bot||!actor||!actor.userData||!actor.userData.alive)return;});
+function shoot(){if(P.cd>0||P.rl>0||P.air||P.down)return;}
+window.shotSfx=function(){if(!SND_ON)return;};
+if(!u.alive||u.airDrop||u.falling)return;
 </body></html>""", encoding="utf-8")
+    models = root / "app/src/main/assets/www/js/models.js"
+    models.parent.mkdir(parents=True, exist_ok=True)
+    models.write_text("""function findBone(model,keys){return null}
+function register(obj,model,opt){
+ const bones={rightHand:findBone(model,['righthand','handr','handslotright']),rightArm:findBone(model,['rightarm','upperarmr','armright']),rightForeArm:findBone(model,['rightforearm','forearmr']),leftArm:findBone(model,['leftarm','upperarml','armleft']),leftForeArm:findBone(model,['leftforearm','forearml']),spine:findBone(model,['spine','spine1','chest','body'])};
+ const entry={obj,model,an, bones,template,lx:obj.position.x,lz:obj.position.z,air:opt.air||null,far:!!opt.cull,speedOf:opt.speedOf||null,weaponMount:null,weaponName:null,weaponBasePosition:null,weaponBaseRotation:null};
+}
+""", encoding="utf-8")
     subprocess.run([sys.executable, str(patcher), str(root)], check=True)
     first = html.read_text(encoding="utf-8")
     subprocess.run([sys.executable, str(patcher), str(root)], check=True)
@@ -27,6 +54,13 @@ window.addEventListener('blur',clearGameplayInputs);document.addEventListener('v
     css = html.parent / "css/v6-critical-gameplay-polish.css"
     assert css.is_file() and "#fire" in css.read_text() and "#bzSquadOrders" in css.read_text()
     assert "v6-critical-gameplay-polish.css" in second
+    for token in ("BATTLEZONE_V6_FINAL_GAMEPLAY_VISUAL_OVERHAUL_V3", "bzOrder==='regroup'", "bzOrder==='hold'", "u.airDrop||u.falling||u.chute", "P.y>(P.gh||1.6)+.22", "bzGroundTexture", "MeshStandardMaterial({color:c,roughness:.82,metalness:.04})"):
+        assert token in second, f"missing V3 runtime token: {token}"
+    model_text = models.read_text(encoding="utf-8")
+    assert "BATTLEZONE_V6_OPERATOR_ARMOR_REDIGN_V3" in model_text and "bzAttachOperatorGear(model,bones,opt.skinKey||'Recruit')" in model_text
+    css_text = css.read_text(encoding="utf-8")
+    assert "BATTLEZONE_V6_FINAL_UI_OVERHAUL_V3" in css_text
+    assert "right(var(--bz-safe-r) + 106px)" in css_text
     bad = root / "bad"
     (bad / "app/src/main/assets/www").mkdir(parents=True)
     (bad / "app/src/main/assets/www/index.html").write_text("<html><head></head></html>", encoding="utf-8")
