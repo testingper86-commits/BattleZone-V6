@@ -52,6 +52,7 @@ jobs:
           python3 scripts/apply_v6_voice_startup_fix.py _cloud_source
           python3 scripts/apply_v6_gpu_recovery.py _cloud_source
           python3 scripts/apply_v6_progression_integrity.py _cloud_source
+          python3 scripts/apply_v6_encrypted_backup.py _cloud_source
           python3 scripts/apply_v6_squad_command_system.py _cloud_source
           python3 scripts/apply_v6_lobby_alignment.py _cloud_source
           python3 scripts/apply_v6_tactical_command_ui.py _cloud_source
@@ -120,6 +121,7 @@ jobs:
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_voice_startup_fix.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_gpu_recovery.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_progression_integrity.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_encrypted_backup.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_squad_command_system.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_lobby_alignment.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_tactical_command_ui.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
