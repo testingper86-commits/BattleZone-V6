@@ -211,7 +211,6 @@ jobs:
 
       - name: Sign release APK with owner-managed keystore
         id: sign_release
-        if: ${{ secrets.BATTLEZONE_RELEASE_KEYSTORE_BASE64 != '' && secrets.BATTLEZONE_RELEASE_KEY_ALIAS != '' && secrets.BATTLEZONE_RELEASE_STORE_PASSWORD != '' && secrets.BATTLEZONE_RELEASE_KEY_PASSWORD != '' }}
         env:
           KEYSTORE_BASE64: ${{ secrets.BATTLEZONE_RELEASE_KEYSTORE_BASE64 }}
           KEY_ALIAS: ${{ secrets.BATTLEZONE_RELEASE_KEY_ALIAS }}
@@ -220,6 +219,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "::warning::Production signing skipped. Configure the four BATTLEZONE_RELEASE_* repository secrets before distribution."
+            exit 0
+          fi
           key_store="$RUNNER_TEMP/battlezone-release.jks"
           trap 'rm -f "$key_store"' EXIT
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$key_store"
@@ -234,10 +237,6 @@ jobs:
           "$apksigner" verify --verbose --print-certs "$signed_apk"
           sha256sum "$signed_apk"
           echo "signed_apk=$signed_apk" >> "$GITHUB_OUTPUT"
-
-      - name: Report missing production signing configuration
-        if: ${{ secrets.BATTLEZONE_RELEASE_KEYSTORE_BASE64 == '' || secrets.BATTLEZONE_RELEASE_KEY_ALIAS == '' || secrets.BATTLEZONE_RELEASE_STORE_PASSWORD == '' || secrets.BATTLEZONE_RELEASE_KEY_PASSWORD == '' }}
-        run: echo "::warning::Production signing skipped. Configure the four BATTLEZONE_RELEASE_* repository secrets before distribution."
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -256,7 +255,7 @@ jobs:
           retention-days: 14
 
       - name: Upload signed production release APK
-        if: steps.sign_release.outcome == 'success'
+        if: steps.sign_release.outputs.signed_apk != ''
         uses: actions/upload-artifact@v4
         with:
           name: BattleZone-release-signed-APK
