@@ -49,14 +49,14 @@
 
 ## Runtime integration evidence
 
-- `js/models.js` actively references the Kenney FBX character, its four skin textures, and idle/run/jump animations. All referenced primary files exist in the canonical archive.
+- `js/models.js` actively loads both Kenney FBX and KayKit GLB templates. The 17 named operator profiles map across two model families, four Kenney skin textures and distinct tint palettes. All referenced primary files exist in the canonical archive.
 - The model loader needs `FBXLoader`, `fflate` and `SkeletonUtils`; these are generated at build time from pinned r128 URLs rather than stored in the original ZIP.
-- A bundled KayKit GLB is the second model fallback after the original Kenney FBX. It carries its own rig and 30 GLB clips, including Idle, Walk, Run, Jump, Shoot(1h/2h), Shooting(1h/2h), and Defeat. GLB name matching maps a shooting clip to `shoot` and `Defeat` to `death`; no reload clip is claimed. The KayKit clips are never applied to the different Kenney skeleton.
+- The bundled KayKit GLB is now an active second rigged model family alongside the original Kenney FBX. Seven named operators use the KayKit rig and a deterministic 25% of AI actors use it; the remaining operators use the Kenney rig with its four existing skin textures and distinct palette tints. Each family has its own animation mixer and hand socket. KayKit provides 30 GLB clips, including Idle, Walk, Run, Jump, Shoot(1h/2h), Shooting(1h/2h), and Defeat; no reload clip is claimed. KayKit clips are never applied to the different Kenney skeleton.
 - The build-hardening transformation removes the absent `soldier.glb` fallback and its dead downloader. If Kenney and KayKit both fail, procedural characters remain.
 - Only the KayKit GLB and its CC0 license are retained in the APK. Unreferenced KayKit FBX/DAE/OBJ models, alternate GLTF models, branding images, documentation and external links are pruned from the build workspace. This reduces the KayKit package from 12,147,671 bytes to 460,406 bytes (11,687,265 bytes removed); the original canonical source ZIP remains unchanged.
 - The renderer uses the root PBR texture set. The duplicated `assets/environment` starter pack is not referenced by runtime code and is removed from the APK build workspace; the original source archive is preserved.
 - Main game terrain materials load base-color and roughness PNGs by name. The height PNGs are packaged but the inspected `BZMaterial` path does not bind a height map.
-- Five VFX sprites and 17 voice packs are present; this inventory alone does not prove that every sprite or every voice line is reached by gameplay.
+- Five VFX sprites and 17 voice packs are present. V6.1 routes spawn, combat, reload, low-health, cover, victory and defeat events through the selected character voice pack with cooldown/priority handling; the audio license status remains unconfirmed.
 - The original `libs/README.txt` incorrectly claimed the game does not use FBXLoader/GLTFLoader and all characters are procedural. The Offline patch now rewrites that stale note to match `js/models.js` and the Gradle download tasks.
 
 ## License and provenance ledger
@@ -82,7 +82,7 @@
 1. Preserve the original archive and all original assets.
 2. Confirm provenance for the main PBR textures, voice packs, sprites, branding and loading images before redistribution.
 3. Validate model load success and skeleton/skin compatibility on Android; static loader path checks are not runtime animation tests.
-4. Validate the KayKit fallback model, skin and shooting/defeat clips on physical Android devices; static checks confirm the bundled GLB and CC0 license only.
+4. Validate both Kenney and KayKit model families, right-hand weapon grip, shooting/defeat clips and skin/tint appearance on physical Android devices; static checks confirm local assets and CC0 license evidence only.
 5. The absent soldier fallback and unused download task are removed; regression checks enforce that no stale `soldier.glb` reference remains.
 6. The unused environment starter pack and unreferenced KayKit sample formats/documentation are pruned from the APK build workspace; the original source archive remains preserved.
 7. Confirm provenance for the remaining PBR textures, voice packs, sprites, branding and loading images before redistribution; do not import external assets without exact license, size, mobile compatibility and attribution records.

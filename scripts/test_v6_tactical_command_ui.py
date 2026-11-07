@@ -12,7 +12,7 @@ checks={
  "12 real hub screens":all("['"+k+"','"+v+"']" in h for k,v in [('command','Command Center'),('deployment','Deployment Lobby'),('operator','Operator Bay'),('armory','Armory'),('squad','Squad Command'),('zones','Mission Zones'),('combat','Combat HUD'),('pause','Pause Menu'),('results','After Action'),('service','Service Record'),('settings','Settings'),('controls','Controls')]),
  "existing profile/shop/maps reused":"else if(page==='operator')profilePage()" in h and "else if(page==='armory')shopPage()" in h and "else if(page==='zones')mapsPage()" in h,
  "live squad orders reused":"window.BZSquadOrders.get()" in h and "data-bz-order=" in h,
- "game state snapshot":"function loop0(n){window.BZGameState={started:!!started" in h,
+ "game state snapshot":"window.BZGameState={started:!!started" in h,
  "pause and resume wired":"function loop(n){requestAnimationFrame(loop);if(window.BZ_TACTICAL_PAUSED)return" in h and "window.BZ_TACTICAL_PAUSED=false" in h,
  "real controls reused":"data-tac-control" in h and "['lay','CONTROL LAYOUT']" in h,
  "actual match report and safe empty state":"get('bzOfflineMatchHistory',[])" in h and "NO COMPLETED-MATCH REPORT RECORDED" in h and "OPEN MATCH HISTORY" in h,

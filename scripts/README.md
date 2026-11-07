@@ -81,3 +81,15 @@ The GPU recovery handler now preserves the current match when WebGL reports a re
 ## Build hardening and Android JVM tests
 
 The final CI transformation `apply_v6_build_hardening.py` pins the SHA-256 of runtime Three.js libraries, removes the absent soldier-model downloader and unreferenced asset packs, centralizes WebView URI validation in `OfflineAssetPolicy`, adds JUnit coverage, and increments Android version metadata. `test_v6_build_hardening.py` checks the transformed source and packaging assumptions. The workflow also fails if the Android test source set is empty and rejects build-cache files in the patched-source artifact.
+
+## Battle Zone V6.1 gameplay overhaul
+
+The Android workflow applies three final source transformations after the offline/security/build-hardening steps:
+
+1. `apply_battlezone_v6_overhaul.py` fixes the starting weapon loadout and aircraft-jump presentation, adds hold-to-run and shoulder-peek behavior, applies a single responsive lobby layout authority, adds bounded water/tree/grass/vehicle detail, and routes contextual voice barks through the existing local character voice packs.
+2. `apply_battlezone_v6_rigged_weapons.py` mounts the equipped weapon to the animated Kenney `RightHand`, updates it on swap, removes the floating proxy gun, and applies a stable two-hand armed run pose after locomotion animation.
+3. `apply_battlezone_v6_multimodel.py` loads the Kenney FBX and CC0 KayKit GLB as separate rigged templates. Seven named operators use the KayKit model; the rest use the Kenney model and its four existing skin textures. A deterministic 25% of AI actors uses KayKit. Each template has its own animation mixer and hand-socket mapping.
+
+The existing 17 character voice folders remain local. Their license provenance is still unconfirmed in `ASSET_INVENTORY.md`; the event router improves use/cooldown/priority but does not upgrade that license status. The roster contains 17 visual profiles across two rigged model families, not 17 independently modelled 3D meshes.
+
+`test_battlezone_v6_overhaul.py` covers loadout/jump, input lifecycle, control visibility, lobby panel boundaries, procedural graphics, voice routing, rigged weapon attachment, and model-family separation. Physical Android playtesting remains required for touch feel, final visual alignment, weapon grip alignment and frame rate.

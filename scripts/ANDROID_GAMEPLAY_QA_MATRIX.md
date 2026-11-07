@@ -76,3 +76,14 @@ V2 and feedback-completion static checks verify source invariants only. QA-27 th
 | QA-37 | Lobby accessibility | Navigate lobby settings, map cards and dock controls using keyboard Enter/Space and touch. | Interactive controls expose button semantics, receive visible focus, and retain their original actions. | Accessibility scan + screen recording |
 
 QA-35 through QA-37 require physical-device verification. CI checks the source invariants and JavaScript syntax only.
+
+## V6.1 regression coverage
+
+- Confirm two starting weapon slots are visible during the aircraft jump and remain equipped on landing; collect and swap ground weapons.
+- Hold RUN continuously, release/cancel touch, switch to vehicle controls, and verify no stuck movement/fire input.
+- Hold left/right PEEK and verify the third-person shoulder camera shifts and recenters.
+- Verify control opacity prioritizes movement/fire/vehicle actions and the remaining controls fade without losing touch hit targets.
+- Open every lobby settings subsection and map selector at short landscape heights; verify independent scrolling, no overlap and reachable Deploy/navigation.
+- Compare water ripple/shimmer, tree roots/branches, instanced grass and vehicle trim at Low/Medium/High settings; check frame pacing.
+- Verify all 17 operator profiles across Kenney and KayKit rigs, correct hand weapon attachment, enemy hit registration and animation-family isolation.
+- Trigger spawn, combat, reload, low-health, cover, victory and defeat voice events; verify mute, cooldown and priority behavior.
