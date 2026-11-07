@@ -63,7 +63,7 @@ checks = {
         'models/characters/kenney/Animations/run.fbx',
         'models/characters/kenney/Animations/jump.fbx']),
     'Three.js r128 and helper loaders pinned in Gradle': all(token in gradle for token in [
-        'downloadThreeJs', 'downloadOptionalLibs', 'three@0.128.0', 'GLTFLoader.js', 'FBXLoader.js', 'SkeletonUtils.js', 'fflate.min.js']),
+        'downloadThreeJs', 'downloadCharacterRuntimeLibraries', 'three@0.128.0', 'GLTFLoader.js', 'FBXLoader.js', 'SkeletonUtils.js', 'fflate.min.js']),
     'asset library README matches active model loader': 'FBXLoader' in (ASSET_DIR / 'libs/README.txt').read_text(encoding='utf-8') and 'js/models.js' in (ASSET_DIR / 'libs/README.txt').read_text(encoding='utf-8') and 'all characters are built procedurally' not in (ASSET_DIR / 'libs/README.txt').read_text(encoding='utf-8'),
     'underwater health damage': 'P.waterDamage' in source and 'dmg(7)' in source,
     'vehicle shooting and destruction': 'vehicleRoot' in source and '...veh],true' in source and "msg('Vehicle destroyed!')" in source,

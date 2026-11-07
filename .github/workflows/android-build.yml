@@ -59,6 +59,7 @@ jobs:
           python3 scripts/apply_v6_animation_action_integration.py _cloud_source
           python3 scripts/apply_v6_adaptive_graphics.py _cloud_source
           python3 scripts/apply_v6_offline_webview_security.py _cloud_source
+          python3 scripts/apply_v6_build_hardening.py _cloud_source
           echo "dir=_cloud_source" >> "$GITHUB_OUTPUT"
           echo "Canonical source extracted and offline-only patches applied."
 
@@ -104,6 +105,7 @@ jobs:
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_animation_action_integration.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_adaptive_graphics.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_offline_webview_security.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_build_hardening.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_runtime_javascript_syntax.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
 
       - name: Run unit tests and build debug and unsigned release APKs
@@ -111,6 +113,12 @@ jobs:
         run: |
           set -euo pipefail
           cd "${{ steps.project.outputs.dir }}"
+          test_source_count="$(find app/src/test -type f -name '*.kt' 2>/dev/null | wc -l)"
+          if [ "$test_source_count" -lt 1 ]; then
+            echo "No Android JVM unit-test sources found; refusing a misleading NO-SOURCE test build." >&2
+            exit 1
+          fi
+          echo "Android JVM unit-test source files: $test_source_count"
           if [ -f ./gradlew ]; then
             chmod +x ./gradlew
             ./gradlew --no-daemon :app:testDebugUnitTest :app:testReleaseUnitTest :app:assembleDebug :app:assembleRelease
@@ -139,8 +147,13 @@ jobs:
         run: |
           set -euo pipefail
           cd "${{ steps.project.outputs.dir }}"
+          find . -type f \( -name '*.download' -o -name '*.replaced-backup' \) -delete
           zip -qr "$GITHUB_WORKSPACE/BattleZone_V6_Offline_Patched_Source.zip" . \
-            -x '**/build/**' '**/.gradle/**' '.git/**' '*/.git/*'
+            -x 'build/**' '**/build/**' '.gradle/**' '**/.gradle/**' '.kotlin/**' '**/.kotlin/**' '.git/**' '*/.git/*'
+          if zipinfo -1 "$GITHUB_WORKSPACE/BattleZone_V6_Offline_Patched_Source.zip" | grep -Eq '(^|/)(\.gradle|\.kotlin|build)/'; then
+            echo "Build caches leaked into the patched source artifact." >&2
+            exit 1
+          fi
 
       - name: Upload patched source archive
         uses: actions/upload-artifact@v4

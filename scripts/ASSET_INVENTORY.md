@@ -44,16 +44,18 @@
 ## Build-time runtime dependencies
 
 - `index.html` references `three.min.js`, `GLTFLoader.js`, `fflate.min.js`, `FBXLoader.js` and `SkeletonUtils.js` under `libs/`.
-- The canonical archive does not include these runtime JS files. `app/build.gradle.kts` pins Three.js 0.128.0 / r128 and downloads it through the required `downloadThreeJs` task. `downloadOptionalLibs` fetches the r128 loaders/helpers before `preBuild` when missing. CI therefore needs network access during build; the downloaded files are packaged into the APK and served locally at runtime.
-- `downloadSoldierModels` is a manual optional Gradle task and is not a `preBuild` dependency. Do not assume it runs during normal CI builds.
+- The canonical archive does not include these runtime JS files. `app/build.gradle.kts` pins Three.js 0.128.0 / r128 and the GLTFLoader, FBXLoader, SkeletonUtils and fflate helpers by SHA-256. The required `downloadThreeJs` and `downloadCharacterRuntimeLibraries` tasks verify each downloaded file before atomic installation and fail the build on mismatch or unavailable dependencies. CI therefore needs network access during build; the resulting APK serves the verified files locally at runtime.
+- The obsolete `downloadSoldierModels` task and its unused NURBS helper downloads have been removed. The app no longer downloads a third-party soldier model during build.
 
 ## Runtime integration evidence
 
 - `js/models.js` actively references the Kenney FBX character, its four skin textures, and idle/run/jump animations. All referenced primary files exist in the canonical archive.
 - The model loader needs `FBXLoader`, `fflate` and `SkeletonUtils`; these are generated at build time from pinned r128 URLs rather than stored in the original ZIP.
-- A bundled KayKit GLB is now the second model fallback after the original Kenney FBX. It carries its own rig and 30 GLB clips, including Idle, Walk, Run, Jump, Shoot(1h/2h), Shooting(1h/2h), and Defeat. GLB name matching maps a shooting clip to `shoot` and `Defeat` to `death`; no reload clip is claimed. The KayKit clips are never applied to the different Kenney skeleton.
-- The older `./models/characters/soldier.glb` fallback remains last in the list, but that file is **absent** from the canonical archive. The optional `downloadSoldierModels` task is not attached to `preBuild`, so it is not expected in a normal CI APK. If both Kenney and KayKit loaders fail, procedural characters remain.
-- Main game terrain materials load base-color and roughness PNGs by name. The height PNGs are packaged but the inspected `BZMaterial` path does not bind a height map. The procedural environment JPEG starter pack is not referenced by the main terrain material loader.
+- A bundled KayKit GLB is the second model fallback after the original Kenney FBX. It carries its own rig and 30 GLB clips, including Idle, Walk, Run, Jump, Shoot(1h/2h), Shooting(1h/2h), and Defeat. GLB name matching maps a shooting clip to `shoot` and `Defeat` to `death`; no reload clip is claimed. The KayKit clips are never applied to the different Kenney skeleton.
+- The build-hardening transformation removes the absent `soldier.glb` fallback and its dead downloader. If Kenney and KayKit both fail, procedural characters remain.
+- Only the KayKit GLB and its CC0 license are retained in the APK. Unreferenced KayKit FBX/DAE/OBJ models, alternate GLTF models, branding images, documentation and external links are pruned from the build workspace. This reduces the KayKit package from 12,147,671 bytes to 460,406 bytes (11,687,265 bytes removed); the original canonical source ZIP remains unchanged.
+- The renderer uses the root PBR texture set. The duplicated `assets/environment` starter pack is not referenced by runtime code and is removed from the APK build workspace; the original source archive is preserved.
+- Main game terrain materials load base-color and roughness PNGs by name. The height PNGs are packaged but the inspected `BZMaterial` path does not bind a height map.
 - Five VFX sprites and 17 voice packs are present; this inventory alone does not prove that every sprite or every voice line is reached by gameplay.
 - The original `libs/README.txt` incorrectly claimed the game does not use FBXLoader/GLTFLoader and all characters are procedural. The Offline patch now rewrites that stale note to match `js/models.js` and the Gradle download tasks.
 
@@ -67,12 +69,12 @@
 | Main 27 PNG PBR texture set | No dedicated per-pack license/attribution file found in the inspected asset tree | Provenance/license confirmation required. |
 | 51 voice MP3 files | No audio-specific license/attribution file found in the inspected tree | Provenance/license confirmation required. |
 | VFX sprites, branding, loading scenes | No dedicated per-group license file found in the inspected tree | Provenance/license confirmation required. |
-| Optional soldier model source | Gradle task points to `cktang88/3d-fps` and writes a CC BY 4.0 notice if manually run | Not included in canonical archive and not fetched by normal build. Re-check upstream license and attribution before enabling. |
+| Retired optional soldier model source | Historical Gradle task pointed to `cktang88/3d-fps` and required CC BY 4.0 attribution | Task and runtime fallback removed; no soldier model is downloaded or packaged. |
 
 ## Duplicate and cleanup observations
 
 - SHA-256 duplicate groups exist for the four compact terrain JPEGs, the compact environment README, its asset-source license note, and the sample material integration JS. These are exact duplicates in different paths; do not delete them until runtime and packaging references are checked.
-- Six identical placeholder `.mtl` files are included with the KayKit OBJ samples. They are harmless source-pack duplicates but add no runtime value unless those OBJ samples are used.
+- Six identical placeholder `.mtl` files and alternate KayKit model formats are present in the preserved canonical source archive; the build prunes these unreferenced samples and retains only the active GLB plus license.
 - No third-party tree/rock GLB models are included in the environment starter pack despite links to candidate downloads in its license/source notes. Do not claim the pack contains those models.
 
 ## Next asset work
@@ -81,10 +83,10 @@
 2. Confirm provenance for the main PBR textures, voice packs, sprites, branding and loading images before redistribution.
 3. Validate model load success and skeleton/skin compatibility on Android; static loader path checks are not runtime animation tests.
 4. Validate the KayKit fallback model, skin and shooting/defeat clips on physical Android devices; static checks confirm the bundled GLB and CC0 license only.
-5. Correct or remove the absent soldier fallback in a separately tested change, or intentionally wire the optional download task only after reviewing its CC BY 4.0 attribution and offline packaging implications.
-6. Only after runtime reference checks, consider deduplicating repeated environment starter files or excluding unused sample documentation from release packaging.
+5. The absent soldier fallback and unused download task are removed; regression checks enforce that no stale `soldier.glb` reference remains.
+6. The unused environment starter pack and unreferenced KayKit sample formats/documentation are pruned from the APK build workspace; the original source archive remains preserved.
 7. Confirm provenance for the remaining PBR textures, voice packs, sprites, branding and loading images before redistribution; do not import external assets without exact license, size, mobile compatibility and attribution records.
 
 ## Verification boundary
 
-This report was generated from the canonical source ZIP before Gradle downloads by enumerating the source tree, checking file sizes and SHA-256 hashes, reading included license/readme files, and tracing references in `index.html`, `js/models.js` and `app/build.gradle.kts`. It does not certify missing provenance or prove successful rendering/animation on a physical Android device.
+This report was generated from the canonical source ZIP and the Build #45 patched-source artifact by enumerating files, checking SHA-256 hashes and licenses, and tracing runtime references. The Build #46 hardening transformation retains only the KayKit GLB/license and removes unused environment samples from the APK workspace. It does not certify missing provenance or prove successful rendering/animation on a physical Android device.
