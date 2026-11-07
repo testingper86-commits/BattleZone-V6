@@ -35,7 +35,7 @@ function makeContext(mode) {
   const sandbox = {
     getScanCalls:()=>scanCalls,getRandomCalls:()=>randomCalls,
     zc:{x:0,z:0,r:20},
-    P:{alive:true,air:0,x:15,z:0,hp:100},
+    P:{alive:true,air:0,x:15,z:0,y:1.6,gh:1.6,vy:0,hp:100},
     DF:1,ENV:{vis:1},BZ_MODE:mode,bot,actors,
     smk:()=>false,hasClearShot:()=>true,rnd:(a,b)=>{randomCalls++;return(a+b)/2},
     forEachActor:fn=>{scanCalls++;actors.forEach(fn)}
@@ -47,6 +47,12 @@ function makeContext(mode) {
 let c=makeContext('BR');
 let d=c.bzV6ChooseEnemyTarget(c.bot,c.bot.userData,.2);
 if(!d.target||d.target.o!==c.actors[2])throw new Error('BR must select nearest hostile and ignore squad allies');
+c=makeContext('BR');c.actors[2].userData.airDrop=true;c.P.x=5;
+d=c.bzV6ChooseEnemyTarget(c.bot,c.bot.userData,.2);
+if(!d.target||!d.target.p)throw new Error('grounded player should be selected instead of an airborne bot');
+c.P.air=1;c.P.y=3;c.P.vy=-2;c.bot.userData.aiScanT=0;
+d=c.bzV6ChooseEnemyTarget(c.bot,c.bot.userData,.2);
+if(d.target)throw new Error('airborne player and airborne bots must not be targeted before landing');
 c.actors[2].position.x=9;c.bot.userData.aiScanT=.2;
 d=c.bzV6ChooseEnemyTarget(c.bot,c.bot.userData,.01);
 if(d.target.x!==9)throw new Error('cached actor target position did not refresh');
