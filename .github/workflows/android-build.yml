@@ -55,6 +55,10 @@ jobs:
           python3 scripts/apply_v6_squad_command_system.py _cloud_source
           python3 scripts/apply_v6_lobby_alignment.py _cloud_source
           python3 scripts/apply_v6_tactical_command_ui.py _cloud_source
+          python3 scripts/apply_v6_adaptive_enemy_ai.py _cloud_source
+          python3 scripts/apply_v6_animation_action_integration.py _cloud_source
+          python3 scripts/apply_v6_adaptive_graphics.py _cloud_source
+          python3 scripts/apply_v6_offline_webview_security.py _cloud_source
           echo "dir=_cloud_source" >> "$GITHUB_OUTPUT"
           echo "Canonical source extracted and offline-only patches applied."
 
@@ -96,6 +100,11 @@ jobs:
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_squad_command_system.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_lobby_alignment.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_tactical_command_ui.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_adaptive_enemy_ai.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_animation_action_integration.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_adaptive_graphics.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_offline_webview_security.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_runtime_javascript_syntax.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
 
       - name: Run unit tests and build debug and unsigned release APKs
         shell: bash
