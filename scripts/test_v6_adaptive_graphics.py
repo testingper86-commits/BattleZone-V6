@@ -22,7 +22,7 @@ helper = source[start:end]
 node = r"""
 const vm=require('node:vm');
 const helper=__HELPER__;
-const ratios=[],window={devicePixelRatio:2,BZBatterySaver:()=>false};
+let batterySaver=false;const ratios=[],window={devicePixelRatio:2,BZBatterySaver:()=>batterySaver};
 const R={shadowMap:{enabled:true},setPixelRatio(v){ratios.push(v)}};
 const sun={castShadow:true};
 const ctx={window,R,sun,LQ:false,Number,Math};
@@ -34,7 +34,9 @@ sample(16,175);sample(16,175);sample(16,175);
 if(vm.runInContext('bzQualityTier',ctx)!==1||ratios.at(-1)!==1.12||!sun.castShadow||!R.shadowMap.enabled)throw new Error('balanced tier did not restore 1.12 pixel ratio and shadows');
 sample(16,175);sample(16,175);sample(16,175);
 if(vm.runInContext('bzQualityTier',ctx)!==2||ratios.at(-1)!==1.32||!sun.castShadow||!R.shadowMap.enabled)throw new Error('sustained headroom did not restore high quality');
-if(!window.BZPerformance||window.BZPerformance.qualityTier!==2)throw new Error('performance telemetry missing');\nbatterySaver=true;sample(50,224);\nif(vm.runInContext('bzQualityTier',ctx)!==2||ratios.at(-1)!==1.32||!sun.castShadow||!R.shadowMap.enabled)throw new Error('battery saver changed adaptive tier or shadow state');
+if(!window.BZPerformance||window.BZPerformance.qualityTier!==2)throw new Error('performance telemetry missing');
+batterySaver=true;sample(50,224);
+if(vm.runInContext('bzQualityTier',ctx)!==2||ratios.at(-1)!==1.32||!sun.castShadow||!R.shadowMap.enabled)throw new Error('battery saver changed adaptive tier or shadow state');
 console.log('ADAPTIVE_GRAPHICS_BEHAVIOR_OK');
 """.replace("__HELPER__", repr(helper))
 p=subprocess.run(["node","-e",node],capture_output=True,text=True)
