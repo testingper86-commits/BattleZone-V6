@@ -26,5 +26,12 @@ assert (kaykit / "Animations/gltf/KayKit_AnimatedCharacter_v1.2.glb").is_file()
 retained_kaykit = {p.relative_to(kaykit) for p in kaykit.rglob("*") if p.is_file()}
 assert retained_kaykit == {Path("License.txt"), Path("Animations/gltf/KayKit_AnimatedCharacter_v1.2.glb")}, f"unreferenced KayKit files remain: {retained_kaykit}"
 assert not (root / "app/src/main/assets/www/assets/environment").exists()
+www = root / "app/src/main/assets/www"
+portrait_dir = www / "characters/portraits"
+assert not portrait_dir.exists() or not any(p.is_file() for p in portrait_dir.iterdir()), "unused portrait images remain in the APK source"
+branding_dir = www / "branding"
+assert {p.name for p in branding_dir.iterdir() if p.is_file()} <= {"battle_zone_logo.jpg"}, "unreferenced branding images remain in the APK source"
+assert (branding_dir / "battle_zone_logo.jpg").is_file(), "active loading-screen logo was removed"
+assert all((www / "loading" / f"boot_scene_{i}.jpg").is_file() for i in (1, 2, 3)), "active loading backgrounds were removed"
 assert len(re.findall(r"@Test", tests.read_text(encoding="utf-8"))) >= 4
 print("BUILD_HARDENING_AND_ANDROID_UNIT_TEST_REGRESSION_CHECKS_OK")

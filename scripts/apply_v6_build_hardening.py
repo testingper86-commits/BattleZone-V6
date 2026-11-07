@@ -284,6 +284,26 @@ if kaykit.is_dir():
 # The active renderer uses the root PBR texture set; this duplicated starter environment pack is unused.
 shutil.rmtree(root / "app/src/main/assets/www/assets/environment", ignore_errors=True)
 
+# Remove image files that are not referenced by the runtime; preserve active splash assets.
+www_dir = root / "app/src/main/assets/www"
+portrait_dir = www_dir / "characters/portraits"
+removed_portraits = 0
+if portrait_dir.is_dir():
+    for asset in portrait_dir.iterdir():
+        if asset.is_file() and asset.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}:
+            asset.unlink()
+            removed_portraits += 1
+    if not any(portrait_dir.iterdir()):
+        portrait_dir.rmdir()
+branding_dir = www_dir / "branding"
+removed_branding = 0
+if branding_dir.is_dir():
+    for asset in branding_dir.iterdir():
+        if asset.is_file() and asset.name != "battle_zone_logo.jpg" and asset.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}:
+            asset.unlink()
+            removed_branding += 1
+print(f"UNREFERENCED_IMAGE_ASSETS_PRUNED portraits={removed_portraits} branding={removed_branding}")
+
 gradle_path.write_text(gradle, encoding="utf-8")
 models_path.write_text(models, encoding="utf-8")
 activity_path.write_text(activity, encoding="utf-8")

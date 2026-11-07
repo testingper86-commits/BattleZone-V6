@@ -88,3 +88,10 @@ No original assets were changed, removed, imported, or approved. No source/gamep
 The patched Build #55 source and APK replace the 51 synthetic demo MP3s (provider/model terms were absent) with 44 Kenney Voiceover Pack OGG callouts under CC0 1.0. The pack's original `License.txt` and `Credits.txt` are retained, and a SHA-256 manifest verifies every bundled file. Publisher and mirror references: https://kenney.nl/assets/voiceover-pack ; https://kenney.nl/support ; https://opengameart.org/content/voiceover-pack-40-lines.
 
 The original canonical source ZIP remains preserved with the legacy MP3 files. Only the CI-patched source archive and APK are sanitized. This update resolves the voice-license evidence for those patched distributables; all previously listed PBR, VFX, portrait, branding and loading-scene evidence gaps remain open.
+
+
+## 2026-11-07 APK packaging cleanup
+
+- A repository-wide runtime-reference scan found no references to `characters/portraits/` or to four of the five images in `branding/`. Build hardening now removes the 17 unused portrait JPGs and four unused branding variants from the patched APK source. The active `branding/battle_zone_logo.jpg` and all three `loading/boot_scene_*.jpg` files are retained because the HTML/CSS/JavaScript references them.
+- The cleanup removes approximately 723 KB of unused image payload from the packaged source without changing active runtime screens. Regression checks assert that the active logo and loading backgrounds remain present.
+- **This is not a license certification.** The active logo, three loading-scene backgrounds, and 27 PBR texture maps remain described as project-generated, but independent authoring records or source provenance were not available in this audit. They must not be advertised as third-party CC0 assets until their authoring rights are evidenced or they are replaced with verified licensed assets. The bundled Kenney/KayKit models and CC0 voice pack retain their separate license records.
