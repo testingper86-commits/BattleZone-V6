@@ -255,7 +255,7 @@ models_source = models_path.read_text(encoding="utf-8")
 gear_marker = "BATTLEZONE_V6_OPERATOR_ARMOR_REDESIGN_V3"
 if gear_marker not in models_source:
     gear_helper = r"""
-/* BATTLEZONE_V6_OPERATOR_ARMOR_REDIGN_V3 */
+/* BATTLEZONE_V6_OPERATOR_ARMOR_REDESIGN_V3 */
 const bzGearGeometry={
  helmet:new THREE.SphereGeometry(.17,12,8,0,Math.PI*2,0,Math.PI*.62),
  visor:new THREE.BoxGeometry(.25,.055,.045),

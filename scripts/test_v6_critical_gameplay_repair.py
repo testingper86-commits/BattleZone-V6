@@ -43,9 +43,12 @@ function register(obj,model,opt){
 """, encoding="utf-8")
     subprocess.run([sys.executable, str(patcher), str(root)], check=True)
     first = html.read_text(encoding="utf-8")
+    first_models = models.read_text(encoding="utf-8")
     subprocess.run([sys.executable, str(patcher), str(root)], check=True)
     second = html.read_text(encoding="utf-8")
+    second_models = models.read_text(encoding="utf-8")
     assert first == second, "patcher is not idempotent"
+    assert first_models == second_models, "character gear patcher is not idempotent"
     for token in ("rootA.rotateZ(Math.PI/2)", "rootB.rotateZ(-Math.PI/2)", "branchC.rotateX(.68)", "id=\"thrn\"", "id=\"gswn\"", "BATTLEZONE_V6_CRITICAL_GAMEPLAY_REPAIR_V2", "R.toneMappingExposure=1.2;", "const ratio=[.88,1.12,1.32][bzQualityTier];"):
         assert token in second, f"missing repaired runtime token: {token}"
     css = html.parent / "css/v6-critical-gameplay-polish.css"
@@ -54,7 +57,7 @@ function register(obj,model,opt){
     for token in ("BATTLEZONE_V6_FINAL_GAMEPLAY_VISUAL_OVERHAUL_V3", "bzOrder==='regroup'", "bzOrder==='hold'", "u.airDrop||u.falling||u.chute", "P.y>(P.gh||1.6)+.22", "bzGroundTexture", "MeshStandardMaterial({color:c,roughness:.82,metalness:.04})"):
         assert token in second, f"missing V3 runtime token: {token}"
     model_text = models.read_text(encoding="utf-8")
-    assert "BATTLEZONE_V6_OPERATOR_ARMOR_REDESIGN_V3" in model_text and "bzAttachOperatorGear(model,bones,opt.skinKey||'Recruit')" in model_text
+    assert "BATTLEZONE_V6_OPERATOR_ARMOR_REDESIGN_V3" in model_text and "bzAttachOperatorGear(model,bones,opt.skinKey||'Recruit')" in model_text and model_text.count("function bzAttachOperatorGear(")==1
     css_text = css.read_text(encoding="utf-8")
     assert "BATTLEZONE_V6_FINAL_UI_OVERHAUL_V3" in css_text
     assert "right:calc(var(--bz-safe-r) + 106px)" in css_text
