@@ -88,6 +88,18 @@ jobs:
           echo "dir=$project_dir" >> "$GITHUB_OUTPUT"
           echo "Project root: $project_dir"
 
+      - name: Create content-addressed source provenance
+        id: provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_dir="${{ steps.project.outputs.dir }}"
+          python3 scripts/create_build_provenance.py \
+            --archive "$GITHUB_WORKSPACE/BattleZone_V6_GitHub_Actions_Ready.zip" \
+            --source "$project_dir" \
+            --workflow "$GITHUB_WORKSPACE/.github/workflows/android-build.yml" \
+            --commit "$GITHUB_SHA"
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -99,6 +111,9 @@ jobs:
           set -euo pipefail
           cd "${{ steps.project.outputs.dir }}"
           python3 validate_project.py
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_offline_integrity.py"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_build_provenance.py"
+          python3 "$GITHUB_WORKSPACE/scripts/verify_offline_integrity.py" --source "$project_dir"
           python3 "$GITHUB_WORKSPACE/scripts/test_battlezone_v6_enhancement.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_runtime_reliability.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_voice_startup_fix.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
@@ -137,6 +152,10 @@ jobs:
           else
             gradle --no-daemon :app:testDebugUnitTest :app:testReleaseUnitTest :app:assembleDebug :app:assembleRelease
           fi
+          for apk in app/build/outputs/apk/debug/*.apk app/build/outputs/apk/release/*.apk; do
+            test -f "$apk"
+            python3 "$GITHUB_WORKSPACE/scripts/verify_offline_integrity.py" --apk "$apk"
+          done
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
@@ -170,7 +189,7 @@ jobs:
       - name: Upload patched source archive
         uses: actions/upload-artifact@v4
         with:
-          name: BattleZone-Offline-Patched-Source
+          name: ${{ steps.provenance.outputs.artifact_name }}
           path: BattleZone_V6_Offline_Patched_Source.zip
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 90
