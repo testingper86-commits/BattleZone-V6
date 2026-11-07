@@ -52,6 +52,8 @@ with tempfile.TemporaryDirectory() as tmp:
     js = root / "app/src/main/assets/www/js/game.js"
     js.write_text('fetch("https://api.example.com/match");', encoding="utf-8")
     assert any("external runtime resource" in item for item in module.verify_source(root))
+    js.write_text('new WebSocket("wss://api.example.com/match");', encoding="utf-8")
+    assert any("external runtime resource" in item for item in module.verify_source(root))
     js.write_text('fetch("./local-data.json");', encoding="utf-8")
 
     html = root / "app/src/main/assets/www/index.html"
