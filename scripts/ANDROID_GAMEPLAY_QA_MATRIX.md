@@ -96,3 +96,6 @@ QA-35 through QA-37 require physical-device verification. CI checks the source i
 
 
 | QA-39 | Vehicle visual feedback | Drive forward/reverse and steer at low/high speed across each ground-vehicle type; stop and change direction. | Wheel rotation follows signed speed, front wheels visibly steer, body lean stays subtle and stable, and vehicle/player position remains synchronized. | Device screen recording at 60 fps |
+
+
+| QA-40 | Operator gear silhouettes | Preview and spawn all 17 operators; inspect each in idle, run, jump, freefall, shoot and reload on a low/mid/high Android device. | Eight equipment styles remain distinct; headwear, masks, radios, shoulder plates and packs stay attached without clipping or animation detachment; no material/geometry errors or noticeable frame-time regression. | Operator roster screenshots + animation screen recordings + logcat/FPS capture |

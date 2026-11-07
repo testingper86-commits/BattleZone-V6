@@ -62,3 +62,10 @@ The patched distributable replaces the 51 unverified synthetic MP3 demo clips wi
 - Four ground wheels are tagged once at vehicle creation. Their rotation follows signed vehicle speed; front wheels receive a bounded steering angle.
 - The vehicle body gets a small smoothed lateral lean based on steering input and speed. Animation iterates the vehicle's existing direct children without recursive traversal or per-frame helper allocation.
 - Regression coverage verifies forward/reverse wheel spin, front-only steering, body lean, invalid frame-delta handling, and player position synchronization.
+
+
+## Procedural operator equipment variation
+
+- The 17 original operator profiles now map deterministically across eight equipment silhouettes in the procedural fallback rig: cap/visor, hood/mask, headset/radio, winter hood/goggles/scarf, heavy helmet/shoulder armor, antenna/expanded pack, face mask/armor plates, and reinforced visor/pack.
+- Equipment attaches to the existing articulated head, torso, and pack groups. No external meshes, textures, or runtime downloads are introduced; the existing Kenney/KayKit rigged model families and profile palettes remain intact.
+- A Node-backed regression verifies all 17 profiles map across all eight styles and that unknown profiles resolve deterministically. Physical preview/animation QA remains required.
