@@ -114,7 +114,7 @@ jobs:
           python3 validate_project.py
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_offline_integrity.py"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_build_provenance.py"
-          python3 "$GITHUB_WORKSPACE/scripts/verify_offline_integrity.py" --source "$project_dir"
+          python3 "$GITHUB_WORKSPACE/scripts/verify_offline_integrity.py" --source "$GITHUB_WORKSPACE/${{ steps.project.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_battlezone_v6_enhancement.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_runtime_reliability.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_voice_startup_fix.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
