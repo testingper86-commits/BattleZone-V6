@@ -15,7 +15,10 @@ for token in (
     "a.death=act(clips.death)", "function playAction(target,state)",
     "THREE.LoopOnce", "active.getClip().duration", "availableActions",
     "a.cur=null", "e.an.cur=null", "resumeAction:null", "e.an.resumeAction.stop()", "want.a.fadeIn(.12).play()",
-    "death|die|dead|defeat",
+    "death|die|dead|defeat", "BATTLEZONE_V6_ANIMATION_FALLBACK_V1",
+    "a.fallbackTimer=a.fallbackDuration", "fallbackTimer>0",
+    "weaponBasePosition", "weaponBaseRotation", "position.z-=.075*pulse",
+    "rotation.x-=.58*pulse", "fallbackDuration=state==='reload'?1.5:.22",
 ):
     assert token in models, f"missing rigged animation capability or recovery: {token}"
 for token in (
@@ -25,7 +28,8 @@ for token in (
 ):
     assert token in html, f"missing gameplay action trigger: {token}"
 assert "function animSc(c,tg,dt,t)" in html, "procedural fallback must remain"
-assert "if(!entry||!entry.an||!entry.an.acts[state]||entry.an.dead)return false" in models, "missing-clip and dead-state guard missing"
+assert "if(!entry||!entry.an||entry.an.dead)return false" in models, "dead-state guard missing"
+assert "if(!action){" in models and "a.fallbackTimer=a.fallbackDuration" in models, "missing-clip procedural action fallback missing"
 kaykit = root / "app/src/main/assets/www/models/characters/kaykit_v1_2/Animations/gltf/KayKit_AnimatedCharacter_v1.2.glb"
 license = root / "app/src/main/assets/www/models/characters/kaykit_v1_2/License.txt"
 assert kaykit.is_file(), "bundled KayKit GLB fallback is missing"

@@ -16,7 +16,7 @@
 ## Scope and honest limits
 
 - The roster has 17 visual operator profiles across **two** rigged model families. It does not contain 17 independently modelled character meshes.
-- KayKit has shooting/defeat clips but no reload clip; the existing reload fallback remains. Kenney retains its available idle/run/jump clips and the procedural weapon-ready pose.
+- KayKit has shooting/defeat clips but no reload clip. Missing shoot/reload clips now use a timed rig-aware procedural fallback: the weapon mount recoils/tilts on both rig families, and Kenney arm bones add the corresponding two-hand firing/reload pose. Existing real clips still take precedence. Death continues to use a real clip when available and the gameplay knockdown pose otherwise.
 - Character grip orientation, lobby alignment, touch ergonomics, graphics quality and frame pacing still require physical Android QA. Static checks cannot prove those device behaviors.
 - No network matchmaking, accounts, remote runtime assets or new permissions are introduced. All gameplay assets remain local.
 
