@@ -163,6 +163,12 @@ if v3_marker not in v3_html:
         "else{u.cd=.22;u.squadThink=0}}if(bzOrder==='hold'){gx=a.position.x;gz=a.position.z;speed=0;}",
         "hold order movement lock",
     )
+    v3_html = v3_replace(
+        v3_html,
+        "}else{u.squadTarget=null;u.squadCover=null;const follow=Math.hypot(px-a.position.x,pz-a.position.z);if(follow>34){gx=px;gz=pz;speed=7.8}else if(follow<5){gx=a.position.x;gz=a.position.z;speed=0}else if(follow<10){gx=px+Math.cos(P.yaw)*9+Math.sin(P.yaw)*(i-1)*5;gz=pz-Math.sin(P.yaw)*9+Math.cos(P.yaw)*(i-1)*5;}}",
+        "}else{u.squadTarget=null;u.squadCover=null;if(bzOrder==='hold'){gx=a.position.x;gz=a.position.z;speed=0;}else{const follow=Math.hypot(px-a.position.x,pz-a.position.z);if(follow>34){gx=px;gz=pz;speed=7.8}else if(follow<5){gx=a.position.x;gz=a.position.z;speed=0}else if(follow<10){gx=px+Math.cos(P.yaw)*9+Math.sin(P.yaw)*(i-1)*5;gz=pz-Math.sin(P.yaw)*9+Math.cos(P.yaw)*(i-1)*5;}}}",
+        "hold order no-target position lock",
+    )
 
     # Airborne actors cannot be acquired as combat targets; no pre-landing bot fire.
     v3_html = v3_replace(
