@@ -9,7 +9,7 @@ htmls=list(root.rglob('app/src/main/assets/www/index.html'))
 models_paths=list(root.rglob('app/src/main/assets/www/js/models.js'))
 if len(htmls)!=1 or len(models_paths)!=1: raise SystemExit(f'Expected one index.html and models.js, found {len(htmls)} and {len(models_paths)}')
 p=htmls[0]; s=p.read_text(encoding='utf-8'); mp=models_paths[0]; ms=mp.read_text(encoding='utf-8')
-world='BATTLEZONE_V6_WORLD_TACTICAL_INTEGRITY_V1'; combat='BATTLEZONE_V6_COMBAT_CONTROL_INTEGRITY_V1'; animation='BATTLEZONE_V6_ANIMATION_FALLBACK_V1'; los='BATTLEZONE_V6_TACTICAL_LINE_OF_SIGHT_V1'; frame='BATTLEZONE_V6_FRAME_LOOP_EFFICIENCY_V1'; version='BATTLEZONE_V6_BUILD_VERSION_1_2_2'; voice='BATTLEZONE_V6_CC0_VOICEOVER_V1'; vehicle='BATTLEZONE_V6_VEHICLE_COLLISION_DAMAGE_V1'; vehicle_dynamics='BATTLEZONE_V6_VEHICLE_DYNAMICS_V1'
+world='BATTLEZONE_V6_WORLD_TACTICAL_INTEGRITY_V1'; combat='BATTLEZONE_V6_COMBAT_CONTROL_INTEGRITY_V1'; animation='BATTLEZONE_V6_ANIMATION_FALLBACK_V1'; los='BATTLEZONE_V6_TACTICAL_LINE_OF_SIGHT_V1'; frame='BATTLEZONE_V6_FRAME_LOOP_EFFICIENCY_V1'; version='BATTLEZONE_V6_BUILD_VERSION_1_2_2'; voice='BATTLEZONE_V6_CC0_VOICEOVER_V1'; vehicle='BATTLEZONE_V6_VEHICLE_COLLISION_DAMAGE_V1'; vehicle_dynamics='BATTLEZONE_V6_VEHICLE_DYNAMICS_V1'; vehicle_wheels='BATTLEZONE_V6_VEHICLE_WHEEL_ANIMATION_V1'
 gradle_paths=list(root.rglob('app/build.gradle.kts'))
 if len(gradle_paths)!=1: raise SystemExit(f'Expected one app/build.gradle.kts, found {len(gradle_paths)}')
 gp=gradle_paths[0]; gs=gp.read_text(encoding='utf-8'); www=p.parent
@@ -30,7 +30,7 @@ for rel in voice_rel:
     f=voice_repo/rel
     if not f.is_file() or hashlib.sha256(f.read_bytes()).hexdigest()!=manifest[rel]: raise SystemExit(f'CC0 voice asset failed SHA-256 verification: {rel}')
 voice_ready=voice in s and all((voice_dest/rel).is_file() for rel in voice_rel) and not (www/'audio'/'voicepacks').exists()
-if world in s and combat in s and animation in ms and los in s and frame in s and version in gs and voice_ready and 'const bzLosRayState=' in s and vehicle in s and vehicle_dynamics in s:
+if world in s and combat in s and animation in ms and los in s and frame in s and version in gs and voice_ready and 'const bzLosRayState=' in s and vehicle in s and vehicle_dynamics in s and vehicle_wheels in s:
     print('WORLD_COMBAT_ANIMATION_CC0_VOICE_AND_VERSION_INTEGRITY_ALREADY_APPLIED'); raise SystemExit(0)
 def sub(text,old,new,label):
     n=text.count(old)
@@ -85,6 +85,21 @@ if vehicle_dynamics not in s:
     s=sub(s,'Object.assign({v:0,yaw:rnd(0,6),a,vw:w,vl:l,hp:100,crashCd:0},o)','Object.assign({v:0,yaw:rnd(0,6),a,vw:w,vl:l,hp:100,crashCd:0,maxSpeed:Math.max(12,Math.min(32,a*1.05)),maxReverseSpeed:6,brakePower:Math.max(12,a*1.6)},o)','vehicle speed and brake limits')
     s=sub(s,'u.crashCd=Math.max(0,(Number(u.crashCd)||0)-dt);u.v+=-fz*u.a*dt-u.v*.7*dt;','u.crashCd=Math.max(0,(Number(u.crashCd)||0)-dt);const throttle=Math.max(0,Math.min(1,driveInput.gas+(key.KeyW?1:0))),brake=Math.max(0,Math.min(1,driveInput.brake+(key.KeyS?1:0)));bzV6StepVehicleDynamics(u,throttle,brake,dt);','separate vehicle throttle and brake')
     s=s.replace('</html>',f'<!-- {vehicle_dynamics} -->\n</html>',1)
+if vehicle_wheels not in s:
+    s=sub(s,'w.rotation.z=1.57;w.position.set(a,.5,d);g.add(w)','w.rotation.z=1.57;w.position.set(a,.5,d);w.userData.bzVehicleWheel=1;w.userData.bzSteeringWheel=d>0;g.add(w)','tag vehicle wheels')
+    wheel_helper = """function bzV6AnimateVehicleWheels(g,u,dt,steer){
+ const step=Number.isFinite(dt)?Math.max(0,Math.min(.1,dt)):0;
+ const speed=Number.isFinite(u.v)?u.v:0;
+ const spin=speed*step*2.4;
+ const steering=Math.max(-1,Math.min(1,Number(steer)||0))*.32;
+ for(let i=0;i<g.children.length;i++){const w=g.children[i],d=w.userData;if(d&&d.bzVehicleWheel){w.rotation.x+=spin;if(d.bzSteeringWheel)w.rotation.y=steering}}
+ const lean=-steering*Math.min(1,Math.abs(speed)/10)*.25;
+ g.rotation.z+=(lean-g.rotation.z)*Math.min(1,step*6);
+}
+/* BZ_V6_VEHICLE_WHEEL_ANIMATION_HELPER_END */"""
+    s=sub(s,'function loop0(n){',wheel_helper+chr(10)+'function loop0(n){','vehicle wheel animation helper')
+    s=sub(s,'g.rotation.y=u.yaw;P.x=g.position.x;P.z=g.position.z;fx=fz=0;','g.rotation.y=u.yaw;bzV6AnimateVehicleWheels(g,u,dt,fx);P.x=g.position.x;P.z=g.position.z;fx=fz=0;','vehicle wheel spin and steering update')
+    s=s.replace('</html>',f'<!-- {vehicle_wheels} -->\n</html>',1)
 if los not in s:
     if 'if(!Number.isFinite(dist)||dist<.2)return true;' in s:
         s=sub(s,'if(!Number.isFinite(dist)||dist<.2)return true;','if(!Number.isFinite(dist))return false;if(dist<.2)return true;','reject non-finite tactical raycasts')

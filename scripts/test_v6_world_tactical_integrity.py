@@ -27,7 +27,7 @@ checks={
 'world marker present':'BATTLEZONE_V6_WORLD_TACTICAL_INTEGRITY_V1' in s,
 'attachment multipliers reduce spread':'const sp_=0.01*(P.grip?0.65:1)*(P.comp?0.75:1);' in s,
 'boolean-as-spread defect removed':'const sp_=P.grip||P.comp?.005:.01;' not in s,
-'player follows clamped vehicle transform':'g.rotation.y=u.yaw;P.x=g.position.x;P.z=g.position.z;fx=fz=0;' in s,
+'player follows clamped vehicle transform':'g.rotation.y=u.yaw;bzV6AnimateVehicleWheels(g,u,dt,fx);P.x=g.position.x;P.z=g.position.z;fx=fz=0;' in s,
 'vehicle exit collision and world clamp':'const exit=hit(P.x,P.z,.5,0);[P.x,P.z]=clampWorld(exit[0],exit[1],.8);' in s,
 'vehicle collision damage marker':'BATTLEZONE_V6_VEHICLE_COLLISION_DAMAGE_V1' in s,
 'vehicle helper extraction boundary marker':'/* BZ_V6_VEHICLE_IMPACT_HELPER_END */' in s,
@@ -40,6 +40,10 @@ checks={
 'vehicle top speed is bounded':'maxSpeed:Math.max(12,Math.min(32,a*1.05))' in s,
 'vehicle reverse speed is bounded':'maxReverseSpeed:6' in s,
 'destroyed vehicles cannot accelerate':'if(u.dead){u.v=0;return 0}' in s,
+'vehicle wheel animation marker present':'BATTLEZONE_V6_VEHICLE_WHEEL_ANIMATION_V1' in s,
+'vehicle wheels are tagged by axle':'w.userData.bzVehicleWheel=1;w.userData.bzSteeringWheel=d>0;' in s,
+'vehicle wheel animation avoids tree traversal':'for(let i=0;i<g.children.length;i++){const w=g.children[i],d=w.userData;' in s and 'g.traverse(' not in s[s.find('function bzV6AnimateVehicleWheels('):s.find('/* BZ_V6_VEHICLE_WHEEL_ANIMATION_HELPER_END */')],
+'vehicle wheel spin and steering update wired':'bzV6AnimateVehicleWheels(g,u,dt,fx);' in s,
 'combat marker present':'BATTLEZONE_V6_COMBAT_CONTROL_INTEGRITY_V1' in s,
 'AI line-of-sight marker present':'BATTLEZONE_V6_TACTICAL_LINE_OF_SIGHT_V1' in s,
 'enemy AI checks visibility before target lock':'if(!hasClearShot(bot.position.x,bot.position.y+1.15,bot.position.z,target.x,targetY,target.z))' in s,
@@ -97,3 +101,15 @@ dynamics_run=subprocess.run(['node','-e',dynamics_js],capture_output=True,text=T
 if dynamics_run.returncode:
     raise SystemExit(dynamics_run.stderr or dynamics_run.stdout)
 print('PASS vehicle throttle, brake, speed limits and destruction behavior')
+
+# Exercise vehicle wheel spin, front steering, and body roll without Three.js.
+wheel_start=s.find('function bzV6AnimateVehicleWheels(')
+wheel_end=s.find('/* BZ_V6_VEHICLE_WHEEL_ANIMATION_HELPER_END */',wheel_start)
+if wheel_start<0 or wheel_end<0:
+    raise SystemExit('Missing vehicle wheel animation helper')
+wheel_helper=s[wheel_start:wheel_end]
+wheel_js=f"""const vm=require('node:vm');const c={{}};vm.createContext(c);vm.runInContext({json.dumps(wheel_helper)},c);const spinFront={{userData:{{bzVehicleWheel:1,bzSteeringWheel:true}},rotation:{{x:0,y:0}}}},spinRear={{userData:{{bzVehicleWheel:1,bzSteeringWheel:false}},rotation:{{x:0,y:0}}}},other={{userData:{{}},rotation:{{x:0,y:0}}}};const g={{children:[spinFront,spinRear,other],rotation:{{z:0}}}},u={{v:10}};c.bzV6AnimateVehicleWheels(g,u,.1,1);const near=(a,b)=>Math.abs(a-b)<1e-8;if(!near(spinFront.rotation.x,2.4)||!near(spinRear.rotation.x,2.4))throw Error('wheel spin does not follow vehicle speed');if(!near(spinFront.rotation.y,.32)||spinRear.rotation.y!==0)throw Error('only front wheels should steer');if(!(g.rotation.z<0))throw Error('vehicle body roll should respond to steering');c.bzV6AnimateVehicleWheels(g,{{v:-10}},.1,-1);if(!near(spinFront.rotation.x,0)||!near(spinFront.rotation.y,-.32)||!(g.rotation.z>0))throw Error('reverse wheel animation/steering is incorrect');const x=spinFront.rotation.x;c.bzV6AnimateVehicleWheels(g,u,NaN,1);if(spinFront.rotation.x!==x)throw Error('invalid frame delta must not animate wheels');"""
+wheel_run=subprocess.run(['node','-e',wheel_js],capture_output=True,text=True)
+if wheel_run.returncode:
+    raise SystemExit(wheel_run.stderr or wheel_run.stdout)
+print('PASS vehicle wheel spin, steering and body roll behavior')

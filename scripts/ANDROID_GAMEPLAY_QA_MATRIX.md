@@ -93,3 +93,6 @@ QA-35 through QA-37 require physical-device verification. CI checks the source i
 
 
 | QA-38 | Terrain materials | Compare all three maps in low-quality and high-quality modes on low/mid/high Android devices; inspect grass, soil, sand, bark, rock, asphalt and concrete under daylight and shadows. | High quality shows subtle surface relief without visible tiling/overblown normals; low quality omits height-map GPU cost while retaining base color and roughness; no texture load errors or sustained frame drops. | Matched screenshots + 10-minute Perfetto/FPS capture + logcat |
+
+
+| QA-39 | Vehicle visual feedback | Drive forward/reverse and steer at low/high speed across each ground-vehicle type; stop and change direction. | Wheel rotation follows signed speed, front wheels visibly steer, body lean stays subtle and stable, and vehicle/player position remains synchronized. | Device screen recording at 60 fps |

@@ -55,3 +55,10 @@ The patched distributable replaces the 51 unverified synthetic MP3 demo clips wi
 - Existing 512×512 grayscale height maps are now bound as Three.js bump maps for the nine project material families in normal/high-quality mode. Per-material relief scales are deliberately shallow to avoid changing collision geometry or terrain navigation.
 - Low-quality mode skips height-map loading entirely and sets bump scale to zero, avoiding the extra texture memory and fragment work on constrained devices. Base-color and roughness maps remain unchanged.
 - Regression tests exercise both quality paths and verify all nine source height maps are present. Physical Android visual/performance comparison is still required before treating the high-quality setting as device-validated.
+
+
+## Vehicle wheel and steering feedback
+
+- Four ground wheels are tagged once at vehicle creation. Their rotation follows signed vehicle speed; front wheels receive a bounded steering angle.
+- The vehicle body gets a small smoothed lateral lean based on steering input and speed. Animation iterates the vehicle's existing direct children without recursive traversal or per-frame helper allocation.
+- Regression coverage verifies forward/reverse wheel spin, front-only steering, body lean, invalid frame-delta handling, and player position synchronization.
