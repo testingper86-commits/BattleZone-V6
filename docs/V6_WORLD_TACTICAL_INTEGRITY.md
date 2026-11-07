@@ -8,7 +8,7 @@ Movement collision and tactical shot occlusion used separate registries. Several
 - Broadleaf tree trunks and instanced forest trunks are registered as raycast blockers.
 - Collidable grouped props register their mesh children because the raycaster intentionally uses non-recursive intersection for performance.
 - Environmental deadfall is registered as tactical cover.
-- The raycast rejects non-finite distances and remains allocation-free in the combat loop.
+- The raycast rejects non-finite distances and reuses one Raycaster, two Vector3 instances, and a cleared hit buffer. This removes per-query Raycaster/vector/result-array allocation; intersection records are created only when actual hits occur.
 
 ## Verification
 CI checks each registration path and confirms the line-of-sight helper still raycasts against the single canonical blocker list. Android Gradle build and JVM tests are separate checks. Physical-device visual, collision, combat and frame-pacing QA is still required; this source patch does not claim those tests have been performed.

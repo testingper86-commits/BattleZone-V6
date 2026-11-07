@@ -30,7 +30,7 @@ for rel in voice_rel:
     f=voice_repo/rel
     if not f.is_file() or hashlib.sha256(f.read_bytes()).hexdigest()!=manifest[rel]: raise SystemExit(f'CC0 voice asset failed SHA-256 verification: {rel}')
 voice_ready=voice in s and all((voice_dest/rel).is_file() for rel in voice_rel) and not (www/'audio'/'voicepacks').exists()
-if world in s and combat in s and animation in ms and los in s and frame in s and version in gs and voice_ready:
+if world in s and combat in s and animation in ms and los in s and frame in s and version in gs and voice_ready and 'const bzLosRayState=' in s:
     print('WORLD_COMBAT_ANIMATION_CC0_VOICE_AND_VERSION_INTEGRITY_ALREADY_APPLIED'); raise SystemExit(0)
 def sub(text,old,new,label):
     n=text.count(old)
@@ -43,16 +43,23 @@ if world not in s:
 ("L.frustumCulled=false;T.frustumCulled=false;S.add(L,T)","L.frustumCulled=false;T.frustumCulled=false;S.add(L,T);solid.push(T)",'instanced forest trunk'),
 ("function pr(k,x,z,ry){const g=mp(x,z,PR[k],ry);(ENV.props[k]=ENV.props[k]||[]).push(g);if(COL.includes(k))obs.push({x,z,w:1.4,d:1.4});return g}","function pr(k,x,z,ry){const g=mp(x,z,PR[k],ry);(ENV.props[k]=ENV.props[k]||[]).push(g);if(COL.includes(k)){obs.push({x,z,w:1.4,d:1.4});g.traverse(o=>{if(o.isMesh)solid.push(o)})}return g}",'grouped props'),
 ("t.position.set(x,2.5,z);S.add(t);obs.push({x,z,w:.8,d:.8});for(let k=0;k<3;k++)","t.position.set(x,2.5,z);S.add(t);obs.push({x,z,w:.8,d:.8});solid.push(t);for(let k=0;k<3;k++)",'deadfall'),
-("function hasClearShot(ax,ay,az,bx,by,bz){const dx=bx-ax,dy=by-ay,dz=bz-az,dist=Math.hypot(dx,dy,dz);if(dist<.2)return true;const ray=new THREE.Raycaster(new THREE.Vector3(ax,ay,az),new THREE.Vector3(dx,dy,dz).normalize(),.15,Math.max(.15,dist-.35));return ray.intersectObjects(solid,false).length===0}","function hasClearShot(ax,ay,az,bx,by,bz){const dx=bx-ax,dy=by-ay,dz=bz-az,dist=Math.hypot(dx,dy,dz);if(!Number.isFinite(dist)||dist<.2)return true;const ray=new THREE.Raycaster(new THREE.Vector3(ax,ay,az),new THREE.Vector3(dx,dy,dz).normalize(),.15,Math.max(.15,dist-.35));return ray.intersectObjects(solid,false).length===0}",'finite tactical raycast')]
+("function hasClearShot(ax,ay,az,bx,by,bz){const dx=bx-ax,dy=by-ay,dz=bz-az,dist=Math.hypot(dx,dy,dz);if(dist<.2)return true;const ray=new THREE.Raycaster(new THREE.Vector3(ax,ay,az),new THREE.Vector3(dx,dy,dz).normalize(),.15,Math.max(.15,dist-.35));return ray.intersectObjects(solid,false).length===0}","const bzLosRayState={ray:new THREE.Raycaster(),origin:new THREE.Vector3(),direction:new THREE.Vector3(),hits:[]};\nfunction hasClearShot(ax,ay,az,bx,by,bz){const dx=bx-ax,dy=by-ay,dz=bz-az,dist=Math.hypot(dx,dy,dz);if(!Number.isFinite(dist))return false;if(dist<.2)return true;const state=bzLosRayState;state.origin.set(ax,ay,az);state.direction.set(dx,dy,dz).normalize();state.ray.set(state.origin,state.direction);state.ray.near=.15;state.ray.far=Math.max(.15,dist-.35);state.hits.length=0;state.ray.intersectObjects(solid,false,state.hits);return state.hits.length===0}",'reused tactical raycaster and intersection buffer')]
     for a,b,label in pairs:s=sub(s,a,b,label)
     s=sub(s,'</html>',f'<!-- {world} -->\n</html>','world marker')
+if 'const bzLosRayState=' not in s:
+    old_ray="function hasClearShot(ax,ay,az,bx,by,bz){const dx=bx-ax,dy=by-ay,dz=bz-az,dist=Math.hypot(dx,dy,dz);if(!Number.isFinite(dist))return false;if(dist<.2)return true;const ray=new THREE.Raycaster(new THREE.Vector3(ax,ay,az),new THREE.Vector3(dx,dy,dz).normalize(),.15,Math.max(.15,dist-.35));return ray.intersectObjects(solid,false).length===0}"
+    new_ray="const bzLosRayState={ray:new THREE.Raycaster(),origin:new THREE.Vector3(),direction:new THREE.Vector3(),hits:[]};\nfunction hasClearShot(ax,ay,az,bx,by,bz){const dx=bx-ax,dy=by-ay,dz=bz-az,dist=Math.hypot(dx,dy,dz);if(!Number.isFinite(dist))return false;if(dist<.2)return true;const state=bzLosRayState;state.origin.set(ax,ay,az);state.direction.set(dx,dy,dz).normalize();state.ray.set(state.origin,state.direction);state.ray.near=.15;state.ray.far=Math.max(.15,dist-.35);state.hits.length=0;state.ray.intersectObjects(solid,false,state.hits);return state.hits.length===0}"
+    s=sub(s,old_ray,new_ray,'upgrade previously patched tactical raycaster')
 if combat not in s:
     s=sub(s,'const sp_=P.grip||P.comp?.005:.01;','const sp_=0.01*(P.grip?0.65:1)*(P.comp?0.75:1);','aim spread')
     s=sub(s,'g.rotation.y=u.yaw;P.x=r[0];P.z=r[1];fx=fz=0;','g.rotation.y=u.yaw;P.x=g.position.x;P.z=g.position.z;fx=fz=0;','vehicle/player sync')
     s=sub(s,'P.z=old.position.z-Math.sin(old.userData.yaw)*2.4;[P.x,P.z]=hit(P.x,P.z,.5,0);gun.visible=true;','P.z=old.position.z-Math.sin(old.userData.yaw)*2.4;const exit=hit(P.x,P.z,.5,0);[P.x,P.z]=clampWorld(exit[0],exit[1],.8);gun.visible=true;','vehicle exit clamp')
     s=sub(s,'</html>',f'<!-- {combat} -->\n</html>','combat marker')
 if los not in s:
-    s=sub(s,'if(!Number.isFinite(dist)||dist<.2)return true;','if(!Number.isFinite(dist))return false;if(dist<.2)return true;','reject non-finite tactical raycasts')
+    if 'if(!Number.isFinite(dist)||dist<.2)return true;' in s:
+        s=sub(s,'if(!Number.isFinite(dist)||dist<.2)return true;','if(!Number.isFinite(dist))return false;if(dist<.2)return true;','reject non-finite tactical raycasts')
+    elif 'if(!Number.isFinite(dist))return false;if(dist<.2)return true;' not in s:
+        raise SystemExit('Tactical raycast finite-distance guard is missing')
     s=sub(s," const maxRange=([30,40,55][DF]||40)*Math.max(.55,Number(ENV.vis)||1);", " const maxRange=([30,40,55][DF]||40)*Math.max(.55,Number(ENV.vis)||1);\n u.aiBlockedT=Math.max(0,(Number(u.aiBlockedT)||0)-dt);\n if(u.aiBlockedT===0){u.aiBlockedTarget=null;u.aiBlockedPlayer=false}",'enemy AI blocked-target cooldown')
     s=sub(s,'   if(!Number.isFinite(x)||!Number.isFinite(z))return;\n   const d=Math.hypot(x-bot.position.x,z-bot.position.z);', '   if(!Number.isFinite(x)||!Number.isFinite(z))return;\n   if(candidate.p&&u.aiBlockedPlayer)return;\n   if(candidate.o&&candidate.o===u.aiBlockedTarget)return;\n   const d=Math.hypot(x-bot.position.x,z-bot.position.z);','enemy AI skips temporarily occluded targets')
     s=sub(s,'  target=chosen;u.aiTarget=target;', "  target=chosen;\n  if(target){\n   const targetY=target.p?(P.y-.25):(target.o.position.y+1.1);\n   if(!hasClearShot(bot.position.x,bot.position.y+1.15,bot.position.z,target.x,targetY,target.z)){\n    u.aiBlockedPlayer=!!target.p;u.aiBlockedTarget=target.o||null;u.aiBlockedT=1.0;target=null;\n   }\n  }\n  u.aiTarget=target;",'enemy AI requires visible target acquisition')

@@ -44,11 +44,16 @@ def extract_function(name):
         i += 1
     raise SystemExit(f'Unterminated runtime function: {name}')
 
-functions = '\n'.join(extract_function(n) for n in ('hasClearShot', 'bzV6TargetIsValid', 'bzV6ChooseEnemyTarget', 'bzV6ValidateSquadTarget'))
+ray_state_start = source.find('const bzLosRayState=')
+ray_state_end = source.find('function hasClearShot', ray_state_start)
+if ray_state_start < 0 or ray_state_end < 0:
+    raise SystemExit('Missing reusable tactical raycast state')
+ray_state = source[ray_state_start:ray_state_end]
+functions = ray_state + chr(10) + chr(10).join(extract_function(n) for n in ('hasClearShot', 'bzV6TargetIsValid', 'bzV6ChooseEnemyTarget', 'bzV6ValidateSquadTarget'))
 script = r"""const assert = require('assert');
-let rayBlocked = false;
-class Vector3 { constructor(x,y,z){this.x=x;this.y=y;this.z=z} normalize(){return this} }
-class Raycaster { constructor(origin,direction,near,far){this.origin=origin;this.direction=direction;this.near=near;this.far=far} intersectObjects(){return rayBlocked?[{distance:1}]:[]} }
+let rayBlocked = false, raycasterInstances = 0, rayHitTarget = null, rayTargetLengths = [];
+class Vector3 { constructor(x=0,y=0,z=0){this.set(x,y,z)} set(x,y,z){this.x=x;this.y=y;this.z=z;return this} normalize(){const d=Math.hypot(this.x,this.y,this.z)||1;this.x/=d;this.y/=d;this.z/=d;return this} }
+class Raycaster { constructor(){raycasterInstances++} set(origin,direction){this.origin=origin;this.direction=direction;return this} intersectObjects(objects,recursive,target){rayTargetLengths.push(target.length);rayHitTarget=target;if(rayBlocked)target.push({distance:1});return target} }
 const THREE={Vector3,Raycaster};
 const solid=[];
 const P={alive:true,air:0,x:10,z:0,y:1.6,hp:100};
@@ -62,6 +67,12 @@ assert.strictEqual(hasClearShot(0,0,0,NaN,0,0),false,'non-finite endpoints must 
 assert.strictEqual(hasClearShot(0,0,0,0,0,0),true,'near-zero finite segments should remain clear');
 rayBlocked=true;
 assert.strictEqual(hasClearShot(0,0,0,5,0,0),false,'solid cover must block the shot');
+const reusableHits=rayHitTarget;
+rayBlocked=false;
+assert.strictEqual(hasClearShot(0,0,0,5,0,0),true,'clear ray should reuse the intersection buffer');
+assert.strictEqual(raycasterInstances,1,'raycaster must be allocated once, not per query');
+assert.strictEqual(rayHitTarget,reusableHits,'intersection buffer must be reused');
+assert.deepStrictEqual(rayTargetLengths,[0,0],'intersection buffer must be cleared before every query');
 rayBlocked=false;
 hasClearShot=(ax,ay,az,bx,by,bz)=>bx!==10;
 const bot={position:{x:0,y:0,z:0}};

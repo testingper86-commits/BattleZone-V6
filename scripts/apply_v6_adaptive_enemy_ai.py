@@ -29,12 +29,6 @@ function bzV6TargetIsValid(target){
  if(!actor||!u||!u.alive||!actor.position)return false;
  return BZ_MODE==='TDM'?!!u.ally:!u.ally;
 }
-function bzV6TargetHasLOS(bot,target){
- if(!bot||!bot.position||!target||!Number.isFinite(target.x)||!Number.isFinite(target.z))return false;
- const by=(Number(bot.position.y)||0)+1.15;
- const ty=target.p?(Number(P.y)||.25)-.25:(Number(target.o&&target.o.position&&target.o.position.y)||0)+1.1;
- return !smk(target.x,target.z)&&hasClearShot(bot.position.x,by,bot.position.z,target.x,ty,target.z);
-}
 function bzV6UpdateZoneWaypoint(bot,u,dt){
  const outside=Math.hypot(bot.position.x-zc.x,bot.position.z-zc.z)>zc.r*.9;
  if(outside){
@@ -53,7 +47,6 @@ function bzV6ChooseEnemyTarget(bot,u,dt){
  if(target&&target.p){target.x=P.x;target.z=P.z}else if(target&&target.o&&target.o.position){target.x=target.o.position.x;target.z=target.o.position.z}
  if(target&&(!bzV6TargetIsValid(target)||Math.hypot(target.x-bot.position.x,target.z-bot.position.z)>maxRange*1.25)){target=null;u.aiTarget=null;u.aiScanT=0}
  u.aiScanT=(Number(u.aiScanT)||0)-dt;
- if(target&&u.aiScanT<=0&&!bzV6TargetHasLOS(bot,target)){target=null;u.aiTarget=null}
  if(u.aiScanT<=0){
   u.aiScanT=rnd(.16,.26);
   let best=Infinity,chosen=null;
@@ -63,13 +56,9 @@ function bzV6ChooseEnemyTarget(bot,u,dt){
    if(d>maxRange)return;
    const health=Number(hp),weak=Number.isFinite(health)?Math.max(0,35-health)/35*4:0;
    const score=d-priority-weak;
-   if(score<best){
-    const next={x,z,p:candidate.p?1:undefined,o:candidate.o||undefined};
-    if(!bzV6TargetHasLOS(bot,next))return;
-    best=score;chosen=next;
-   }
+   if(score<best){best=score;chosen={x,z,p:candidate.p?1:undefined,o:candidate.o||undefined}}
   };
-  if(P.alive&&!P.air)consider(P.x,P.z,{p:1},5,Number(P.hp));
+  if(P.alive&&!P.air&&!smk(P.x,P.z))consider(P.x,P.z,{p:1},5,Number(P.hp));
   forEachActor(actor=>{
    if(actor===bot||!actor||!actor.userData||!actor.userData.alive)return;
    const friendly=!!actor.userData.ally;
