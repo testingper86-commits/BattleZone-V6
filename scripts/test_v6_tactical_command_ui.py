@@ -17,6 +17,7 @@ checks={
  "real controls reused":"data-tac-control" in h and "['lay','CONTROL LAYOUT']" in h,
  "actual match report and safe empty state":"get('bzOfflineMatchHistory',[])" in h and "NO COMPLETED-MATCH REPORT RECORDED" in h and "OPEN MATCH HISTORY" in h,
  "existing statistics and history preserved":"['statistics','Statistics']" in h and "['history','Match History']" in h,
+ "legacy hub routes preserved":"else if(page==='profile')profilePage()" in h and "else if(page==='maps')mapsPage()" in h and "else if(page==='shop')shopPage()" in h and "else if(page==='inventory')inventoryPage()" in h,
  "mobile and reduced-motion styles":"max-width:700px" in c and "prefers-reduced-motion:reduce" in c,
  "lobby entry point":"bzTacEntry" in j and "open('command')" in j,
  "local assets linked":"./css/bz-tactical-command.css" in h and "./js/bz-tactical-command.js" in h,
