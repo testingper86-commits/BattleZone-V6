@@ -60,6 +60,7 @@ jobs:
           python3 scripts/apply_v6_animation_action_integration.py _cloud_source
           python3 scripts/apply_v6_adaptive_graphics.py _cloud_source
           python3 scripts/apply_v6_offline_webview_security.py _cloud_source
+          python3 scripts/apply_v6_webview_recovery.py _cloud_source
           python3 scripts/apply_v6_build_hardening.py _cloud_source
           python3 scripts/apply_battlezone_v6_overhaul.py _cloud_source
           python3 scripts/apply_battlezone_v6_rigged_weapons.py _cloud_source
@@ -146,6 +147,7 @@ jobs:
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_animation_action_integration.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_adaptive_graphics.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_offline_webview_security.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_webview_recovery.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_build_hardening.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_battlezone_v6_overhaul.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_world_tactical_integrity.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
