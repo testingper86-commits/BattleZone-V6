@@ -64,7 +64,7 @@ if vehicle not in s:
  if(u.hp<=0&&!u.dead){u.dead=1;u.v=0;E.ignite(g.position.x,g.position.z,22,'veh',.8);return true}
  return false;
 }"""
-    s=sub(s,'function loop0(n){',vehicle_helper+'\nfunction loop0(n){','vehicle collision impact helper')
+    s=sub(s,'function loop0(n){',vehicle_helper+chr(10)+'function loop0(n){','vehicle collision impact helper')
     s=sub(s,'Object.assign({v:0,yaw:rnd(0,6),a,vw:w,vl:l},o)','Object.assign({v:0,yaw:rnd(0,6),a,vw:w,vl:l,hp:100,crashCd:0},o)','vehicle health initialization')
     s=sub(s,'if(P.veh){const g=P.veh,u=g.userData;u.v+=','if(P.veh){const g=P.veh,u=g.userData;u.crashCd=Math.max(0,(Number(u.crashCd)||0)-dt);u.v+=','vehicle collision cooldown')
     s=sub(s,'if(r[0]!=nx||r[1]!=nz)u.v*=.3;','if(r[0]!=nx||r[1]!=nz){bzV6ApplyVehicleImpact(g,u,Math.abs(u.v),nx,nz);u.v*=.3;}','vehicle collision damage')
