@@ -30,6 +30,7 @@ checks={
 'player follows clamped vehicle transform':'g.rotation.y=u.yaw;P.x=g.position.x;P.z=g.position.z;fx=fz=0;' in s,
 'vehicle exit collision and world clamp':'const exit=hit(P.x,P.z,.5,0);[P.x,P.z]=clampWorld(exit[0],exit[1],.8);' in s,
 'vehicle collision damage marker':'BATTLEZONE_V6_VEHICLE_COLLISION_DAMAGE_V1' in s,
+'vehicle helper extraction boundary marker':'/* BZ_V6_VEHICLE_IMPACT_HELPER_END */' in s,
 'vehicle health and crash cooldown initialize':'hp:100,crashCd:0' in s,
 'vehicle crash cooldown decays each frame':'u.crashCd=Math.max(0,(Number(u.crashCd)||0)-dt);' in s,
 'vehicle collision is speed-gated and cooldown-limited':'impact<=6||(Number(u.crashCd)||0)>0' in s,
@@ -60,7 +61,7 @@ print(f'WORLD_TACTICAL_INTEGRITY_OK checks={len(checks)}')
 
 # Exercise vehicle impact damage independently of Three.js and the render loop.
 vehicle_start=s.find('function bzV6ApplyVehicleImpact(')
-vehicle_end=s.find('\nfunction loop0(',vehicle_start)
+vehicle_end=s.find('/* BZ_V6_VEHICLE_IMPACT_HELPER_END */',vehicle_start)
 if vehicle_start<0 or vehicle_end<0:
     raise SystemExit('Missing vehicle collision damage helper')
 vehicle_helper=s[vehicle_start:vehicle_end]

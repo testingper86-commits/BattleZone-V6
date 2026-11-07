@@ -56,7 +56,7 @@ if combat not in s:
     s=sub(s,'P.z=old.position.z-Math.sin(old.userData.yaw)*2.4;[P.x,P.z]=hit(P.x,P.z,.5,0);gun.visible=true;','P.z=old.position.z-Math.sin(old.userData.yaw)*2.4;const exit=hit(P.x,P.z,.5,0);[P.x,P.z]=clampWorld(exit[0],exit[1],.8);gun.visible=true;','vehicle exit clamp')
     s=sub(s,'</html>',f'<!-- {combat} -->\n</html>','combat marker')
 if vehicle not in s:
-    vehicle_helper="function bzV6ApplyVehicleImpact(g,u,impact,x,z){\n if(!Number.isFinite(impact)||impact<=6||(Number(u.crashCd)||0)>0)return false;\n u.hp=(Number.isFinite(u.hp)?u.hp:100)-Math.min(35,(impact-5)*1.8);\n u.crashCd=1;\n E.fx('spark',x,.7,z,6);\n if(u.hp<=0&&!u.dead){u.dead=1;u.v=0;E.ignite(g.position.x,g.position.z,22,'veh',.8);return true}\n return false;\n}"
+    vehicle_helper="function bzV6ApplyVehicleImpact(g,u,impact,x,z){\n if(!Number.isFinite(impact)||impact<=6||(Number(u.crashCd)||0)>0)return false;\n u.hp=(Number.isFinite(u.hp)?u.hp:100)-Math.min(35,(impact-5)*1.8);\n u.crashCd=1;\n E.fx('spark',x,.7,z,6);\n if(u.hp<=0&&!u.dead){u.dead=1;u.v=0;E.ignite(g.position.x,g.position.z,22,'veh',.8);return true}\n return false;\n}\n/* BZ_V6_VEHICLE_IMPACT_HELPER_END */"
     s=sub(s,'function loop0(n){',vehicle_helper+chr(10)+'function loop0(n){','vehicle collision impact helper')
     s=sub(s,'Object.assign({v:0,yaw:rnd(0,6),a,vw:w,vl:l},o)','Object.assign({v:0,yaw:rnd(0,6),a,vw:w,vl:l,hp:100,crashCd:0},o)','vehicle health initialization')
     s=sub(s,'if(P.veh){const g=P.veh,u=g.userData;u.v+=','if(P.veh){const g=P.veh,u=g.userData;u.crashCd=Math.max(0,(Number(u.crashCd)||0)-dt);u.v+=','vehicle collision cooldown')
