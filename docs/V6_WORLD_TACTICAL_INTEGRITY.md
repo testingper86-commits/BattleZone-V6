@@ -48,3 +48,8 @@ The next Android package increments to version `1.2.2` / versionCode `5`. CI run
 ## CC0 voice assets and release version
 
 The final-stage patcher installs 44 byte-for-byte Kenney CC0 tactical/match callouts, verifies all selected OGGs against a per-file SHA-256 manifest, copies the original licence and performer credits, and removes the 51 synthetic MP3 demo directory from the patched distributable. Runtime callouts map to spawn, combat, reload, cover, low-health, victory and defeat events with deterministic male/female voice assignment per operator. The APK version is `1.2.2` / versionCode `5`. CI additionally runs `test_v6_cc0_voiceover.py` for 10 licence/asset/runtime checks.
+
+
+## Vehicle crash damage
+
+Player-driven ground vehicles now receive impact damage when collision resolution blocks their movement. Damage is speed-gated, capped per impact, and protected by a one-second cooldown; low-speed contact does not damage the vehicle. Repeated hard impacts can destroy it, stop its drive velocity, and trigger the existing vehicle fire/explosion effect. CI exercises the damage threshold, cooldown, spark effect and destruction transition.

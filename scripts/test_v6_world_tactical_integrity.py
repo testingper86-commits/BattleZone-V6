@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Regression gate for world occlusion, weapon aim and vehicle coordinate integrity."""
 from pathlib import Path
+import json
+import subprocess
 import sys
 root=Path(sys.argv[1] if len(sys.argv)>1 else '.').resolve()
 paths=list(root.rglob('app/src/main/assets/www/index.html'))
@@ -27,6 +29,11 @@ checks={
 'boolean-as-spread defect removed':'const sp_=P.grip||P.comp?.005:.01;' not in s,
 'player follows clamped vehicle transform':'g.rotation.y=u.yaw;P.x=g.position.x;P.z=g.position.z;fx=fz=0;' in s,
 'vehicle exit collision and world clamp':'const exit=hit(P.x,P.z,.5,0);[P.x,P.z]=clampWorld(exit[0],exit[1],.8);' in s,
+'vehicle collision damage marker':'BATTLEZONE_V6_VEHICLE_COLLISION_DAMAGE_V1' in s,
+'vehicle health and crash cooldown initialize':'hp:100,crashCd:0' in s,
+'vehicle crash cooldown decays each frame':'u.crashCd=Math.max(0,(Number(u.crashCd)||0)-dt);' in s,
+'vehicle collision is speed-gated and cooldown-limited':'impact<=6||(Number(u.crashCd)||0)>0' in s,
+'vehicle collision damage is applied before speed damping':'bzV6ApplyVehicleImpact(g,u,Math.abs(u.v),nx,nz);u.v*=.3;' in s,
 'combat marker present':'BATTLEZONE_V6_COMBAT_CONTROL_INTEGRITY_V1' in s,
 'AI line-of-sight marker present':'BATTLEZONE_V6_TACTICAL_LINE_OF_SIGHT_V1' in s,
 'enemy AI checks visibility before target lock':'if(!hasClearShot(bot.position.x,bot.position.y+1.15,bot.position.z,target.x,targetY,target.z))' in s,
@@ -50,3 +57,15 @@ checks={
 for name,ok in checks.items(): print(('PASS ' if ok else 'FAIL ')+name)
 if not all(checks.values()): raise SystemExit(f'{sum(not x for x in checks.values())} integrity checks failed')
 print(f'WORLD_TACTICAL_INTEGRITY_OK checks={len(checks)}')
+
+# Exercise vehicle impact damage independently of Three.js and the render loop.
+vehicle_start=s.find('function bzV6ApplyVehicleImpact(')
+vehicle_end=s.find('\nfunction loop0(',vehicle_start)
+if vehicle_start<0 or vehicle_end<0:
+    raise SystemExit('Missing vehicle collision damage helper')
+vehicle_helper=s[vehicle_start:vehicle_end]
+vehicle_js=f"""const vm=require('node:vm');let fx=0,ignite=0;const c={{E:{{fx:()=>fx++,ignite:()=>ignite++}}}};vm.createContext(c);vm.runInContext({json.dumps(vehicle_helper)},c);const g={{position:{{x:3,z:4}}}},u={{hp:100,crashCd:0,v:10,dead:0}};if(c.bzV6ApplyVehicleImpact(g,u,6,3,4)!==false||u.hp!==100)throw Error('low-speed impact must not damage vehicle');if(c.bzV6ApplyVehicleImpact(g,u,10,3,4)!==false||u.hp!==91||u.crashCd!==1||fx!==1)throw Error('impact damage or spark effect incorrect');if(c.bzV6ApplyVehicleImpact(g,u,40,3,4)!==false||u.hp!==91)throw Error('crash cooldown must suppress repeated impact damage');u.crashCd=0;c.bzV6ApplyVehicleImpact(g,u,40,3,4);u.crashCd=0;c.bzV6ApplyVehicleImpact(g,u,40,3,4);u.crashCd=0;if(c.bzV6ApplyVehicleImpact(g,u,40,3,4)!==true||!u.dead||u.v!==0||ignite!==1)throw Error('vehicle destruction must stop and ignite the vehicle');"""
+vehicle_run=subprocess.run(['node','-e',vehicle_js],capture_output=True,text=True)
+if vehicle_run.returncode:
+    raise SystemExit(vehicle_run.stderr or vehicle_run.stdout)
+print('PASS vehicle collision damage behavior')

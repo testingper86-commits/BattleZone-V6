@@ -9,7 +9,7 @@ htmls=list(root.rglob('app/src/main/assets/www/index.html'))
 models_paths=list(root.rglob('app/src/main/assets/www/js/models.js'))
 if len(htmls)!=1 or len(models_paths)!=1: raise SystemExit(f'Expected one index.html and models.js, found {len(htmls)} and {len(models_paths)}')
 p=htmls[0]; s=p.read_text(encoding='utf-8'); mp=models_paths[0]; ms=mp.read_text(encoding='utf-8')
-world='BATTLEZONE_V6_WORLD_TACTICAL_INTEGRITY_V1'; combat='BATTLEZONE_V6_COMBAT_CONTROL_INTEGRITY_V1'; animation='BATTLEZONE_V6_ANIMATION_FALLBACK_V1'; los='BATTLEZONE_V6_TACTICAL_LINE_OF_SIGHT_V1'; frame='BATTLEZONE_V6_FRAME_LOOP_EFFICIENCY_V1'; version='BATTLEZONE_V6_BUILD_VERSION_1_2_2'; voice='BATTLEZONE_V6_CC0_VOICEOVER_V1'
+world='BATTLEZONE_V6_WORLD_TACTICAL_INTEGRITY_V1'; combat='BATTLEZONE_V6_COMBAT_CONTROL_INTEGRITY_V1'; animation='BATTLEZONE_V6_ANIMATION_FALLBACK_V1'; los='BATTLEZONE_V6_TACTICAL_LINE_OF_SIGHT_V1'; frame='BATTLEZONE_V6_FRAME_LOOP_EFFICIENCY_V1'; version='BATTLEZONE_V6_BUILD_VERSION_1_2_2'; voice='BATTLEZONE_V6_CC0_VOICEOVER_V1'; vehicle='BATTLEZONE_V6_VEHICLE_COLLISION_DAMAGE_V1'
 gradle_paths=list(root.rglob('app/build.gradle.kts'))
 if len(gradle_paths)!=1: raise SystemExit(f'Expected one app/build.gradle.kts, found {len(gradle_paths)}')
 gp=gradle_paths[0]; gs=gp.read_text(encoding='utf-8'); www=p.parent
@@ -30,7 +30,7 @@ for rel in voice_rel:
     f=voice_repo/rel
     if not f.is_file() or hashlib.sha256(f.read_bytes()).hexdigest()!=manifest[rel]: raise SystemExit(f'CC0 voice asset failed SHA-256 verification: {rel}')
 voice_ready=voice in s and all((voice_dest/rel).is_file() for rel in voice_rel) and not (www/'audio'/'voicepacks').exists()
-if world in s and combat in s and animation in ms and los in s and frame in s and version in gs and voice_ready and 'const bzLosRayState=' in s:
+if world in s and combat in s and animation in ms and los in s and frame in s and version in gs and voice_ready and 'const bzLosRayState=' in s and vehicle in s:
     print('WORLD_COMBAT_ANIMATION_CC0_VOICE_AND_VERSION_INTEGRITY_ALREADY_APPLIED'); raise SystemExit(0)
 def sub(text,old,new,label):
     n=text.count(old)
@@ -55,6 +55,20 @@ if combat not in s:
     s=sub(s,'g.rotation.y=u.yaw;P.x=r[0];P.z=r[1];fx=fz=0;','g.rotation.y=u.yaw;P.x=g.position.x;P.z=g.position.z;fx=fz=0;','vehicle/player sync')
     s=sub(s,'P.z=old.position.z-Math.sin(old.userData.yaw)*2.4;[P.x,P.z]=hit(P.x,P.z,.5,0);gun.visible=true;','P.z=old.position.z-Math.sin(old.userData.yaw)*2.4;const exit=hit(P.x,P.z,.5,0);[P.x,P.z]=clampWorld(exit[0],exit[1],.8);gun.visible=true;','vehicle exit clamp')
     s=sub(s,'</html>',f'<!-- {combat} -->\n</html>','combat marker')
+if vehicle not in s:
+    vehicle_helper="""function bzV6ApplyVehicleImpact(g,u,impact,x,z){
+ if(!Number.isFinite(impact)||impact<=6||(Number(u.crashCd)||0)>0)return false;
+ u.hp=(Number.isFinite(u.hp)?u.hp:100)-Math.min(35,(impact-5)*1.8);
+ u.crashCd=1;
+ E.fx('spark',x,.7,z,6);
+ if(u.hp<=0&&!u.dead){u.dead=1;u.v=0;E.ignite(g.position.x,g.position.z,22,'veh',.8);return true}
+ return false;
+}"""
+    s=sub(s,'function loop0(n){',vehicle_helper+'\nfunction loop0(n){','vehicle collision impact helper')
+    s=sub(s,'Object.assign({v:0,yaw:rnd(0,6),a,vw:w,vl:l},o)','Object.assign({v:0,yaw:rnd(0,6),a,vw:w,vl:l,hp:100,crashCd:0},o)','vehicle health initialization')
+    s=sub(s,'if(P.veh){const g=P.veh,u=g.userData;u.v+=','if(P.veh){const g=P.veh,u=g.userData;u.crashCd=Math.max(0,(Number(u.crashCd)||0)-dt);u.v+=','vehicle collision cooldown')
+    s=sub(s,'if(r[0]!=nx||r[1]!=nz)u.v*=.3;','if(r[0]!=nx||r[1]!=nz){bzV6ApplyVehicleImpact(g,u,Math.abs(u.v),nx,nz);u.v*=.3;}','vehicle collision damage')
+    s=s.replace('</html>',f'<!-- {vehicle} -->\n</html>',1)
 if los not in s:
     if 'if(!Number.isFinite(dist)||dist<.2)return true;' in s:
         s=sub(s,'if(!Number.isFinite(dist)||dist<.2)return true;','if(!Number.isFinite(dist))return false;if(dist<.2)return true;','reject non-finite tactical raycasts')
