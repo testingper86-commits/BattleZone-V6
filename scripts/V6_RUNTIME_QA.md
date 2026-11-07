@@ -12,3 +12,6 @@ These checks extend the V6 Android gameplay matrix. They require physical Androi
 | QA-43 | WebView lifecycle | Background/foreground, lock/unlock, and recover from a main-frame resource error | WebView page lifecycle and startup state are logged; main-frame load failures show a readable error page; no silent black screen | BattleZoneWeb Logcat + video |
 
 A successful APK build is not device verification. Record evidence against the exact APK SHA-256 and keep every blocker test tied to the tested build.
+
+| QA-44 | Tactical visibility | Place enemy bots and squad allies on opposite sides of buildings, tree trunks and grouped cover; break and restore line of sight. | AI does not maintain a live target lock or chase through solid cover; enemy bots investigate the last visible location, choose another visible target when available, and reacquire after visibility returns. | Screen recording + match-state/combat trace |
+| QA-45 | Frame-loop efficiency | Profile idle, movement, sprint and combat transitions for 15 minutes on low/mid/high Android devices. | Movement/run DOM state changes only on transitions; telemetry object remains stable; no regression in touch response, FPS, memory or thermal behavior. | Perfetto/Android profiler + APK SHA-256 |

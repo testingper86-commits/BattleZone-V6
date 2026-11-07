@@ -7,9 +7,12 @@ htmls=list(root.rglob('app/src/main/assets/www/index.html'))
 models_paths=list(root.rglob('app/src/main/assets/www/js/models.js'))
 if len(htmls)!=1 or len(models_paths)!=1: raise SystemExit(f'Expected one index.html and models.js, found {len(htmls)} and {len(models_paths)}')
 p=htmls[0]; s=p.read_text(encoding='utf-8'); mp=models_paths[0]; ms=mp.read_text(encoding='utf-8')
-world='BATTLEZONE_V6_WORLD_TACTICAL_INTEGRITY_V1'; combat='BATTLEZONE_V6_COMBAT_CONTROL_INTEGRITY_V1'; animation='BATTLEZONE_V6_ANIMATION_FALLBACK_V1'
-if world in s and combat in s and animation in ms:
-    print('WORLD_COMBAT_AND_ANIMATION_INTEGRITY_ALREADY_APPLIED'); raise SystemExit(0)
+world='BATTLEZONE_V6_WORLD_TACTICAL_INTEGRITY_V1'; combat='BATTLEZONE_V6_COMBAT_CONTROL_INTEGRITY_V1'; animation='BATTLEZONE_V6_ANIMATION_FALLBACK_V1'; los='BATTLEZONE_V6_TACTICAL_LINE_OF_SIGHT_V1'; frame='BATTLEZONE_V6_FRAME_LOOP_EFFICIENCY_V1'; version='BATTLEZONE_V6_BUILD_VERSION_1_2_1'
+gradle_paths=list(root.rglob('app/build.gradle.kts'))
+if len(gradle_paths)!=1: raise SystemExit(f'Expected one app/build.gradle.kts, found {len(gradle_paths)}')
+gp=gradle_paths[0]; gs=gp.read_text(encoding='utf-8')
+if world in s and combat in s and animation in ms and los in s and frame in s and version in gs:
+    print('WORLD_COMBAT_ANIMATION_AND_RUNTIME_INTEGRITY_ALREADY_APPLIED'); raise SystemExit(0)
 def sub(text,old,new,label):
     n=text.count(old)
     if n!=1: raise SystemExit(f'{label}: expected one exact source anchor, found {n}')
@@ -29,6 +32,22 @@ if combat not in s:
     s=sub(s,'g.rotation.y=u.yaw;P.x=r[0];P.z=r[1];fx=fz=0;','g.rotation.y=u.yaw;P.x=g.position.x;P.z=g.position.z;fx=fz=0;','vehicle/player sync')
     s=sub(s,'P.z=old.position.z-Math.sin(old.userData.yaw)*2.4;[P.x,P.z]=hit(P.x,P.z,.5,0);gun.visible=true;','P.z=old.position.z-Math.sin(old.userData.yaw)*2.4;const exit=hit(P.x,P.z,.5,0);[P.x,P.z]=clampWorld(exit[0],exit[1],.8);gun.visible=true;','vehicle exit clamp')
     s=sub(s,'</html>',f'<!-- {combat} -->\n</html>','combat marker')
+if los not in s:
+    s=sub(s,'if(!Number.isFinite(dist)||dist<.2)return true;','if(!Number.isFinite(dist))return false;if(dist<.2)return true;','reject non-finite tactical raycasts')
+    s=sub(s," const maxRange=([30,40,55][DF]||40)*Math.max(.55,Number(ENV.vis)||1);", " const maxRange=([30,40,55][DF]||40)*Math.max(.55,Number(ENV.vis)||1);\n u.aiBlockedT=Math.max(0,(Number(u.aiBlockedT)||0)-dt);\n if(u.aiBlockedT===0){u.aiBlockedTarget=null;u.aiBlockedPlayer=false}",'enemy AI blocked-target cooldown')
+    s=sub(s,'   if(!Number.isFinite(x)||!Number.isFinite(z))return;\n   const d=Math.hypot(x-bot.position.x,z-bot.position.z);', '   if(!Number.isFinite(x)||!Number.isFinite(z))return;\n   if(candidate.p&&u.aiBlockedPlayer)return;\n   if(candidate.o&&candidate.o===u.aiBlockedTarget)return;\n   const d=Math.hypot(x-bot.position.x,z-bot.position.z);','enemy AI skips temporarily occluded targets')
+    s=sub(s,'  target=chosen;u.aiTarget=target;', "  target=chosen;\n  if(target){\n   const targetY=target.p?(P.y-.25):(target.o.position.y+1.1);\n   if(!hasClearShot(bot.position.x,bot.position.y+1.15,bot.position.z,target.x,targetY,target.z)){\n    u.aiBlockedPlayer=!!target.p;u.aiBlockedTarget=target.o||null;u.aiBlockedT=1.0;target=null;\n   }\n  }\n  u.aiTarget=target;",'enemy AI requires visible target acquisition')
+    s=sub(s,'al.forEach((a,i)=>{const u=a.userData;if(u.down||u.alive===false)return;u.cd=(u.cd||0)-dt;u.squadThink=(u.squadThink||0)-dt;', 'al.forEach((a,i)=>{const u=a.userData;if(u.down||u.alive===false)return;u.cd=(u.cd||0)-dt;u.squadThink=(u.squadThink||0)-dt;u.squadBlockedT=Math.max(0,(Number(u.squadBlockedT)||0)-dt);u.squadLosT=Math.max(0,(Number(u.squadLosT)||0)-dt);if(u.squadBlockedT===0)u.squadBlockedTarget=null;', 'squad AI line-of-sight cooldown state')
+    s=sub(s,'if(!v.alive||v.ally||v.airDrop||v.falling)return;', 'if(!v.alive||v.ally||v.airDrop||v.falling||o===u.squadBlockedTarget)return;', 'squad AI skips temporarily occluded targets')
+    s=sub(s,'/* BATTLEZONE_V6_ADAPTIVE_ENEMY_AI_V1 */',"function bzV6ValidateSquadTarget(actor,u,target){\n if(!target)return null;\n if(target===u.squadBlockedTarget&&u.squadBlockedT>0)return null;\n if(u.squadLosT>0)return target;\n u.squadLosT=.22;\n if(!hasClearShot(actor.position.x,actor.position.y+1.15,actor.position.z,target.position.x,target.position.y+1.1,target.position.z)){u.squadBlockedTarget=target;u.squadBlockedT=1.0;return null}\n return target;\n}\n/* BATTLEZONE_V6_ADAPTIVE_ENEMY_AI_V1 */",'extractable squad target visibility validator')
+    s=sub(s,"if(window.BZSquadOrders?.get()==='regroup'&&Math.hypot(px-a.position.x,pz-a.position.z)>12)en=null;let bd=en?Math.hypot(en.position.x-a.position.x,en.position.z-a.position.z):96;","if(window.BZSquadOrders?.get()==='regroup'&&Math.hypot(px-a.position.x,pz-a.position.z)>12)en=null;en=bzV6ValidateSquadTarget(a,u,en);if(!en)u.squadTargetObj=null;let bd=en?Math.hypot(en.position.x-a.position.x,en.position.z-a.position.z):96;",'squad AI uses testable visibility validator')
+    s=s.replace('</html>',f'<!-- {los} -->\n</html>',1)
+if frame not in s:
+    old="function loop0(n){const bzWaterShader=lk.material.userData.bzWaterShader;if(bzWaterShader)bzWaterShader.uniforms.bzWaterTime.value=n*.001;window.BZGameState={started:!!started,health:Number(P.hp)||0,alive:!!P.alive,weapon:W[P.w]?.n||'Weapon'};const frameMs=Math.max(0,n-last),dt=Math.min(frameMs/1000,.1);last=n;const bzMove=Math.hypot(joy.x,joy.y)>.12||key.KeyW||key.KeyA||key.KeyS||key.KeyD;document.body.classList.toggle('bz-moving',!!bzMove);document.body.classList.toggle('bz-running',!!(key.sprint||key.ShiftLeft||key.ShiftRight));bzAdaptiveQuality(frameMs);"
+    new="const bzFrameGameState=window.BZGameState||(window.BZGameState={});let bzFrameLastMoving=null,bzFrameLastRunning=null;\nfunction loop0(n){const bzWaterShader=lk.material.userData.bzWaterShader;if(bzWaterShader)bzWaterShader.uniforms.bzWaterTime.value=n*.001;bzFrameGameState.started=!!started;bzFrameGameState.health=Number(P.hp)||0;bzFrameGameState.alive=!!P.alive;bzFrameGameState.weapon=W[P.w]?.n||'Weapon';const frameMs=Math.max(0,n-last),dt=Math.min(frameMs/1000,.1);last=n;const bzMove=Math.hypot(joy.x,joy.y)>.12||key.KeyW||key.KeyA||key.KeyS||key.KeyD;if(bzMove!==bzFrameLastMoving){document.body.classList.toggle('bz-moving',!!bzMove);bzFrameLastMoving=!!bzMove}const bzRunning=!!(key.sprint||key.ShiftLeft||key.ShiftRight);if(bzRunning!==bzFrameLastRunning){document.body.classList.toggle('bz-running',bzRunning);bzFrameLastRunning=bzRunning}bzAdaptiveQuality(frameMs);"
+    s=sub(s,old,new,'reuse frame telemetry and cache DOM movement states')
+    s=s.replace('</html>',f'<!-- {frame} -->\n</html>',1)
+if los not in s or frame not in s: raise SystemExit('line-of-sight or frame-loop marker insertion failed')
 if animation not in ms:
     old_action = """function playAction(target,state){
   if(!target||!['shoot','reload','death'].includes(state))return false;
@@ -97,4 +116,12 @@ if animation not in ms:
 mp.write_text(ms,encoding='utf-8')
 s=s.replace('</html>',f'<!-- {animation} -->\n</html>',1)
 p.write_text(s,encoding='utf-8')
-print('WORLD_COMBAT_ANIMATION_INTEGRITY_APPLIED',p,mp)
+if version not in gs:
+    if gs.count('versionCode = 3')!=1 or gs.count('versionName = \"1.2.0\"')!=1:
+        raise SystemExit('Unexpected Android version metadata; refusing an unsafe version bump')
+    gs=gs.replace('versionCode = 3','versionCode = 4',1).replace('versionName = \"1.2.0\"','versionName = \"1.2.1\"',1)
+    gs=gs.replace('android {','android {\n    // '+version,1)
+    gp.write_text(gs,encoding='utf-8')
+elif gs.count('versionCode = 4')!=1 or gs.count('versionName = \"1.2.1\"')!=1:
+    raise SystemExit('Build version marker conflicts with Android version metadata')
+print('WORLD_COMBAT_ANIMATION_AND_VERSION_INTEGRITY_APPLIED',p,mp,gp)

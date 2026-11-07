@@ -1,7 +1,7 @@
 # Battle Zone V6.1 Gameplay Overhaul
 
 **Target branch:** `feature/offline-pairing-removal`
-**Android version:** `1.2.0` / versionCode `3`
+**Android version:** `1.2.1` / versionCode `4`
 **Runtime:** offline-only Kotlin Android shell with local WebView and Three.js r128 assets.
 
 ## Implemented source changes
@@ -22,4 +22,15 @@
 
 ## Automated validation
 
-The CI pipeline applies the three V6.1 patchers after offline/security/build hardening and runs `test_battlezone_v6_overhaul.py`, existing animation/build-hardening regressions, JavaScript syntax checks, Android JVM unit tests, and debug/unsigned-release APK assembly. A green workflow is build/static verification, not a substitute for testing on the target phone.
+The CI pipeline applies the three V6.1 patchers after offline/security/build hardening and runs `test_battlezone_v6_overhaul.py`, existing animation/build-hardening regressions, the 29-check world integrity suite, the 11-check executable tactical line-of-sight behavior suite, JavaScript syntax checks, Android JVM unit tests, and debug/unsigned-release APK assembly. A green workflow is build/static verification, not a substitute for testing on the target phone.
+
+
+## Tactical visibility and frame-loop repair
+
+- Enemy bots now require a clear raycast before locking a player or another actor. A blocked target is temporarily suppressed so the next scan can select a visible opponent; existing last-seen investigation remains active.
+- TDM squad allies validate target visibility before pursuing. Occluded targets are cached for one second, repeated raycasts are rate-limited to 0.22 seconds, and visible targets can be reacquired after cover is cleared.
+- Non-finite combat raycast endpoints are rejected.
+- Frame telemetry reuses one `BZGameState` object and movement/run CSS classes update only on transitions, removing avoidable per-frame allocations and DOM calls.
+- Regression coverage: 29 static world/combat/animation/frame assertions, 11 executable tactical LOS behavior checks, JavaScript syntax validation, and idempotent patch replay.
+
+These are source/CI checks. Physical-device animation, AI behavior, frame pacing and thermal QA remain separate release gates.

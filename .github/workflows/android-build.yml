@@ -112,6 +112,7 @@ jobs:
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_build_hardening.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_battlezone_v6_overhaul.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_world_tactical_integrity.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_tactical_line_of_sight.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_runtime_javascript_syntax.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
 
       - name: Run unit tests and build debug and unsigned release APKs
