@@ -11,9 +11,9 @@ spec.loader.exec_module(module)
 
 
 def fixture(root: Path) -> None:
-    (root / "app/src/main/java/com/example/battlezone").mkdir(parents=True)
-    (root / "app/src/main/assets/www/js").mkdir(parents=True)
-    (root / "app/src/main/assets/www/css").mkdir(parents=True)
+    (root / "app/src/main/java/com/example/battlezone").mkdir(parents=True, exist_ok=True)
+    (root / "app/src/main/assets/www/js").mkdir(parents=True, exist_ok=True)
+    (root / "app/src/main/assets/www/css").mkdir(parents=True, exist_ok=True)
     (root / "app/src/main/AndroidManifest.xml").write_text("<manifest package='test' />", encoding="utf-8")
     (root / "app/src/main/java/com/example/battlezone/MainActivity.kt").write_text(
         "class MainActivity { val offline = true; settings.blockNetworkLoads = true }", encoding="utf-8"
@@ -39,9 +39,10 @@ with tempfile.TemporaryDirectory() as tmp:
     assert any("WifiManager" in item for item in module.verify_source(root))
     activity.write_text("offline", encoding="utf-8")
 
-    (root / "app/src/main/assets/www/js/netplay.js").write_text("legacy", encoding="utf-8")
+    netplay = root / "app/src/main/assets/www/js/netplay.js"
+    netplay.write_text("legacy", encoding="utf-8")
     assert any("netplay.js" in item for item in module.verify_source(root))
-    (root / "app/src/main/assets/www/js/netplay.js").unlink()
+    netplay.unlink()
 
     css = root / "app/src/main/assets/www/css/game.css"
     css.write_text('@import url("https://cdn.example.com/game.css");', encoding="utf-8")
