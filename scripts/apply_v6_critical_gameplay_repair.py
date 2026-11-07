@@ -156,7 +156,7 @@ if v3_marker not in v3_html:
     v3_html = v3_replace(
         v3_html,
         "else{u.cd=.22;u.squadThink=0}}",
-        "else{u.cd=.22;u.squadThink=0}if(bzOrder==='hold'){gx=a.position.x;gz=a.position.z;speed=0;}}",
+        "else{u.cd=.22;u.squadThink=0}}if(bzOrder==='hold'){gx=a.position.x;gz=a.position.z;speed=0;}",
         "hold order movement lock",
     )
 
@@ -248,7 +248,7 @@ if len(models_paths) != 1:
     raise SystemExit(f"Expected exactly one character model loader, found {len(models_paths)}")
 models_path = models_paths[0]
 models_source = models_path.read_text(encoding="utf-8")
-gear_marker = "BATTLEZONE_V6_OPERATOR_ARMOR_REDIGN_V3"
+gear_marker = "BATTLEZONE_V6_OPERATOR_ARMOR_REDESIGN_V3"
 if gear_marker not in models_source:
     gear_helper = r"""
 /* BATTLEZONE_V6_OPERATOR_ARMOR_REDIGN_V3 */
@@ -322,6 +322,7 @@ function bzAttachOperatorGear(model,bones,key){
     old_bones = "const bones={rightHand:findBone(model,['righthand','handr','handslotright']),rightArm:findBone(model,['rightarm','upperarmr','armright']),rightForeArm:findBone(model,['rightforearm','forearmr']),leftArm:findBone(model,['leftarm','upperarml','armleft']),leftForeArm:findBone(model,['leftforearm','forearml']),spine:findBone(model,['spine','spine1','chest','body'])};"
     new_bones = "const bones={rightHand:findBone(model,['righthand','handr','handslotright']),head:findBone(model,['head','headtop','headend']),rightArm:findBone(model,['rightarm','upperarmr','armright']),rightForeArm:findBone(model,['rightforearm','forearmr']),leftArm:findBone(model,['leftarm','upperarml','armleft']),leftForeArm:findBone(model,['leftforearm','forearml']),rightLeg:findBone(model,['rightupleg','rightthigh','rightleg','thighr']),leftLeg:findBone(model,['leftupleg','leftthigh','leftleg','thighl']),rightFoot:findBone(model,['rightfoot','footr']),leftFoot:findBone(model,['leftfoot','footl']),spine:findBone(model,['spine','spine1','chest','body'])};bzAttachOperatorGear(model,bones,opt.skinKey||'Recruit');"
     models_source = v3_replace(models_source, old_bones, new_bones, "operator gear bone integration")
+    models_source = v3_replace(models_source, "register(group,model,Object.assign({},opt,{template}));group.userData.bzDressed=true;", "register(group,model,Object.assign({},opt,{template,skinKey}));group.userData.bzDressed=true;", "operator identity propagation")
     models_source = models_source.replace("/* Rigged character models", "/* " + gear_marker + " */\n/* Rigged character models", 1)
     models_path.write_text(models_source, encoding="utf-8")
 
@@ -384,9 +385,9 @@ if v3_css_marker not in css_source:
  #lnl,#lnr,#rev,#drive{display:none!important}
 }
 @media(orientation:portrait){
- #lb-l{left:8px!important;top:15vh!important;bottom:20vh!important;width:44vw!important;max-width:44vw!important}
- #maps{right:8px!important;top:15vh!important;bottom:20vh!important;width:44vw!important;max-width:44vw!important}
- #char{top:57%!important;width:24vw!important;height:30vh!important;max-width:25vw!important}
+ #lb-l{left:8px!important;top:15vh!important;bottom:20vh!important;width:40vw!important;max-width:40vw!important}
+ #maps{right:8px!important;top:15vh!important;bottom:20vh!important;width:40vw!important;max-width:40vw!important}
+ #char{top:57%!important;width:16vw!important;height:28vh!important;max-width:16vw!important}
  #bz-v6-hero{top:8vh!important;width:48vw!important;max-width:48vw!important}
  #go2{left:8px!important;bottom:8px!important;width:42vw!important;max-width:42vw!important}
  #lb-nav{right:8px!important;bottom:8px!important;max-width:46vw!important;overflow-x:auto!important}
@@ -398,15 +399,15 @@ if v3_css_marker not in css_source:
  #rev{left:70px!important;bottom:126px!important}
  #drive{left:70px!important;bottom:186px!important}
  #lnl,#lnr{display:none!important}
- #fire{right:10px!important;bottom:10px!important;width:72px!important;height:72px!important}
- #rel{right:88px!important;bottom:10px!important}
- #swap{right:88px!important;bottom:68px!important}
- #thr{right:146px!important;bottom:10px!important}
- #gsw{right:146px!important;bottom:68px!important}
- #jump{right:10px!important;bottom:92px!important}
- #crouch{right:64px!important;bottom:92px!important}
- #prone{right:118px!important;bottom:92px!important}
- #scope{right:10px!important;bottom:150px!important}
+ #fire{right:10px!important;bottom:10px!important;width:52px!important;height:52px!important}
+ #rel{right:66px!important;bottom:10px!important}
+ #swap{right:122px!important;bottom:10px!important}
+ #scope{right:10px!important;bottom:66px!important}
+ #thr{right:66px!important;bottom:66px!important}
+ #gsw{right:122px!important;bottom:66px!important}
+ #jump{right:10px!important;bottom:122px!important}
+ #crouch{right:66px!important;bottom:122px!important}
+ #prone{right:122px!important;bottom:122px!important}
  #pjump,#pchute{top:52%!important}
 }
 @media(max-height:440px) and (orientation:landscape){

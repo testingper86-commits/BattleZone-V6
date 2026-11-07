@@ -57,10 +57,10 @@ function register(obj,model,opt){
     for token in ("BATTLEZONE_V6_FINAL_GAMEPLAY_VISUAL_OVERHAUL_V3", "bzOrder==='regroup'", "bzOrder==='hold'", "u.airDrop||u.falling||u.chute", "P.y>(P.gh||1.6)+.22", "bzGroundTexture", "MeshStandardMaterial({color:c,roughness:.82,metalness:.04})"):
         assert token in second, f"missing V3 runtime token: {token}"
     model_text = models.read_text(encoding="utf-8")
-    assert "BATTLEZONE_V6_OPERATOR_ARMOR_REDIGN_V3" in model_text and "bzAttachOperatorGear(model,bones,opt.skinKey||'Recruit')" in model_text
+    assert "BATTLEZONE_V6_OPERATOR_ARMOR_REDESIGN_V3" in model_text and "bzAttachOperatorGear(model,bones,opt.skinKey||'Recruit')" in model_text
     css_text = css.read_text(encoding="utf-8")
     assert "BATTLEZONE_V6_FINAL_UI_OVERHAUL_V3" in css_text
-    assert "right(var(--bz-safe-r) + 106px)" in css_text
+    assert "right:calc(var(--bz-safe-r) + 106px)" in css_text
     bad = root / "bad"
     (bad / "app/src/main/assets/www").mkdir(parents=True)
     (bad / "app/src/main/assets/www/index.html").write_text("<html><head></head></html>", encoding="utf-8")
