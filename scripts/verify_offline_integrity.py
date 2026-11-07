@@ -23,10 +23,7 @@ NETWORK_PERMISSIONS = (
     "android.permission.ACCESS_WIFI_STATE", "android.permission.CHANGE_WIFI_MULTICAST_STATE",
 )
 RUNTIME_ASSET_SUFFIXES = {".js", ".html", ".css", ".svg", ".xml"}
-LOCAL_ASSET_HOST = "appassets.androidplatform.net"
-
-# Match network-bearing resource references, not arbitrary URLs in vendor license comments.
-REMOTE_ORIGIN = r"""(?!(?:https?:)?//appassets\.androidplatform\.net(?:[:/]|$))(?:https?:)?//[^"'\s)<>]+"""
+REMOTE_ORIGIN = r"""(?!(?:(?:https?|wss?):)?//appassets\.androidplatform\.net(?:[:/]|$))(?:(?:https?|wss?):)?//[^"'\s)<>]+"""
 HTML_REMOTE_RESOURCE = re.compile(
     rf"""\b(?:src|href|action|poster|data)\s*=\s*["']\s*{REMOTE_ORIGIN}""", re.I
 )
@@ -35,14 +32,12 @@ CSS_REMOTE_RESOURCE = re.compile(
 )
 JS_REMOTE_REQUEST = re.compile(
     rf"""(?:
-        \b(?:fetch|importScripts|sendBeacon|WebSocket|EventSource)\s*\(\s*["']\s*{REMOTE_ORIGIN}
+        \b(?:fetch|importScripts|sendBeacon|WebSocket|EventSource|Worker|SharedWorker)\s*\(\s*["']\s*{REMOTE_ORIGIN}
         |\bimport\s*\(\s*["']\s*{REMOTE_ORIGIN}
         |\.open\s*\(\s*["'][A-Z]+["']\s*,\s*["']\s*{REMOTE_ORIGIN}
+        |\baxios\.(?:get|post|put|patch|delete|request)\s*\(\s*["']\s*{REMOTE_ORIGIN}
     )""", re.I | re.X
 )
-
-class IntegrityError(Exception):
-    pass
 
 
 def _check_runtime_text(label: str, text: str, failures: list[str]) -> None:
