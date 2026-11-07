@@ -107,16 +107,10 @@ jobs:
           set -euo pipefail
           project_dir="${{ steps.project.outputs.dir }}"
           python3 scripts/test_v6_asset_provenance.py
-          if [ "${BATTLEZONE_RELEASE_APPROVED:-false}" = "true" ]; then
-            python3 scripts/create_asset_provenance_ledger.py \
-              --assets-root "$project_dir/app/src/main/assets/www" \
-              --output "$project_dir/app/src/main/assets/ASSET_PROVENANCE_LEDGER.json" \
-              --require-verified
-          else
-            python3 scripts/create_asset_provenance_ledger.py \
-              --assets-root "$project_dir/app/src/main/assets/www" \
-              --output "$project_dir/app/src/main/assets/ASSET_PROVENANCE_LEDGER.json"
-          fi
+          python3 scripts/create_asset_provenance_ledger.py \
+            --assets-root "$project_dir/app/src/main/assets/www" \
+            --output "$project_dir/app/src/main/assets/ASSET_PROVENANCE_LEDGER.json" \
+            --require-verified
 
       - name: Create content-addressed source provenance
         id: provenance
@@ -192,6 +186,59 @@ jobs:
             python3 "$GITHUB_WORKSPACE/scripts/verify_offline_integrity.py" --apk "$apk"
           done
 
+      - name: Rebuild clean with outbound networking disabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "${{ steps.project.outputs.dir }}"
+          sudo iptables -I OUTPUT 1 -o lo -j ACCEPT
+          sudo iptables -I OUTPUT 2 -j DROP
+          sudo ip6tables -I OUTPUT 1 -o lo -j ACCEPT
+          sudo ip6tables -I OUTPUT 2 -j DROP
+          restore_network() {
+            sudo iptables -D OUTPUT -j DROP || true
+            sudo iptables -D OUTPUT -o lo -j ACCEPT || true
+            sudo ip6tables -D OUTPUT -j DROP || true
+            sudo ip6tables -D OUTPUT -o lo -j ACCEPT || true
+          }
+          trap restore_network EXIT
+          if [ -f ./gradlew ]; then
+            ./gradlew --no-daemon --offline clean :app:testDebugUnitTest :app:testReleaseUnitTest :app:assembleDebug :app:assembleRelease
+          else
+            gradle --no-daemon --offline clean :app:testDebugUnitTest :app:testReleaseUnitTest :app:assembleDebug :app:assembleRelease
+          fi
+          echo "CLEAN_BUILD_NETWORK_DISABLED_OK dependency_cache_warmed=true"
+
+      - name: Sign release APK with owner-managed keystore
+        id: sign_release
+        if: ${{ secrets.BATTLEZONE_RELEASE_KEYSTORE_BASE64 != '' && secrets.BATTLEZONE_RELEASE_KEY_ALIAS != '' && secrets.BATTLEZONE_RELEASE_STORE_PASSWORD != '' && secrets.BATTLEZONE_RELEASE_KEY_PASSWORD != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.BATTLEZONE_RELEASE_KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.BATTLEZONE_RELEASE_KEY_ALIAS }}
+          KEYSTORE_PASSWORD: ${{ secrets.BATTLEZONE_RELEASE_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.BATTLEZONE_RELEASE_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          key_store="$RUNNER_TEMP/battlezone-release.jks"
+          trap 'rm -f "$key_store"' EXIT
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$key_store"
+          chmod 600 "$key_store"
+          release_apk="$(find "${{ steps.project.outputs.dir }}/app/build/outputs/apk/release" -maxdepth 1 -type f -name '*.apk' | head -n 1)"
+          test -n "$release_apk"
+          signed_apk="${{ steps.project.outputs.dir }}/app/build/outputs/apk/release/BattleZone-release-signed.apk"
+          cp "$release_apk" "$signed_apk"
+          apksigner="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          test -x "$apksigner"
+          "$apksigner" sign --ks "$key_store" --ks-key-alias "$KEY_ALIAS" --ks-pass env:KEYSTORE_PASSWORD --key-pass env:KEY_PASSWORD "$signed_apk"
+          "$apksigner" verify --verbose --print-certs "$signed_apk"
+          sha256sum "$signed_apk"
+          echo "signed_apk=$signed_apk" >> "$GITHUB_OUTPUT"
+
+      - name: Report missing production signing configuration
+        if: ${{ secrets.BATTLEZONE_RELEASE_KEYSTORE_BASE64 == '' || secrets.BATTLEZONE_RELEASE_KEY_ALIAS == '' || secrets.BATTLEZONE_RELEASE_STORE_PASSWORD == '' || secrets.BATTLEZONE_RELEASE_KEY_PASSWORD == '' }}
+        run: echo "::warning::Production signing skipped. Configure the four BATTLEZONE_RELEASE_* repository secrets before distribution."
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
@@ -207,6 +254,15 @@ jobs:
           path: ${{ steps.project.outputs.dir }}/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload signed production release APK
+        if: steps.sign_release.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: BattleZone-release-signed-APK
+          path: ${{ steps.sign_release.outputs.signed_apk }}
+          if-no-files-found: error
+          retention-days: 90
 
       - name: Package patched Android source
         shell: bash

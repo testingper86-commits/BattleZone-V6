@@ -49,3 +49,12 @@ On a successful WebGL context restoration, the renderer is resized and allowed t
 ## Procedural visual asset provenance
 
 The distributable build replaces all 36 previously unverified retained image assets (27 PBR maps, five VFX sprites, three loading scenes and the active logo) with deterministic original project-generated artwork. CI pins Pillow, runs the generator and its deterministic/image-decoding regression tests, then verifies every generated file against `PROCEDURAL_ASSET_PROVENANCE.json`. The original input archive is preserved unchanged and is not the cleared distributable. The release ledger must show zero unverified retained binary assets. This provenance check does not replace physical-device visual QA.
+
+
+## Release integrity, offline rebuild and signing
+
+CI now fails closed unless every retained binary asset has verified CC0 or original-project provenance with matching per-file SHA-256 evidence. It regenerates the 36 previously unresolved visual assets from deterministic project-authored procedural artwork; the raw canonical archive is preserved but is not the cleared distributable.
+
+After the normal dependency-fetching build, CI performs a clean Gradle rebuild with outbound IPv4/IPv6 networking blocked and Gradle offline mode enabled. This proves the clean build can complete from the already-warmed dependency cache without network access; it is not a cold-cache build on a machine with no preloaded dependencies.
+
+Production signing is enabled when all four owner-controlled GitHub repository secrets are configured: `BATTLEZONE_RELEASE_KEYSTORE_BASE64`, `BATTLEZONE_RELEASE_KEY_ALIAS`, `BATTLEZONE_RELEASE_STORE_PASSWORD`, and `BATTLEZONE_RELEASE_KEY_PASSWORD`. The keystore is decoded only into the runner's temporary directory, used to sign and verify the release APK, then deleted. Without these secrets, CI intentionally publishes only the clearly labelled unsigned release APK. Never commit the keystore or place passwords in source files or chat.
