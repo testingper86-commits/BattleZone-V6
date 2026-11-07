@@ -226,7 +226,7 @@ jobs:
           chmod 600 "$key_store"
           release_apk="$(find "${{ steps.project.outputs.dir }}/app/build/outputs/apk/release" -maxdepth 1 -type f -name '*.apk' | head -n 1)"
           test -n "$release_apk"
-          signed_apk="${{ steps.project.outputs.dir }}/app/build/outputs/apk/release/BattleZone-release-signed.apk"
+          signed_apk="$RUNNER_TEMP/BattleZone-release-signed.apk"
           cp "$release_apk" "$signed_apk"
           apksigner="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
           test -x "$apksigner"
