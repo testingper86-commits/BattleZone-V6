@@ -15,3 +15,13 @@ CI checks each registration path and confirms the line-of-sight helper still ray
 
 ## Scope
 This patch repairs collision/line-of-sight consistency. It does not convert the existing procedural world into a photorealistic AAA asset pipeline, and it does not certify every weapon, animation, vehicle, map, or tactical order as defect-free.
+
+## Combat controls and vehicle coordinate integrity
+
+The same idempotent source patch also corrects three verified gameplay defects:
+
+- Aim spread previously used `P.grip || ...`, so an equipped grip returned numeric `1` as the normalized spread and made shots wildly inaccurate. Spread now starts at `0.01` and applies the same `0.65` grip and `0.75` compensator multipliers as the recoil model.
+- Vehicle movement clamped the vehicle transform to the playable world but copied the unclamped candidate coordinates into the player proxy. The player now follows the final clamped vehicle transform, keeping combat, HUD, minimap and world checks aligned.
+- Vehicle exit now resolves nearby obstacle collision and clamps the resulting player position to the playable world boundary.
+
+The regression test checks all three invariants as well as the original seven world/tactical checks. These are source-level checks; actual touch feel, combat balance and vehicle handling still require Android gameplay QA.
