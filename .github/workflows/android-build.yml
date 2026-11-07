@@ -100,6 +100,15 @@ jobs:
           python3 scripts/apply_v6_gradle_compatibility.py "$project_dir"
           python3 scripts/test_v6_gradle_compatibility.py "$project_dir"
 
+      - name: Repair critical gameplay runtime and tactical controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_dir="${{ steps.project.outputs.dir }}"
+          python3 scripts/apply_v6_critical_gameplay_repair.py "$project_dir"
+          python3 scripts/test_v6_critical_gameplay_repair.py
+          python3 scripts/test_v6_runtime_javascript_syntax.py "$project_dir"
+
       - name: Generate and verify procedural visual replacements
         shell: bash
         run: |
