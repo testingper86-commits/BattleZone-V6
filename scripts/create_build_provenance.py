@@ -42,7 +42,7 @@ def main() -> None:
     if not archive.is_file() or not source.is_dir() or not workflow.is_file():
         raise SystemExit("Archive, transformed source directory, or workflow file is missing")
     text = workflow.read_text(encoding="utf-8")
-    chain = re.findall(r"python3\s+scripts/(apply_[A-Za-z0-9_]+\.py)\s+_cloud_source", text)
+    chain = re.findall(r'python3\s+scripts/(apply_[A-Za-z0-9_]+\.py)\s+(?:_cloud_source|"\$project_dir")', text)
     if not chain or len(chain) != len(set(chain)):
         raise SystemExit("Workflow patch chain is empty or contains duplicate patcher invocations")
     patchers = []
