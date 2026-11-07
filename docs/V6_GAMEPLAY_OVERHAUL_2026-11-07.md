@@ -48,3 +48,10 @@ The patched distributable replaces the 51 unverified synthetic MP3 demo clips wi
 - A destroyed vehicle remains immobilized even if the driver continues holding throttle. Existing water drag, steering, collision damage, crash cooldown, and vehicle exit clamping are preserved.
 - A deterministic Node.js behavior regression covers acceleration, braking from forward and reverse motion, stop-without-reversal, coasting, speed limits, and destroyed-vehicle lockout.
 - Physical Android QA remains required for touch response, steering feel, vehicle types, terrain/water handling, collision response, and exit interaction.
+
+
+## Terrain surface relief
+
+- Existing 512×512 grayscale height maps are now bound as Three.js bump maps for the nine project material families in normal/high-quality mode. Per-material relief scales are deliberately shallow to avoid changing collision geometry or terrain navigation.
+- Low-quality mode skips height-map loading entirely and sets bump scale to zero, avoiding the extra texture memory and fragment work on constrained devices. Base-color and roughness maps remain unchanged.
+- Regression tests exercise both quality paths and verify all nine source height maps are present. Physical Android visual/performance comparison is still required before treating the high-quality setting as device-validated.

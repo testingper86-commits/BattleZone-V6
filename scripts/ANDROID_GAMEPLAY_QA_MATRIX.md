@@ -90,3 +90,6 @@ QA-35 through QA-37 require physical-device verification. CI checks the source i
 
 
 | QA-37 | Vehicle handling | Drive each ground vehicle at low/high speed; apply brake from forward and reverse motion; release controls; hit an obstacle; destroy the vehicle; attempt to accelerate and exit. | Brake reduces speed to zero without reversing, coasting decays smoothly, speed remains bounded, collision damage is cooldown-limited, and a destroyed vehicle stays immobilized while exit remains usable. | Device video + vehicle speed/health state + logcat |
+
+
+| QA-38 | Terrain materials | Compare all three maps in low-quality and high-quality modes on low/mid/high Android devices; inspect grass, soil, sand, bark, rock, asphalt and concrete under daylight and shadows. | High quality shows subtle surface relief without visible tiling/overblown normals; low quality omits height-map GPU cost while retaining base color and roughness; no texture load errors or sustained frame drops. | Matched screenshots + 10-minute Perfetto/FPS capture + logcat |

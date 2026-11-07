@@ -9,6 +9,13 @@ marker = "BATTLEZONE_V6_ADAPTIVE_GRAPHICS_V1"
 assert marker in source
 assert "window.BZBatterySaver=()=>BS" in source
 assert "bzAdaptiveQuality(frameMs)" in source
+assert "BATTLEZONE_V6_TERRAIN_RELIEF_V1" in source
+assert "const bumpMap=LQ?null:BZTexture(name+'_height',repeat);" in source
+assert "bumpMap,bumpScale:LQ?0:bumpScale" in source
+assert "name==='bark'?.045" in source
+height_dir=root / "app/src/main/assets/www/textures"
+for material in ("asphalt","bark","concrete","dry_dirt","forest_floor","grass","military_metal","sand","weathered_rock"):
+    assert (height_dir / (material + "_height.png")).is_file(), f"missing {material} height map"
 start = source.index("/* " + marker + " */")
 end = source.index("function loop0(n)", start)
 helper = source[start:end]
@@ -34,3 +41,22 @@ p=subprocess.run(["node","-e",node],capture_output=True,text=True)
 if p.returncode: raise SystemExit(p.stderr or p.stdout)
 print(p.stdout.strip())
 print("ADAPTIVE_GRAPHICS_STATIC_CHECKS_OK")
+
+# Verify high-quality mode uses the existing height maps and low-quality mode does not load them.
+mat_start=source.index("const BZMaterial=")
+mat_end=source.index("const mtl=",mat_start)
+material_function=source[mat_start:mat_end]
+material_node=r"""
+const vm=require('node:vm');const calls=[];
+const ctx={_m:{},LQ:false,BZTexture:(name,repeat)=>{calls.push(name);return {name,repeat}},THREE:{MeshStandardMaterial:function(options){return options}}};
+vm.createContext(ctx);vm.runInContext(__MATERIAL__+';globalThis.makeMaterial=BZMaterial;',ctx);
+const high=ctx.makeMaterial('grass',3,.98);
+if(!high.bumpMap||high.bumpMap.name!=='grass_height'||high.bumpScale!==.028)throw new Error('high-quality terrain relief was not configured');
+if(!calls.includes('grass_height'))throw new Error('high-quality mode did not load the height map');
+ctx.LQ=true;ctx._m={};calls.length=0;const low=ctx.makeMaterial('grass',3,.98);
+if(low.bumpMap!==null||low.bumpScale!==0||calls.some(n=>n.endsWith('_height')))throw new Error('low-quality mode must not load or apply height maps');
+console.log('TERRAIN_RELIEF_QUALITY_GATE_OK');
+""".replace("__MATERIAL__",repr(material_function))
+material_run=subprocess.run(["node","-e",material_node],capture_output=True,text=True)
+if material_run.returncode: raise SystemExit(material_run.stderr or material_run.stdout)
+print(material_run.stdout.strip())
