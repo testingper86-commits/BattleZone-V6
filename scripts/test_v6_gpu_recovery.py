@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+"""Build-blocking regression checks for V6 GPU restoration and fullscreen Promise handling."""
+from pathlib import Path
+import sys
+root = Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
+files = list(root.rglob("app/src/main/assets/www/index.html"))
+if len(files) != 1:
+    raise SystemExit(f"Expected exactly one game index.html, found {len(files)}")
+html = files[0].read_text(encoding="utf-8")
+checks = {
+    "GPU recovery marker present": "BATTLEZONE_V6_GPU_RECOVERY_V1" in html,
+    "recovery listener is attached only to the gameplay canvas": "var cv=r.domElement;if(cv&&cv.id==='c'){" in html,
+    "preview renderer keeps its intentional context release outside game recovery": "if(cv&&cv.id==='c')" in html and "lr.forceContextLoss()" in html,
+    "context loss is prevented and recovery is awaited": "e.preventDefault();window.__bzWebglContextLost=true" in html and "waiting for WebGL restoration" in html,
+    "context restore clears timeout and preserves the active match": "webglcontextrestored" in html and "clearTimeout(window.__bzWebglRecoveryTimer)" in html and "r.setSize(window.innerWidth,window.innerHeight,false)" in html and "without resetting the match" in html and "setTimeout(function(){location.reload()},250)" not in html,
+    "failed GPU restoration has bounded fatal fallback": "},10000);" in html and "Graphics context could not recover" in html,
+    "fullscreen is feature-detected": "document.fullscreenEnabled&&document.documentElement&&typeof document.documentElement.requestFullscreen==='function'" in html,
+    "fullscreen Promise rejection is handled": "bzFullscreenPromise.catch" in html and "Fullscreen unavailable:" in html,
+    "web orientation lock is not called when Android manifest owns landscape": "screen.orientation.lock(" not in html and "Landscape orientation is controlled by the Android activity manifest" in html,
+    "old immediate fatal context-loss handler is removed": "window.bzFatal('Graphics context lost'" not in html,
+    "old unguarded fullscreen call is removed": "document.documentElement.requestFullscreen();screen.orientation.lock('landscape')" not in html,
+}
+for name, ok in checks.items():
+    print(("PASS" if ok else "FAIL") + "  " + name)
+if not all(checks.values()):
+    raise SystemExit("V6 GPU recovery regression checks failed")
+print("PASS  V6 GPU recovery regression checks")

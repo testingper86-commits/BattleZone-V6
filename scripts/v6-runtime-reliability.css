@@ -1,0 +1,38 @@
+/* V6 runtime fallback and final responsive alignment. */
+#char.bz-preview-fallback{display:block;pointer-events:none;background:radial-gradient(ellipse at 50% 80%,rgba(99,190,204,.18),transparent 64%)}
+#char.bz-preview-fallback::after{content:"";position:absolute;left:50%;bottom:9%;width:40%;height:66%;transform:translateX(-50%);border-radius:48% 48% 18% 18%;background:linear-gradient(105deg,rgba(185,205,211,.16),rgba(38,67,83,.82) 38%,rgba(13,27,40,.96) 72%,rgba(129,157,166,.26));clip-path:polygon(34% 0,66% 0,79% 14%,100% 37%,82% 48%,72% 31%,75% 100%,25% 100%,28% 31%,18% 48%,0 37%,21% 14%);filter:drop-shadow(0 12px 18px rgba(0,0,0,.45))}
+#char canvas{display:block;width:100%!important;height:100%!important;pointer-events:none}
+#lobby{width:100vw!important;height:100dvh!important;min-height:0!important;box-sizing:border-box!important;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)!important}
+#lb-top{left:max(10px,env(safe-area-inset-left,0px) + 8px)!important;right:max(10px,env(safe-area-inset-right,0px) + 8px)!important;top:max(8px,env(safe-area-inset-top,0px) + 6px)!important}
+#lb-l{max-height:calc(100dvh - 178px)!important;overflow-y:auto!important;overscroll-behavior:contain!important;scrollbar-width:thin!important}
+#lb-l #setc{max-height:inherit!important;overflow-y:auto!important;overscroll-behavior:contain!important}
+#lb-l #more{display:none!important}
+#lb-l #more.open{display:flex!important}
+#lb-l .card{min-height:42px!important;display:flex!important;align-items:center!important;box-sizing:border-box!important}
+#maps{display:flex!important;flex-direction:column!important;max-height:calc(100dvh - 178px)!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain!important;scrollbar-width:thin!important}
+#maps .mc{flex:0 0 auto!important;width:100%!important;min-height:44px!important;box-sizing:border-box!important}
+#maps .mc .th{height:30px!important;flex:0 0 30px!important}
+#lb-nav{display:flex!important;align-items:stretch!important;justify-content:flex-end!important;flex-wrap:nowrap!important;max-width:calc(100vw - 250px)!important;gap:clamp(4px,.65vw,8px)!important}
+#lb-nav b{min-height:46px!important;min-width:46px!important;box-sizing:border-box!important;flex:0 1 62px!important}
+#go2{min-height:48px!important;max-width:calc(100vw - 24px)!important;touch-action:manipulation!important}
+#lo{touch-action:manipulation!important}
+#lb-l .card,#maps .mc,#lb-nav b,#go2,#lo{user-select:none!important;-webkit-user-select:none!important;touch-action:manipulation!important}
+@media(max-width:760px) and (orientation:landscape){
+ #lb-l{left:max(7px,env(safe-area-inset-left,0px) + 5px)!important;top:82px!important;width:clamp(126px,20vw,158px)!important;max-height:calc(100dvh - 142px)!important}
+ #maps{right:max(7px,env(safe-area-inset-right,0px) + 5px)!important;top:82px!important;width:clamp(136px,21vw,170px)!important;max-height:calc(100dvh - 142px)!important}
+ #lb-nav{right:max(7px,env(safe-area-inset-right,0px) + 5px)!important;bottom:max(6px,env(safe-area-inset-bottom,0px) + 4px)!important;max-width:54vw!important}
+ #lb-nav b{min-width:40px!important;min-height:40px!important;width:clamp(40px,7vw,49px)!important;padding:4px 2px!important;font-size:7px!important}
+ #go2{left:max(7px,env(safe-area-inset-left,0px) + 5px)!important;bottom:max(6px,env(safe-area-inset-bottom,0px) + 4px)!important;width:clamp(126px,20vw,158px)!important;padding:7px 9px!important;font-size:13px!important}
+ #char{width:clamp(112px,18vw,164px)!important;height:clamp(150px,54vh,220px)!important;top:57%!important}
+ #bz-v6-hero{top:46px!important;width:min(250px,34vw)!important;padding:6px 9px!important}
+}
+@media(max-height:390px) and (orientation:landscape){
+ #lb-l,#maps{top:74px!important;max-height:calc(100dvh - 124px)!important}
+ #lb-l .card{min-height:34px!important;padding:5px 7px!important}
+ #maps .mc{min-height:36px!important;padding:4px!important}
+ #char{top:56%!important;height:160px!important}
+ #bz-v6-hero{top:40px!important;gap:2px!important;padding:4px 8px!important}
+ #lb-nav b{min-height:36px!important}
+ #go2{min-height:38px!important}
+}
+@media(prefers-reduced-motion:reduce){#char::before,#go2{animation:none!important;transition:none!important}}
