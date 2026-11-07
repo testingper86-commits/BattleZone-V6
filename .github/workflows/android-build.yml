@@ -150,7 +150,7 @@ jobs:
           find . -type f \( -name '*.download' -o -name '*.replaced-backup' \) -delete
           zip -qr "$GITHUB_WORKSPACE/BattleZone_V6_Offline_Patched_Source.zip" . \
             -x 'build/**' '**/build/**' '.gradle/**' '**/.gradle/**' '.kotlin/**' '**/.kotlin/**' '.git/**' '*/.git/*'
-          if zipinfo -1 "$GITHUB_WORKSPACE/BattleZone_V6_Offline_Patched_Source.zip" | grep -Eq '(^|/)(\.gradle|\.kotlin|build)/'; then
+          if zipinfo -1 "$GITHUB_WORKSPACE/BattleZone_V6_Offline_Patched_Source.zip" | grep -v '/$' | grep -Eq '(^|/)(\.gradle|\.kotlin|build)/'; then
             echo "Build caches leaked into the patched source artifact." >&2
             exit 1
           fi
