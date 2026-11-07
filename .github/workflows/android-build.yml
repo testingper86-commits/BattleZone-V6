@@ -92,6 +92,14 @@ jobs:
           echo "dir=$project_dir" >> "$GITHUB_OUTPUT"
           echo "Project root: $project_dir"
 
+      - name: Enforce supported Android Gradle plugin compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_dir="${{ steps.project.outputs.dir }}"
+          python3 scripts/apply_v6_gradle_compatibility.py "$project_dir"
+          python3 scripts/test_v6_gradle_compatibility.py "$project_dir"
+
       - name: Generate and verify procedural visual replacements
         shell: bash
         run: |
