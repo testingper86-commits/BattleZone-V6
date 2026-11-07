@@ -54,6 +54,7 @@ jobs:
           python3 scripts/apply_v6_progression_integrity.py _cloud_source
           python3 scripts/apply_v6_squad_command_system.py _cloud_source
           python3 scripts/apply_v6_lobby_alignment.py _cloud_source
+          python3 scripts/apply_v6_tactical_command_ui.py _cloud_source
           echo "dir=_cloud_source" >> "$GITHUB_OUTPUT"
           echo "Canonical source extracted and offline-only patches applied."
 
@@ -94,6 +95,7 @@ jobs:
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_progression_integrity.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_squad_command_system.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_lobby_alignment.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_tactical_command_ui.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
 
       - name: Run unit tests and build debug and unsigned release APKs
         shell: bash
