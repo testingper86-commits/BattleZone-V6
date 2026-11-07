@@ -1,7 +1,7 @@
 # Battle Zone V6.1 Gameplay Overhaul
 
 **Target branch:** `feature/offline-pairing-removal`
-**Android version:** `1.2.1` / versionCode `4`
+**Android version:** `1.2.2` / versionCode `5`
 **Runtime:** offline-only Kotlin Android shell with local WebView and Three.js r128 assets.
 
 ## Implemented source changes
@@ -34,3 +34,8 @@ The CI pipeline applies the three V6.1 patchers after offline/security/build har
 - Regression coverage: 29 static world/combat/animation/frame assertions, 11 executable tactical LOS behavior checks, JavaScript syntax validation, and idempotent patch replay.
 
 These are source/CI checks. Physical-device animation, AI behavior, frame pacing and thermal QA remain separate release gates.
+
+
+## Verified CC0 tactical voiceover
+
+The patched distributable replaces the 51 unverified synthetic MP3 demo clips with 44 hash-verified Kenney CC0 OGG callouts (male/female variants). Spawn, combat, reload, cover, low-health, victory and defeat events now select event-specific radio lines. The original CC0 licence and performer credits ship with the audio; the old `audio/voicepacks` directory is removed from the patched package.

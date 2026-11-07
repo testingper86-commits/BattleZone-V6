@@ -46,3 +46,12 @@ Remaining evidence needed:
 4. For branding: retain creator/ownership evidence and confirm trademark clearance for the name/logo artwork.
 
 No asset was changed, removed, imported, or newly approved. This follow-up is documentation-only. No gameplay, weapon-combat systems, build workflow, APK, CI run, signing, or release artifact was changed or executed.
+
+
+## 2026-11-07 distributable voice replacement addendum
+
+The Build #55 pipeline no longer packages the original 51 synthetic MP3 demo clips. They are replaced byte-for-byte with 44 selected OGG callouts from Kenney's `Voiceover Pack`, in Male and Female variants. The official Kenney asset page identifies the pack as CC0, and the official support page states Kenney asset-page packs are CC0 for commercial and personal use. The OpenGameArt mirror identifies Kenney as author, CC0, and lists the included tactical lines. The original `License.txt` and `Credits.txt` are bundled; the credits identify Jeffrey M. Smith (male) and Giselle (female). The exact archive hash and each selected file's SHA-256 are retained in `assets/kenney_voiceover_cc0/PROVENANCE.md` and `manifest.sha256`.
+
+Sources: https://kenney.nl/assets/voiceover-pack ; https://kenney.nl/support ; https://opengameart.org/content/voiceover-pack-40-lines
+
+This clears the voice files used by the patched APK/source artifact only. The preserved canonical ZIP still contains the original synthetic MP3s and must not be treated as the sanitized distributable. The 27 PBR maps, five VFX sprites, portraits, branding and loading images retain their previously documented project-origin claims and evidence gaps; this addendum does not certify those unrelated groups.

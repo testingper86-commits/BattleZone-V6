@@ -81,3 +81,10 @@ Files compared on the reviewed commit:
 The review compared the canonical branch documents and workflow content, the existing archive inventory, bundled-license findings recorded by that inventory, and the named publishers' public licensing statements. It did not independently unpack and fingerprint every asset against its publisher's download archive, obtain private rights/consent records, or provide legal advice. A final per-file clearance requires an asset-to-source manifest with cryptographic hashes and the corresponding source/license evidence.
 
 No original assets were changed, removed, imported, or approved. No source/gameplay code, CI workflow, APK, or release artifact was changed or generated.
+
+
+## 2026-11-07 distributable voice asset update
+
+The patched Build #55 source and APK replace the 51 synthetic demo MP3s (provider/model terms were absent) with 44 Kenney Voiceover Pack OGG callouts under CC0 1.0. The pack's original `License.txt` and `Credits.txt` are retained, and a SHA-256 manifest verifies every bundled file. Publisher and mirror references: https://kenney.nl/assets/voiceover-pack ; https://kenney.nl/support ; https://opengameart.org/content/voiceover-pack-40-lines.
+
+The original canonical source ZIP remains preserved with the legacy MP3 files. Only the CI-patched source archive and APK are sanitized. This update resolves the voice-license evidence for those patched distributables; all previously listed PBR, VFX, portrait, branding and loading-scene evidence gaps remain open.

@@ -20,8 +20,8 @@ checks={
  'tree trunks block tactical line of sight':'solid.push(t)' in h,
  'grass uses a bounded instanced draw call':'new THREE.InstancedMesh(blades,mat,count)' in h and 'grass.count=placed' in h,
  'vehicles have added exterior and wheel details':'bzBaseBuildCar' in h and 'vehicle exterior and wheel detail' not in h and 'steel=mS' in h,
- 'character-specific voice events use local voice packs':'bzVoiceLastPriority' in h and 'playCharacterVoice(nm)' in h and 'voicepacks/' in h,
- 'voice respects mute and active playback is stopped':'if(!SND_ON)return;const n=1+Math.floor(Math.random()*3)' in h and 'window.bzVoiceAudio.pause()' in h,
+ 'character-specific voice events use verified CC0 tactical callouts':'bzVoiceLastPriority' in h and 'bzPlayCC0VoiceLine' in h and 'audio/cc0_voiceover/' in h and 'war_target_engaged' in h,
+ 'voice respects mute and active playback is stopped':'function playCharacterVoice(name){if(!SND_ON)return;' in h and 'window.bzVoiceAudio.pause()' in h,
  'Kenney rig attaches weapon to right hand': "'righthand'" in m and "'handslotright'" in m and 'bones.rightHand.add(entry.weaponMount)' in m,
  'armed locomotion stabilizes both arms':'function applyWeaponPose(entry,speed,time)' in m and 'blend(b.leftForeArm' in m and 'applyWeaponPose(e,sp,n*.001)' in m,
  'weapon replacement disposes old geometry and materials':'o.geometry.dispose()' in m and 'o.material.dispose()' in m,
@@ -29,7 +29,7 @@ checks={
  'KayKit weapon socket and native animation are supported':'handslotright' in m and "template.format==='glb'" in m and 'entry.template.format' in m,
  'Kenney skin textures load concurrently in stable order':'Promise.all(skins.map(async s=>' in m and 'tpl.skinTex=skinTex.slice()' in m,
  'offline character assets are present':all((www/p).is_file() for p in ['models/characters/kenney/Skins/skaterMaleA.png','models/characters/kenney/Skins/criminalMaleA.png','models/characters/kenney/Skins/cyborgFemaleA.png','models/characters/kenney/Skins/skaterFemaleA.png','models/characters/kaykit_v1_2/Animations/gltf/KayKit_AnimatedCharacter_v1.2.glb','models/characters/kaykit_v1_2/License.txt']),
- 'version metadata advanced exactly once':'versionCode = 3' in gradle and 'versionName = "1.2.0"' in gradle,
+ 'version metadata advanced exactly once':'versionCode = 5' in gradle and 'versionName = \"1.2.2\"' in gradle,
 }
 failed=[]
 for name,ok in checks.items():

@@ -1,18 +1,37 @@
 #!/usr/bin/env python3
 """Enforce world occlusion, weapon aim, vehicle and rigged animation integrity."""
 from pathlib import Path
+import hashlib
+import shutil
 import sys
 root=Path(sys.argv[1] if len(sys.argv)>1 else '.').resolve()
 htmls=list(root.rglob('app/src/main/assets/www/index.html'))
 models_paths=list(root.rglob('app/src/main/assets/www/js/models.js'))
 if len(htmls)!=1 or len(models_paths)!=1: raise SystemExit(f'Expected one index.html and models.js, found {len(htmls)} and {len(models_paths)}')
 p=htmls[0]; s=p.read_text(encoding='utf-8'); mp=models_paths[0]; ms=mp.read_text(encoding='utf-8')
-world='BATTLEZONE_V6_WORLD_TACTICAL_INTEGRITY_V1'; combat='BATTLEZONE_V6_COMBAT_CONTROL_INTEGRITY_V1'; animation='BATTLEZONE_V6_ANIMATION_FALLBACK_V1'; los='BATTLEZONE_V6_TACTICAL_LINE_OF_SIGHT_V1'; frame='BATTLEZONE_V6_FRAME_LOOP_EFFICIENCY_V1'; version='BATTLEZONE_V6_BUILD_VERSION_1_2_1'
+world='BATTLEZONE_V6_WORLD_TACTICAL_INTEGRITY_V1'; combat='BATTLEZONE_V6_COMBAT_CONTROL_INTEGRITY_V1'; animation='BATTLEZONE_V6_ANIMATION_FALLBACK_V1'; los='BATTLEZONE_V6_TACTICAL_LINE_OF_SIGHT_V1'; frame='BATTLEZONE_V6_FRAME_LOOP_EFFICIENCY_V1'; version='BATTLEZONE_V6_BUILD_VERSION_1_2_2'; voice='BATTLEZONE_V6_CC0_VOICEOVER_V1'
 gradle_paths=list(root.rglob('app/build.gradle.kts'))
 if len(gradle_paths)!=1: raise SystemExit(f'Expected one app/build.gradle.kts, found {len(gradle_paths)}')
-gp=gradle_paths[0]; gs=gp.read_text(encoding='utf-8')
-if world in s and combat in s and animation in ms and los in s and frame in s and version in gs:
-    print('WORLD_COMBAT_ANIMATION_AND_RUNTIME_INTEGRITY_ALREADY_APPLIED'); raise SystemExit(0)
+gp=gradle_paths[0]; gs=gp.read_text(encoding='utf-8'); www=p.parent
+voice_repo=Path(__file__).resolve().parents[1]/'assets'/'kenney_voiceover_cc0'
+voice_dest=www/'audio'/'cc0_voiceover'
+voice_lines=['war_call_for_backup','war_cover_me','war_fire_in_the_hole','war_get_down','war_go_go_go','war_look_out','war_medic','war_reloading','war_rpg','war_sniper','war_suppressing_fire','war_target_destroyed','war_target_engaged','war_watch_my_back','mission_completed','mission_failed','you_win','you_lose','ready','go','hurry_up','objective_achieved']
+voice_rel=[f'{gender}/{line}.ogg' for gender in ('Male','Female') for line in voice_lines]
+manifest_path=voice_repo/'manifest.sha256'
+if not voice_repo.is_dir() or not manifest_path.is_file(): raise SystemExit('Verified Kenney CC0 voice asset source or hash manifest is missing')
+manifest={}
+for row in manifest_path.read_text(encoding='utf-8').splitlines():
+    parts=row.split()
+    if len(parts)!=2: raise SystemExit('Malformed CC0 voice SHA-256 manifest')
+    manifest[parts[1]]=parts[0]
+if set(manifest)!=set(voice_rel): raise SystemExit('CC0 voice manifest does not match the exact 44-file allowlist')
+if 'Creative Commons Zero, CC0' not in (voice_repo/'License.txt').read_text(encoding='utf-8') or 'Jeffrey M. Smith' not in (voice_repo/'Credits.txt').read_text(encoding='utf-8') or 'Giselle' not in (voice_repo/'Credits.txt').read_text(encoding='utf-8'): raise SystemExit('CC0 voice licence or performer credits are incomplete')
+for rel in voice_rel:
+    f=voice_repo/rel
+    if not f.is_file() or hashlib.sha256(f.read_bytes()).hexdigest()!=manifest[rel]: raise SystemExit(f'CC0 voice asset failed SHA-256 verification: {rel}')
+voice_ready=voice in s and all((voice_dest/rel).is_file() for rel in voice_rel) and not (www/'audio'/'voicepacks').exists()
+if world in s and combat in s and animation in ms and los in s and frame in s and version in gs and voice_ready:
+    print('WORLD_COMBAT_ANIMATION_CC0_VOICE_AND_VERSION_INTEGRITY_ALREADY_APPLIED'); raise SystemExit(0)
 def sub(text,old,new,label):
     n=text.count(old)
     if n!=1: raise SystemExit(f'{label}: expected one exact source anchor, found {n}')
@@ -42,6 +61,21 @@ if los not in s:
     s=sub(s,'/* BATTLEZONE_V6_ADAPTIVE_ENEMY_AI_V1 */',"function bzV6ValidateSquadTarget(actor,u,target){\n if(!target)return null;\n if(target===u.squadBlockedTarget&&u.squadBlockedT>0)return null;\n if(u.squadLosT>0)return target;\n u.squadLosT=.22;\n if(!hasClearShot(actor.position.x,actor.position.y+1.15,actor.position.z,target.position.x,target.position.y+1.1,target.position.z)){u.squadBlockedTarget=target;u.squadBlockedT=1.0;return null}\n return target;\n}\n/* BATTLEZONE_V6_ADAPTIVE_ENEMY_AI_V1 */",'extractable squad target visibility validator')
     s=sub(s,"if(window.BZSquadOrders?.get()==='regroup'&&Math.hypot(px-a.position.x,pz-a.position.z)>12)en=null;let bd=en?Math.hypot(en.position.x-a.position.x,en.position.z-a.position.z):96;","if(window.BZSquadOrders?.get()==='regroup'&&Math.hypot(px-a.position.x,pz-a.position.z)>12)en=null;en=bzV6ValidateSquadTarget(a,u,en);if(!en)u.squadTargetObj=null;let bd=en?Math.hypot(en.position.x-a.position.x,en.position.z-a.position.z):96;",'squad AI uses testable visibility validator')
     s=s.replace('</html>',f'<!-- {los} -->\n</html>',1)
+if voice not in s:
+    start_marker='function bzVoiceSlug(name){'
+    end_marker='window.bzPlayEventVoice=bzPlayEventVoice;'
+    if s.count(start_marker)!=1 or s.count(end_marker)!=1: raise SystemExit('CC0 voice runtime source anchors are not unique')
+    start=s.index(start_marker); end=s.index(end_marker,start)+len(end_marker)
+    new_voice="""function bzVoiceVariant(name){const v=String(name||'Recruit');let h=0;for(let i=0;i<v.length;i++)h=(h*31+v.charCodeAt(i))|0;return(h&1)?'Female':'Male'}
+const BZ_CC0_VOICE_LINES=new Set(['war_call_for_backup','war_cover_me','war_fire_in_the_hole','war_get_down','war_go_go_go','war_look_out','war_medic','war_reloading','war_rpg','war_sniper','war_suppressing_fire','war_target_destroyed','war_target_engaged','war_watch_my_back','mission_completed','mission_failed','you_win','you_lose','ready','go','hurry_up','objective_achieved']);
+function bzPlayCC0VoiceLine(line,voice,volume,onFail){if(!BZ_CC0_VOICE_LINES.has(line)){if(onFail)onFail();return null}const gender=voice==='Female'?'Female':'Male',stem=gender==='Female'&&line==='war_suppressing_fire'?'war_supressing_fire':line;let failed=false;const fail=()=>{if(failed)return;failed=true;if(onFail)onFail()};try{if(window.bzVoiceAudio)window.bzVoiceAudio.pause();const a=new Audio('./audio/cc0_voiceover/'+gender+'/'+stem+'.ogg');a.volume=Math.max(0,Math.min(1,Number(volume)||.9));window.bzVoiceAudio=a;a.onerror=()=>{if(window.bzVoiceAudio===a)fail()};const pr=a.play();if(pr&&pr.catch)pr.catch(()=>{if(window.bzVoiceAudio===a)fail()});return a}catch(e){fail();return null}}
+function bzPlayLocalVoice(name,idx,volume,onFail){const lines=['war_target_engaged','war_reloading','war_cover_me'];const n=Math.max(1,Math.min(3,Math.floor(Number(idx)||1)));return bzPlayCC0VoiceLine(lines[n-1],bzVoiceVariant(name),volume,onFail)}
+function playCharacterVoice(name){if(!SND_ON)return;const lines=['war_target_engaged','war_reloading','war_cover_me'];const line=lines[Math.floor(Math.random()*lines.length)];bzPlayCC0VoiceLine(line,bzVoiceVariant(name),.9,()=>msg('Voice audio unavailable'))}
+window.bzPlayLocalVoice=bzPlayLocalVoice;window.playCharacterVoice=playCharacterVoice;
+let bzVoiceLastAt=0,bzVoiceLastPriority=0;function bzPlayEventVoice(eventName){if(!SND_ON)return;const priority=({victory:3,defeat:3,low_health:2,cover:2,spawn:1,combat:1,reload:1})[eventName]||0,now=Date.now();if(now-bzVoiceLastAt<3200&&priority<=bzVoiceLastPriority)return;const choices=({victory:['you_win','mission_completed','objective_achieved'],defeat:['you_lose','mission_failed'],low_health:['war_get_down','war_medic','war_look_out'],cover:['war_cover_me','war_watch_my_back'],spawn:['ready','go','war_go_go_go'],combat:['war_target_engaged','war_suppressing_fire','war_look_out'],reload:['war_reloading']})[eventName];if(!choices)return;bzVoiceLastAt=now;bzVoiceLastPriority=priority;const nm=window.pmS?.charName||(typeof bzSelectedCharacter==='function'?bzSelectedCharacter().name:'Recruit')||'Recruit',line=choices[Math.floor(Math.random()*choices.length)];bzPlayCC0VoiceLine(line,bzVoiceVariant(nm),.9)}
+window.bzPlayEventVoice=bzPlayEventVoice;"""
+    s=s[:start]+new_voice+s[end:]
+    s=s.replace('</html>',f'<!-- {voice} -->\\n</html>',1)
 if frame not in s:
     old="function loop0(n){const bzWaterShader=lk.material.userData.bzWaterShader;if(bzWaterShader)bzWaterShader.uniforms.bzWaterTime.value=n*.001;window.BZGameState={started:!!started,health:Number(P.hp)||0,alive:!!P.alive,weapon:W[P.w]?.n||'Weapon'};const frameMs=Math.max(0,n-last),dt=Math.min(frameMs/1000,.1);last=n;const bzMove=Math.hypot(joy.x,joy.y)>.12||key.KeyW||key.KeyA||key.KeyS||key.KeyD;document.body.classList.toggle('bz-moving',!!bzMove);document.body.classList.toggle('bz-running',!!(key.sprint||key.ShiftLeft||key.ShiftRight));bzAdaptiveQuality(frameMs);"
     new="const bzFrameGameState=window.BZGameState||(window.BZGameState={});let bzFrameLastMoving=null,bzFrameLastRunning=null;\nfunction loop0(n){const bzWaterShader=lk.material.userData.bzWaterShader;if(bzWaterShader)bzWaterShader.uniforms.bzWaterTime.value=n*.001;bzFrameGameState.started=!!started;bzFrameGameState.health=Number(P.hp)||0;bzFrameGameState.alive=!!P.alive;bzFrameGameState.weapon=W[P.w]?.n||'Weapon';const frameMs=Math.max(0,n-last),dt=Math.min(frameMs/1000,.1);last=n;const bzMove=Math.hypot(joy.x,joy.y)>.12||key.KeyW||key.KeyA||key.KeyS||key.KeyD;if(bzMove!==bzFrameLastMoving){document.body.classList.toggle('bz-moving',!!bzMove);bzFrameLastMoving=!!bzMove}const bzRunning=!!(key.sprint||key.ShiftLeft||key.ShiftRight);if(bzRunning!==bzFrameLastRunning){document.body.classList.toggle('bz-running',bzRunning);bzFrameLastRunning=bzRunning}bzAdaptiveQuality(frameMs);"
@@ -116,12 +150,20 @@ if animation not in ms:
 mp.write_text(ms,encoding='utf-8')
 s=s.replace('</html>',f'<!-- {animation} -->\n</html>',1)
 p.write_text(s,encoding='utf-8')
+for rel in voice_rel:
+    target=voice_dest/rel;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(voice_repo/rel,target)
+for meta in ('License.txt','Credits.txt','PROVENANCE.md','manifest.sha256'):
+    shutil.copyfile(voice_repo/meta,voice_dest/meta)
+legacy_voices=www/'audio'/'voicepacks'
+if legacy_voices.exists(): shutil.rmtree(legacy_voices)
 if version not in gs:
     if gs.count('versionCode = 3')!=1 or gs.count('versionName = \"1.2.0\"')!=1:
         raise SystemExit('Unexpected Android version metadata; refusing an unsafe version bump')
-    gs=gs.replace('versionCode = 3','versionCode = 4',1).replace('versionName = \"1.2.0\"','versionName = \"1.2.1\"',1)
+    gs=gs.replace('versionCode = 3','versionCode = 5',1).replace('versionName = \"1.2.0\"','versionName = \"1.2.2\"',1)
     gs=gs.replace('android {','android {\n    // '+version,1)
     gp.write_text(gs,encoding='utf-8')
-elif gs.count('versionCode = 4')!=1 or gs.count('versionName = \"1.2.1\"')!=1:
+elif gs.count('versionCode = 5')!=1 or gs.count('versionName = \"1.2.2\"')!=1:
     raise SystemExit('Build version marker conflicts with Android version metadata')
-print('WORLD_COMBAT_ANIMATION_AND_VERSION_INTEGRITY_APPLIED',p,mp,gp)
+if voice not in s: raise SystemExit('CC0 voice marker was not inserted')
+if gs.count('versionCode = 5')!=1 or gs.count('versionName = \"1.2.2\"')!=1: raise SystemExit('Android version 1.2.2 metadata mismatch')
+print('WORLD_COMBAT_ANIMATION_CC0_VOICE_AND_VERSION_INTEGRITY_APPLIED',p,mp,gp,voice_dest)

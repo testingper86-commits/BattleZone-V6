@@ -42,4 +42,9 @@ The prior AI scan selected targets by distance and role score, then checked cove
 
 ## Build and regression gate
 
-The next Android package increments to version `1.2.1` / versionCode `4`. CI runs `test_v6_world_tactical_integrity.py` (29 world/combat/animation/frame assertions), `test_v6_tactical_line_of_sight.py` (11 executable Node behavior checks for enemy and squad visibility), and full inline/packaged JavaScript syntax validation. The patcher is verified idempotent. A green CI run still does not replace Android hardware QA.
+The next Android package increments to version `1.2.2` / versionCode `5`. CI runs `test_v6_world_tactical_integrity.py` (30 world/combat/animation/frame/audio assertions), `test_v6_tactical_line_of_sight.py` (11 executable Node behavior checks for enemy and squad visibility), and full inline/packaged JavaScript syntax validation. The patcher is verified idempotent. A green CI run still does not replace Android hardware QA.
+
+
+## CC0 voice assets and release version
+
+The final-stage patcher installs 44 byte-for-byte Kenney CC0 tactical/match callouts, verifies all selected OGGs against a per-file SHA-256 manifest, copies the original licence and performer credits, and removes the 51 synthetic MP3 demo directory from the patched distributable. Runtime callouts map to spawn, combat, reload, cover, low-health, victory and defeat events with deterministic male/female voice assignment per operator. The APK version is `1.2.2` / versionCode `5`. CI additionally runs `test_v6_cc0_voiceover.py` for 10 licence/asset/runtime checks.

@@ -90,3 +90,10 @@
 ## Verification boundary
 
 This report was generated from the canonical source ZIP and the Build #45 patched-source artifact by enumerating files, checking SHA-256 hashes and licenses, and tracing runtime references. The Build #46 hardening transformation retains only the KayKit GLB/license and removes unused environment samples from the APK workspace. It does not certify missing provenance or prove successful rendering/animation on a physical Android device.
+
+
+## Build #55 distributable audio inventory (2026-11-07)
+
+The final-stage build patcher now replaces the canonical archive's 51 synthetic demo MP3s (whose TTS provider/model commercial terms were not recorded) with a verified, local-only subset of Kenney's Voiceover Pack: 44 OGG files across male and female voices, 22 tactical/match callouts per voice. The patcher removes `audio/voicepacks/` from the extracted distributable project, installs the selected OGGs under `audio/cc0_voiceover/`, and preserves `License.txt`, `Credits.txt`, `PROVENANCE.md` and a per-file `manifest.sha256`. Every OGG is verified by SHA-256 before installation. The source archive download SHA-256 is `2ff0c8c51a959a754df698c4ee1e7c2db007c4abde4d600fd19545a1aea9d835`.
+
+The original canonical ZIP remains unchanged and still contains the legacy 51 MP3s. Do not distribute that raw archive as a cleared audio source. The CI-generated patched source archive and APK are the sanitized distributables. Other unresolved generated-art asset provenance remains as recorded above.

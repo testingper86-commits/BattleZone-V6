@@ -11,7 +11,7 @@ models = (root / "app/src/main/assets/www/js/models.js").read_text(encoding="utf
 tests = root / "app/src/test/java/com/example/battlezone/OfflineAssetPolicyTest.kt"
 kaykit = root / "app/src/main/assets/www/models/characters/kaykit_v1_2"
 assert "BATTLEZONE_V6_BUILD_HARDENING_V1" in gradle
-assert "versionCode = 3" in gradle and 'versionName = "1.2.0"' in gradle
+assert "versionCode = 5" in gradle and 'versionName = "1.2.2"' in gradle
 assert 'testImplementation("junit:junit:4.13.2")' in gradle and tests.is_file()
 assert "OfflineAssetPolicy.isTrustedAssetUri" in activity
 for token in ("URLDecoder.decode", "appassets.androidplatform.net", 'decoded.startsWith("/assets/")', 'it == ".."', "%2e|%2f|%5c"):
