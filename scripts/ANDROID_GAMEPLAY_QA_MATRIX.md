@@ -99,3 +99,5 @@ QA-35 through QA-37 require physical-device verification. CI checks the source i
 
 
 | QA-40 | Operator gear silhouettes | Preview and spawn all 17 operators; inspect each in idle, run, jump, freefall, shoot and reload on a low/mid/high Android device. | Eight equipment styles remain distinct; headwear, masks, radios, shoulder plates and packs stay attached without clipping or animation detachment; no material/geometry errors or noticeable frame-time regression. | Operator roster screenshots + animation screen recordings + logcat/FPS capture |
+
+| QA-41 | Offline Map Atlas | Open the atlas on all ten maps; pan/zoom; inspect six POIs and their 3D beacons; toggle terrain/water/hazard layers; plot routes around lakes, rivers and the sea boundary; create, rename, move, delete and reload waypoints; repeat in airplane mode. | Map coordinates and beacons stay aligned; water is never crossed except at the configured bridge; routes avoid blocked terrain; waypoint edits persist per map; no network request, collision regression or material FPS drop. | Device screen recording + map screenshots + offline manifest/network capture + Perfetto/FPS log |
