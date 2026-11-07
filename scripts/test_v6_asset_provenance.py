@@ -28,6 +28,7 @@ with tempfile.TemporaryDirectory() as tmp:
  try: mod.build_ledger(root)
  except ValueError as e: assert "checksum mismatch" in str(e)
  else: raise AssertionError("mismatched voice hash was accepted")
+ bad.write_text(digest+"  Male/callout.ogg"+chr(10))
 
  # A generated original is verified only when its manifest, generator and exact bytes agree.
  generated=root/"sprites/generated.png"; put(generated,b"procedural-original")
