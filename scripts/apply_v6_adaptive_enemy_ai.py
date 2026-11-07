@@ -29,13 +29,25 @@ function bzV6TargetIsValid(target){
  if(!actor||!u||!u.alive||!actor.position)return false;
  return BZ_MODE==='TDM'?!!u.ally:!u.ally;
 }
+function bzV6UpdateZoneWaypoint(bot,u,dt){
+ const outside=Math.hypot(bot.position.x-zc.x,bot.position.z-zc.z)>zc.r*.9;
+ if(outside){
+  u.aiZoneT=(Number(u.aiZoneT)||0)-dt;
+  if(u.aiZoneT<=0||!u.aiZoneTarget){u.aiZoneTarget={x:zc.x+rnd(-10,10),z:zc.z+rnd(-10,10)};u.aiZoneT=rnd(1.2,2.2)}
+  u.tx=u.aiZoneTarget.x;u.tz=u.aiZoneTarget.z;
+ }else{
+  u.aiZoneTarget=null;u.aiZoneT=0;
+  if(u.t<=0){u.t=rnd(3,7);const a=rnd(0,6.28),d=rnd(10,40);u.tx=bot.position.x+Math.cos(a)*d;u.tz=bot.position.z+Math.sin(a)*d}
+ }
+ return outside;
+}
 function bzV6ChooseEnemyTarget(bot,u,dt){
  const maxRange=([30,40,55][DF]||40)*Math.max(.55,Number(ENV.vis)||1);
  let target=u.aiTarget||null;
  if(target&&target.p){target.x=P.x;target.z=P.z}else if(target&&target.o&&target.o.position){target.x=target.o.position.x;target.z=target.o.position.z}
+ if(target&&(!bzV6TargetIsValid(target)||Math.hypot(target.x-bot.position.x,target.z-bot.position.z)>maxRange*1.25)){target=null;u.aiTarget=null;u.aiScanT=0}
  u.aiScanT=(Number(u.aiScanT)||0)-dt;
- if(!bzV6TargetIsValid(target)||Math.hypot(target.x-bot.position.x,target.z-bot.position.z)>maxRange*1.25)target=null;
- if(u.aiScanT<=0||!target){
+ if(u.aiScanT<=0){
   u.aiScanT=rnd(.16,.26);
   let best=Infinity,chosen=null;
   const consider=(x,z,candidate,priority,hp)=>{
@@ -76,6 +88,13 @@ new_target = """const aiDecision=bzV6ChooseEnemyTarget(b,u,dt);let tgt=aiDecisio
 if source.count(old_target) != 1:
     raise SystemExit(f"Enemy target-selection anchor expected once, found {source.count(old_target)}")
 source = source.replace(old_target, new_target, 1)
+
+old_zone = """if(Math.hypot(b.position.x-zc.x,b.position.z-zc.z)>zc.r*.9){u.tx=zc.x+rnd(-10,10);u.tz=zc.z+rnd(-10,10)}
+   else if(u.t<=0){u.t=rnd(3,7);const a=rnd(0,6.28),d=rnd(10,40);u.tx=b.position.x+Math.cos(a)*d;u.tz=b.position.z+Math.sin(a)*d}"""
+new_zone = """bzV6UpdateZoneWaypoint(b,u,dt);"""
+if source.count(old_zone) != 1:
+    raise SystemExit(f"Safe-zone waypoint anchor expected once, found {source.count(old_zone)}")
+source = source.replace(old_zone, new_zone, 1)
 
 start_anchor = "let gx=u.tx,gz=u.tz,spd=u.role==='rush'?3.5:3;if(tgt){"
 end_anchor = "const dx=gx-b.position.x,dz=gz-b.position.z,dl=Math.hypot(dx,dz);"

@@ -17,6 +17,7 @@ checks={
  'map selection is restored above legacy hidden rule':'#lobby #maps{position:absolute' in css and 'display:flex!important' in css,
  'water has animated vertex and fragment detail':'bz-water-ripple-v1' in h and 'transformed.z +=' in h and 'gl_FragCoord.x*.035' in h,
  'tree trunks include roots and branches':'tkPDetail' in h and 'tkODetail' in h and 'branchA' in h,
+ 'tree trunks block tactical line of sight':'solid.push(t)' in h,
  'grass uses a bounded instanced draw call':'new THREE.InstancedMesh(blades,mat,count)' in h and 'grass.count=placed' in h,
  'vehicles have added exterior and wheel details':'bzBaseBuildCar' in h and 'vehicle exterior and wheel detail' not in h and 'steel=mS' in h,
  'character-specific voice events use local voice packs':'bzVoiceLastPriority' in h and 'playCharacterVoice(nm)' in h and 'voicepacks/' in h,

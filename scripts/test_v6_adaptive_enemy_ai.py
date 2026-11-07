@@ -13,6 +13,10 @@ assert "u.aiState='investigate'" in source, "last-known-position investigation m
 assert "u.aiState='zone'" in source, "safe-zone recovery priority missing"
 assert "b.userData.aiLastSeenX=P.x" in source, "player-hit memory not wired"
 assert "const accuracy=" in source, "distance/difficulty aim model missing"
+assert "if(u.aiScanT<=0||!target)" not in source, "empty target state must respect the scan cooldown"
+assert "if(u.aiScanT<=0){" in source, "AI scan cooldown is not authoritative"
+assert "bzV6UpdateZoneWaypoint(b,u,dt)" in source, "safe-zone waypoint helper is not used"
+assert "u.aiZoneTarget={x:zc.x+rnd(-10,10),z:zc.z+rnd(-10,10)}" in source, "safe-zone waypoint must be cached"
 assert "gx=tgt.x+Math.cos(approachAngle)*13" in source, "rush/cover target approach missing"
 assert "u.role==='camp'" in source, "camp role hold behavior missing"
 assert "Number(u.hp)<=28" in source and "tacticalCoverPoint(b,aiDecision.x,aiDecision.z)" in source, "low-health lost-target retreat missing"
@@ -27,11 +31,14 @@ function makeContext(mode) {
   const ally = {position:{x:2,z:0},userData:{alive:true,hp:100,ally:true}};
   const enemy = {position:{x:4,z:0},userData:{alive:true,hp:100,ally:false}};
   const actors=[bot,ally,enemy];
+  let scanCalls=0,randomCalls=0;
   const sandbox = {
+    getScanCalls:()=>scanCalls,getRandomCalls:()=>randomCalls,
+    zc:{x:0,z:0,r:20},
     P:{alive:true,air:0,x:15,z:0,hp:100},
     DF:1,ENV:{vis:1},BZ_MODE:mode,bot,actors,
-    smk:()=>false,rnd:(a,b)=>(a+b)/2,
-    forEachActor:fn=>actors.forEach(fn)
+    smk:()=>false,rnd:(a,b)=>{randomCalls++;return(a+b)/2},
+    forEachActor:fn=>{scanCalls++;actors.forEach(fn)}
   };
   vm.createContext(sandbox);
   vm.runInContext(helper,sandbox);
@@ -54,6 +61,22 @@ const wounded={position:{x:15,z:0},userData:{alive:true,hp:5,ally:false}};
 c.actors.push(wounded);
 d=c.bzV6ChooseEnemyTarget(c.bot,c.bot.userData,.2);
 if(!d.target||d.target.o!==wounded)throw new Error('target scoring should prioritize a nearby weakened opponent');
+// Empty target scans are cached for the configured interval.
+c=makeContext('BR');c.P.alive=false;c.actors[1].userData.alive=false;c.actors[2].userData.alive=false;
+c.bzV6ChooseEnemyTarget(c.bot,c.bot.userData,.016);
+const scans=c.getScanCalls();
+c.bzV6ChooseEnemyTarget(c.bot,c.bot.userData,.016);
+if(c.getScanCalls()!==scans)throw new Error('empty-target scans are not throttled');
+c.bzV6ChooseEnemyTarget(c.bot,c.bot.userData,.3);
+if(c.getScanCalls()!==scans+1)throw new Error('empty-target scan did not resume after cooldown');
+// Safe-zone waypoint remains stable between refresh intervals.
+c=makeContext('BR');const zoneBot={position:{x:30,z:0}},zoneState={t:5};
+c.bzV6UpdateZoneWaypoint(zoneBot,zoneState,.016);
+const zx=zoneState.tx,zz=zoneState.tz,randoms=c.getRandomCalls();
+c.bzV6UpdateZoneWaypoint(zoneBot,zoneState,.016);
+if(zoneState.tx!==zx||zoneState.tz!==zz||c.getRandomCalls()!==randoms)throw new Error('safe-zone waypoint changes every frame');
+c.bzV6UpdateZoneWaypoint(zoneBot,zoneState,3);
+if(c.getRandomCalls()===randoms)throw new Error('safe-zone waypoint failed to refresh');
 console.log('ADAPTIVE_ENEMY_AI_BEHAVIOR_OK');
 """.replace("__HELPER__", repr(helper))
 p = subprocess.run(["node", "-e", node], capture_output=True, text=True)
