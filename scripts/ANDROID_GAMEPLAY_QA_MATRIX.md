@@ -87,3 +87,6 @@ QA-35 through QA-37 require physical-device verification. CI checks the source i
 - Compare water ripple/shimmer, tree roots/branches, instanced grass and vehicle trim at Low/Medium/High settings; check frame pacing.
 - Verify all 17 operator profiles across Kenney and KayKit rigs, correct hand weapon attachment, enemy hit registration and animation-family isolation.
 - Trigger spawn, combat, reload, low-health, cover, victory and defeat voice events; verify mute, cooldown and priority behavior.
+
+
+| QA-37 | Vehicle handling | Drive each ground vehicle at low/high speed; apply brake from forward and reverse motion; release controls; hit an obstacle; destroy the vehicle; attempt to accelerate and exit. | Brake reduces speed to zero without reversing, coasting decays smoothly, speed remains bounded, collision damage is cooldown-limited, and a destroyed vehicle stays immobilized while exit remains usable. | Device video + vehicle speed/health state + logcat |

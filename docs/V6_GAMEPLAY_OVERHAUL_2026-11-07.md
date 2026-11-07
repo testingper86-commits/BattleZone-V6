@@ -39,3 +39,12 @@ These are source/CI checks. Physical-device animation, AI behavior, frame pacing
 ## Verified CC0 tactical voiceover
 
 The patched distributable replaces the 51 unverified synthetic MP3 demo clips with 44 hash-verified Kenney CC0 OGG callouts (male/female variants). Spawn, combat, reload, cover, low-health, victory and defeat events now select event-specific radio lines. The original CC0 licence and performer credits ship with the audio; the old `audio/voicepacks` directory is removed from the patched package.
+
+
+## Vehicle control and impact repair
+
+- Vehicle throttle and brake are independent inputs. Brake applies speed-proportional deceleration to a full stop; it no longer becomes reverse acceleration after the vehicle stops.
+- Forward speed and reverse speed are bounded per vehicle profile, and unpowered coasting applies stable drag.
+- A destroyed vehicle remains immobilized even if the driver continues holding throttle. Existing water drag, steering, collision damage, crash cooldown, and vehicle exit clamping are preserved.
+- A deterministic Node.js behavior regression covers acceleration, braking from forward and reverse motion, stop-without-reversal, coasting, speed limits, and destroyed-vehicle lockout.
+- Physical Android QA remains required for touch response, steering feel, vehicle types, terrain/water handling, collision response, and exit interaction.

@@ -35,6 +35,11 @@ checks={
 'vehicle crash cooldown decays each frame':'u.crashCd=Math.max(0,(Number(u.crashCd)||0)-dt);' in s,
 'vehicle collision is speed-gated and cooldown-limited':'impact<=6||(Number(u.crashCd)||0)>0' in s,
 'vehicle collision damage is applied before speed damping':'bzV6ApplyVehicleImpact(g,u,Math.abs(u.v),nx,nz);u.v*=.3;' in s,
+'vehicle dynamics marker present':'BATTLEZONE_V6_VEHICLE_DYNAMICS_V1' in s,
+'vehicle braking is independent from throttle':'bzV6StepVehicleDynamics(u,throttle,brake,dt);' in s and 'driveInput.brake+(key.KeyS?1:0)' in s and 'driveInput.gas+(key.KeyW?1:0)' in s,
+'vehicle top speed is bounded':'maxSpeed:Math.max(12,Math.min(32,a*1.05))' in s,
+'vehicle reverse speed is bounded':'maxReverseSpeed:6' in s,
+'destroyed vehicles cannot accelerate':'if(u.dead){u.v=0;return 0}' in s,
 'combat marker present':'BATTLEZONE_V6_COMBAT_CONTROL_INTEGRITY_V1' in s,
 'AI line-of-sight marker present':'BATTLEZONE_V6_TACTICAL_LINE_OF_SIGHT_V1' in s,
 'enemy AI checks visibility before target lock':'if(!hasClearShot(bot.position.x,bot.position.y+1.15,bot.position.z,target.x,targetY,target.z))' in s,
@@ -70,3 +75,25 @@ vehicle_run=subprocess.run(['node','-e',vehicle_js],capture_output=True,text=Tru
 if vehicle_run.returncode:
     raise SystemExit(vehicle_run.stderr or vehicle_run.stdout)
 print('PASS vehicle collision damage behavior')
+
+# Exercise vehicle throttle/brake dynamics independently of Three.js.
+dynamics_start=s.find('function bzV6StepVehicleDynamics(')
+dynamics_end=s.find('/* BZ_V6_VEHICLE_DYNAMICS_HELPER_END */',dynamics_start)
+if dynamics_start<0 or dynamics_end<0:
+    raise SystemExit('Missing vehicle dynamics helper')
+dynamics_helper=s[dynamics_start:dynamics_end]
+dynamics_js=f"""const vm=require('node:vm');const c={{}};vm.createContext(c);vm.runInContext({json.dumps(dynamics_helper)},c);const step=c.bzV6StepVehicleDynamics;const u={{a:20,brakePower:32,maxSpeed:21,maxReverseSpeed:6,v:0,dead:0}};const near=(a,b)=>Math.abs(a-b)<1e-8;
+if(!near(step(u,1,0,.1),2))throw Error('throttle acceleration incorrect');
+u.v=20;if(!near(step(u,0,1,.1),16.8))throw Error('brake must decelerate forward motion');
+for(let i=0;i<12;i++)step(u,0,1,.1);if(u.v!==0)throw Error('braking to a stop must not reverse the vehicle');
+u.v=-5;step(u,0,1,.1);if(u.v>=0)throw Error('brake must reduce reverse motion without changing direction');
+for(let i=0;i<12;i++)step(u,0,1,.1);if(u.v!==0)throw Error('brake must stop reverse motion');
+u.v=100;step(u,0,0,.1);if(u.v>21)throw Error('vehicle exceeded its forward speed limit');
+u.v=-100;step(u,0,0,.1);if(u.v< -6)throw Error('vehicle exceeded its reverse speed limit');
+u.v=10;const before=u.v;step(u,0,0,.1);if(!(u.v<before&&u.v>0))throw Error('coasting drag must reduce speed smoothly');
+u.v=8;u.dead=1;if(step(u,1,0,.1)!==0||u.v!==0)throw Error('destroyed vehicle must remain immobilized');
+"""
+dynamics_run=subprocess.run(['node','-e',dynamics_js],capture_output=True,text=True)
+if dynamics_run.returncode:
+    raise SystemExit(dynamics_run.stderr or dynamics_run.stdout)
+print('PASS vehicle throttle, brake, speed limits and destruction behavior')
