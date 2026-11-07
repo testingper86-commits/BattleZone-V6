@@ -51,8 +51,8 @@
 
 - `js/models.js` actively references the Kenney FBX character, its four skin textures, and idle/run/jump animations. All referenced primary files exist in the canonical archive.
 - The model loader needs `FBXLoader`, `fflate` and `SkeletonUtils`; these are generated at build time from pinned r128 URLs rather than stored in the original ZIP.
-- A secondary `./models/characters/soldier.glb` fallback is configured, but that file is **absent** from the canonical archive. The optional `downloadSoldierModels` task is not attached to `preBuild`, so the fallback is not expected in a normal CI APK. If the primary Kenney loader fails, procedural characters remain; the absent fallback is not a valid recovery path.
-- KayKit's large animation library is packaged but no runtime path in `js/models.js` selects it. Only idle/run/jump clips are configured in the active default character model. KayKit shooting/defeat/attack clips are not proven to be wired into combat or bot state transitions.
+- A bundled KayKit GLB is now the second model fallback after the original Kenney FBX. It carries its own rig and 30 GLB clips, including Idle, Walk, Run, Jump, Shoot(1h/2h), Shooting(1h/2h), and Defeat. GLB name matching maps a shooting clip to `shoot` and `Defeat` to `death`; no reload clip is claimed. The KayKit clips are never applied to the different Kenney skeleton.
+- The older `./models/characters/soldier.glb` fallback remains last in the list, but that file is **absent** from the canonical archive. The optional `downloadSoldierModels` task is not attached to `preBuild`, so it is not expected in a normal CI APK. If both Kenney and KayKit loaders fail, procedural characters remain.
 - Main game terrain materials load base-color and roughness PNGs by name. The height PNGs are packaged but the inspected `BZMaterial` path does not bind a height map. The procedural environment JPEG starter pack is not referenced by the main terrain material loader.
 - Five VFX sprites and 17 voice packs are present; this inventory alone does not prove that every sprite or every voice line is reached by gameplay.
 - The original `libs/README.txt` incorrectly claimed the game does not use FBXLoader/GLTFLoader and all characters are procedural. The Offline patch now rewrites that stale note to match `js/models.js` and the Gradle download tasks.
@@ -80,10 +80,10 @@
 1. Preserve the original archive and all original assets.
 2. Confirm provenance for the main PBR textures, voice packs, sprites, branding and loading images before redistribution.
 3. Validate model load success and skeleton/skin compatibility on Android; static loader path checks are not runtime animation tests.
-4. Decide whether KayKit's existing shoot/defeat clips can be integrated into existing animation state transitions without replacing originals.
+4. Validate the KayKit fallback model, skin and shooting/defeat clips on physical Android devices; static checks confirm the bundled GLB and CC0 license only.
 5. Correct or remove the absent soldier fallback in a separately tested change, or intentionally wire the optional download task only after reviewing its CC BY 4.0 attribution and offline packaging implications.
 6. Only after runtime reference checks, consider deduplicating repeated environment starter files or excluding unused sample documentation from release packaging.
-7. Do not import external assets until the exact item, license, file size, mobile compatibility and attribution are recorded.
+7. Confirm provenance for the remaining PBR textures, voice packs, sprites, branding and loading images before redistribution; do not import external assets without exact license, size, mobile compatibility and attribution records.
 
 ## Verification boundary
 

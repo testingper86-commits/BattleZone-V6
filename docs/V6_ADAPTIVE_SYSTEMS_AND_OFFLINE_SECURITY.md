@@ -15,8 +15,9 @@ This change extends the existing offline game systems; it does not replace the c
 ## Character action animation
 
 - The existing Three.js mixer now supports optional shoot, reload, and death clips in addition to idle, walk, run, and jump.
-- GLB clips are discovered by conservative name matching; FBX action clips can be supplied through the existing model manifest anims mapping.
-- Combat events request action clips for player, enemy, ally, and death events.
+- GLB clips are discovered by conservative name matching; FBX action clips can be supplied through the existing model manifest anims mapping. The original Kenney rig remains primary. If it cannot load, the bundled CC0 KayKit GLB is a compatible fallback for its own idle/run/walk/jump/shoot/defeat rig; its `Defeat` clip maps to death. The KayKit rig is not retargeted onto Kenney, and no reload clip is claimed because the bundled KayKit GLB does not contain one.
+- Combat events request action clips for player, enemy, ally, and death events. One-shot actions release the locomotion state cleanly so idle/run/walk resumes after a clip ends; death remains terminal. Missing clips still use the existing procedural pose fallback.
+- Character dressing iterates bot and ally arrays directly instead of allocating a concatenated array every animation frame.
 - Missing action clips return false; no placeholder animation is fabricated. Existing procedural characters and poses remain the fallback when the rigged model loader is unavailable.
 
 ## Adaptive graphics

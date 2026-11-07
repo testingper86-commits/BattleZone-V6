@@ -41,12 +41,17 @@ new_animator = """function animator(model){
   a.walk=walk?{a:walk,ts:1}:{a:run,ts:(tpl.clips.run?tpl.walkScale:1)};
   a.jump=jump?{a:jump,ts:1}:null;
   a.shoot=act(tpl.clips.shoot);a.reload=act(tpl.clips.reload);a.death=act(tpl.clips.death);
-  return{mixer,acts:a,cur:null,action:null,actionState:null,dead:false};
+  return{mixer,acts:a,cur:null,action:null,actionState:null,resumeAction:null,dead:false};
 }"""
 model_source = once(model_source, old_animator, new_animator, "rigged mixer action states")
 
+old_fallback = " {format:'glb',model:'./models/characters/soldier.glb',height:1.8,yawOffset:0}"
+new_fallback = """ {format:'glb',model:'./models/characters/kaykit_v1_2/Animations/gltf/KayKit_AnimatedCharacter_v1.2.glb',height:1.8,yawOffset:0},
+ {format:'glb',model:'./models/characters/soldier.glb',height:1.8,yawOffset:0}"""
+model_source = once(model_source, old_fallback, new_fallback, "bundled compatible KayKit fallback")
+
 old_gltf = "finish(g.scene,{idle:bestClip(l,'idle|stand|rest'),run:bestClip(l,'run|sprint|jog'),walk:bestClip(l,'walk'),jump:bestClip(l,'jump')},c);"
-new_gltf = "finish(g.scene,{idle:bestClip(l,'idle|stand|rest'),run:bestClip(l,'run|sprint|jog'),walk:bestClip(l,'walk'),jump:bestClip(l,'jump'),shoot:bestClip(l,'shoot|fire|rifle'),reload:bestClip(l,'reload'),death:bestClip(l,'death|die|dead')},c);"
+new_gltf = "finish(g.scene,{idle:bestClip(l,'idle|stand|rest'),run:bestClip(l,'run|sprint|jog'),walk:bestClip(l,'walk'),jump:bestClip(l,'jump'),shoot:bestClip(l,'shoot|fire|rifle'),reload:bestClip(l,'reload'),death:bestClip(l,'death|die|dead|defeat')},c);"
 model_source = once(model_source, old_gltf, new_gltf, "GLB action clip discovery")
 
 action_anchor = "const lock=(o,v)=>{try{Object.defineProperty(o,'visible',{get:()=>v,set(){},configurable:true})}catch(e){}};"
@@ -56,7 +61,10 @@ action_api = """function playAction(target,state){
   if(!entry||!entry.an||!entry.an.acts[state]||entry.an.dead)return false;
   const a=entry.an,action=a.acts[state];
   if(a.action&&a.action!==action)a.action.stop();
-  if(a.cur&&a.cur.a&&a.cur.a!==action)a.cur.a.fadeOut(.06);
+  if(a.resumeAction){a.resumeAction.stop();a.resumeAction=null}
+  a.resumeAction=a.cur&&a.cur.a&&a.cur.a!==action?a.cur.a:null;
+  if(a.resumeAction)a.resumeAction.fadeOut(.06);
+  a.cur=null;
   action.reset();action.enabled=true;action.clampWhenFinished=true;
   action.setLoop(THREE.LoopOnce,1);action.setEffectiveTimeScale(1);action.fadeIn(.06).play();
   a.action=action;a.actionState=state;if(state==='death')a.dead=true;
@@ -74,16 +82,20 @@ old_tick = """    if(e.an){
 new_tick = """    if(e.an){
       if(e.an.action){
         const active=e.an.action;e.an.mixer.update(dt);
-        if(!e.an.dead&&active.time>=active.getClip().duration-.015){active.stop();e.an.action=null;e.an.actionState=null}
+        if(!e.an.dead&&active.time>=active.getClip().duration-.015){active.stop();if(e.an.resumeAction){e.an.resumeAction.stop();e.an.resumeAction=null}e.an.action=null;e.an.actionState=null;e.an.cur=null}
       }else if(!e.an.dead){
         const want=pickAct(e,sp);
         if(want&&want!==e.an.cur){
-          if(want.a!==e.an.cur.a){want.a.reset().play();e.an.cur.a.crossFadeTo(want.a,.2,false)}
-          want.a.setEffectiveTimeScale(want.ts);e.an.cur=want}
+          if(want.a!==(e.an.cur&&e.an.cur.a)){
+            want.a.reset();want.a.enabled=true;want.a.setEffectiveTimeScale(want.ts);
+            if(e.an.cur&&e.an.cur.a){want.a.play();e.an.cur.a.crossFadeTo(want.a,.2,false)}else want.a.fadeIn(.12).play();
+          }else{want.a.enabled=true;want.a.setEffectiveTimeScale(want.ts);want.a.play()}
+          e.an.cur=want}
         e.an.mixer.update(dt)
       }else e.an.mixer.update(dt)
     }"""
 model_source = once(model_source, old_tick, new_tick, "action-aware locomotion mixer")
+
 
 old_api = "window.BZModels={status:()=>state,config:()=>cfg,count:()=>entries.length,dress,load};"
 new_api = "window.BZModels={status:()=>state,config:()=>cfg,count:()=>entries.length,dress,load,playAction,availableActions:()=>['shoot','reload','death'].filter(k=>!!(tpl&&tpl.clips&&tpl.clips[k]))};"
