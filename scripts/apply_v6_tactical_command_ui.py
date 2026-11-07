@@ -6,10 +6,10 @@ files=list(root.rglob("app/src/main/assets/www/index.html"))
 if len(files)!=1: raise SystemExit("Expected exactly one game index.html")
 html=files[0]; s=html.read_text(encoding="utf-8"); marker="BATTLEZONE_V6_TACTICAL_COMMAND_UI_V1"
 if marker in s: print("TACTICAL_UI_ALREADY_APPLIED"); raise SystemExit(0)
-old_nav="const nav=[['profile','Profile'],['maps','Maps'],['settings','Settings'],['inventory','Inventory'],['shop','Shop'],['rank','Rank & Season']];"
-new_nav="const nav=[['command','Command Center'],['deployment','Deployment Lobby'],['operator','Operator Bay'],['armory','Armory'],['squad','Squad Command'],['zones','Mission Zones'],['combat','Combat HUD'],['pause','Pause Menu'],['results','After Action'],['service','Service Record'],['settings','Settings'],['controls','Controls']];"
-old_render="if(page==='profile')profilePage();else if(page==='maps')mapsPage();else if(page==='settings')settingsPage();else if(page==='inventory')inventoryPage();else if(page==='shop')shopPage();else rankPage();}"
-new_render="if(page==='command')commandPage();else if(page==='deployment')deploymentPage();else if(page==='operator')profilePage();else if(page==='armory')shopPage();else if(page==='squad')squadPage();else if(page==='zones')mapsPage();else if(page==='combat')combatPage();else if(page==='pause')pausePage();else if(page==='results')resultsPage();else if(page==='service')rankPage();else if(page==='settings')settingsPage();else if(page==='controls')controlsPage();}"
+old_nav="const nav=[['profile','Profile'],['maps','Maps'],['settings','Settings'],['inventory','Inventory'],['shop','Shop'],['rank','Rank & Season'],['statistics','Statistics'],['history','Match History']];"
+new_nav="const nav=[['command','Command Center'],['deployment','Deployment Lobby'],['operator','Operator Bay'],['armory','Armory'],['squad','Squad Command'],['zones','Mission Zones'],['combat','Combat HUD'],['pause','Pause Menu'],['results','After Action'],['service','Service Record'],['settings','Settings'],['controls','Controls'],['statistics','Statistics'],['history','Match History']];"
+old_render="if(page==='profile')profilePage();else if(page==='maps')mapsPage();else if(page==='settings')settingsPage();else if(page==='inventory')inventoryPage();else if(page==='shop')shopPage();else if(page==='statistics')statisticsPage();else if(page==='history')historyPage();else rankPage();}"
+new_render="if(page==='command')commandPage();else if(page==='deployment')deploymentPage();else if(page==='operator')profilePage();else if(page==='armory')shopPage();else if(page==='squad')squadPage();else if(page==='zones')mapsPage();else if(page==='combat')combatPage();else if(page==='pause')pausePage();else if(page==='results')resultsPage();else if(page==='service')rankPage();else if(page==='settings')settingsPage();else if(page==='controls')controlsPage();else if(page==='statistics')statisticsPage();else if(page==='history')historyPage();}"
 old_open="function open(p){page=p;render();hub.classList.add('on')};function close(){hub.classList.remove('on')};"
 new_open="function open(p){page=p;window.BZ_TACTICAL_PAUSED=true;render();hub.classList.add('on')};function close(){hub.classList.remove('on');window.BZ_TACTICAL_PAUSED=false};"
 for label,old in (("nav",old_nav),("renderer",old_render),("open-close",old_open)):
@@ -47,7 +47,11 @@ function pausePage(){
  $('bzTacResume').onclick=close;$('bzTacSettings').onclick=()=>open('settings');
 }
 function resultsPage(){
- content.innerHTML='<div class="bz-tac-pagehead"><small>MISSION DEBRIEF</small><h2>AFTER ACTION REPORT</h2><p>Verified local progression only.</p></div><div class="bz-tac-stats"><div><small>PLAYER LEVEL</small><b>'+Number(profile.level||1)+'</b><span>LOCAL PROFILE</span></div><div><small>XP BALANCE</small><b>'+Number(profile.xp||0).toLocaleString()+'</b><span>PROGRESSION</span></div><div><small>RANK POINTS</small><b>'+Number(profile.rankPoints||0).toLocaleString()+'</b><span>'+esc(rank())+'</span></div><div><small>COINS</small><b>'+Number(coins()).toLocaleString()+'</b><span>LOCAL WALLET</span></div></div><div class="bz-tac-empty"><b>NO COMPLETED-MATCH REPORT RECORDED</b><p>This build does not expose a verified per-match report. Eliminations, accuracy, rewards and mission time are not fabricated.</p></div>';
+ const rows=get('bzOfflineMatchHistory',[]),r=Array.isArray(rows)?rows[0]:null;
+ if(!r){content.innerHTML='<div class="bz-tac-pagehead"><small>MISSION DEBRIEF</small><h2>AFTER ACTION REPORT</h2><p>Verified local match history only.</p></div><div class="bz-tac-empty"><b>NO COMPLETED-MATCH REPORT RECORDED</b><p>Complete an offline match to populate this report. Match data is never invented.</p></div>';return;}
+ const duration=Math.max(0,Math.floor(Number(r.seconds)||0));
+ content.innerHTML='<div class="bz-tac-pagehead"><small>MISSION DEBRIEF</small><h2>AFTER ACTION REPORT</h2><p>Latest completed offline match from this device.</p></div><div class="bz-tac-hero"><small>'+esc(r.modeName||r.mode||'OFFLINE MATCH')+'</small><h2>'+(r.won?'MISSION SUCCESS':'MATCH COMPLETE')+'</h2><p>'+esc(r.map||'Unknown map')+' · '+new Date(Number(r.timestamp)||0).toLocaleString()+'</p></div><div class="bz-tac-stats"><div><small>ELIMINATIONS</small><b>'+Math.max(0,Number(r.kills)||0)+'</b></div><div><small>DAMAGE</small><b>'+Math.max(0,Number(r.damage)||0).toLocaleString()+'</b></div><div><small>DURATION</small><b>'+Math.floor(duration/60)+'m '+('0'+duration%60).slice(-2)+'s</b></div><div><small>COINS EARNED</small><b>+'+Math.max(0,Number(r.coins)||0)+'</b></div></div><button class="bz-tac-secondary" id="bzTacHistory">OPEN MATCH HISTORY</button>';
+ $('bzTacHistory').onclick=()=>open('history');
 }
 function controlsPage(){
  const rows=[['lay','CONTROL LAYOUT'],['ctl','BUTTON POSITIONS'],['sns','CAMERA SENSITIVITY'],['sss','SCOPE SENSITIVITY'],['fdc','AUTO-FADE CONTROLS']];
@@ -58,9 +62,12 @@ function controlsPage(){
 s=s.replace(old_nav,new_nav,1).replace(old_render,new_render,1).replace(old_open,new_open,1)
 if s.count("function profilePage(){")!=1: raise SystemExit("profile insertion anchor not unique")
 s=s.replace("function profilePage(){",pages+"\nfunction profilePage(){",1)
-loop="window.loop0=function(n){const now=performance.now()"
-if s.count(loop)!=1: raise SystemExit("game loop anchor not unique")
-s=s.replace(loop,"window.loop0=function(n){window.BZGameState={started:!!started,health:Number(P.hp)||0,alive:!!P.alive,weapon:W[P.w]?.n||'Weapon'};if(window.BZ_TACTICAL_PAUSED)return;const now=performance.now()",1)
+loop="function loop0(n){const dt=Math.min((n-last)/1000,.1);last=n;"
+if s.count(loop)!=1: raise SystemExit("local game-loop anchor not unique: "+str(s.count(loop)))
+s=s.replace(loop,"function loop0(n){window.BZGameState={started:!!started,health:Number(P.hp)||0,alive:!!P.alive,weapon:W[P.w]?.n||'Weapon'};const dt=Math.min((n-last)/1000,.1);last=n;",1)
+scheduler="function loop(n){requestAnimationFrame(loop);try{loop0(n)}catch(e){showErr(e)}}"
+if s.count(scheduler)!=1: raise SystemExit("game-loop scheduler anchor not unique: "+str(s.count(scheduler)))
+s=s.replace(scheduler,"function loop(n){requestAnimationFrame(loop);if(window.BZ_TACTICAL_PAUSED)return;try{loop0(n)}catch(e){showErr(e)}}",1)
 css=r'''/* BATTLEZONE_V6_TACTICAL_COMMAND_UI_V1 */
 #bzHub{background:radial-gradient(ellipse at 75% 8%,#26352b 0,transparent 36%),linear-gradient(135deg,#080d0b,#121b16 62%,#080d0b)!important;color:#edf3ed!important;font-family:Arial,Helvetica,sans-serif!important}
 #bzHub .bhhead{background:#0b1110ed!important;border-bottom:1px solid #344239!important}
