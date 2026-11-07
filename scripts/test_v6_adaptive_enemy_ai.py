@@ -32,12 +32,13 @@ function makeContext(mode) {
   const enemy = {position:{x:4,z:0},userData:{alive:true,hp:100,ally:false}};
   const actors=[bot,ally,enemy];
   let scanCalls=0,randomCalls=0;
+  const blocked=new Set();
   const sandbox = {
-    getScanCalls:()=>scanCalls,getRandomCalls:()=>randomCalls,
+    getScanCalls:()=>scanCalls,getRandomCalls:()=>randomCalls,blocked,
     zc:{x:0,z:0,r:20},
     P:{alive:true,air:0,x:15,z:0,hp:100},
     DF:1,ENV:{vis:1},BZ_MODE:mode,bot,actors,
-    smk:()=>false,hasClearShot:()=>true,rnd:(a,b)=>{randomCalls++;return(a+b)/2},
+    smk:()=>false,hasClearShot:(ax,ay,az,bx,by,bz)=>!blocked.has(bx),rnd:(a,b)=>{randomCalls++;return(a+b)/2},
     forEachActor:fn=>{scanCalls++;actors.forEach(fn)}
   };
   vm.createContext(sandbox);
@@ -50,6 +51,18 @@ if(!d.target||d.target.o!==c.actors[2])throw new Error('BR must select nearest h
 c.actors[2].position.x=9;c.bot.userData.aiScanT=.2;
 d=c.bzV6ChooseEnemyTarget(c.bot,c.bot.userData,.01);
 if(d.target.x!==9)throw new Error('cached actor target position did not refresh');
+// A nearer enemy behind solid cover must not hide a visible alternate.
+c=makeContext('BR');c.blocked.add(4);
+const visibleEnemy={position:{x:6,z:0},userData:{alive:true,hp:100,ally:false}};c.actors.push(visibleEnemy);
+d=c.bzV6ChooseEnemyTarget(c.bot,c.bot.userData,.2);
+if(!d.target||d.target.o!==visibleEnemy)throw new Error('enemy target acquisition must reject blocked actors and select visible hostiles');
+// A cached target that moves behind cover must be dropped on the next scan.
+c=makeContext('BR');d=c.bzV6ChooseEnemyTarget(c.bot,c.bot.userData,.2);
+if(!d.target||d.target.o!==c.actors[2])throw new Error('visible target setup failed');
+c.blocked.add(4);c.P.alive=false;c.actors[1].userData.alive=false;
+c.bot.userData.aiScanT=.01;c.bot.userData.aiAlert=2;c.bot.userData.aiLastSeenX=4;c.bot.userData.aiLastSeenZ=0;
+d=c.bzV6ChooseEnemyTarget(c.bot,c.bot.userData,.02);
+if(d.target||!d.investigate||d.x!==4)throw new Error('cached target behind cover must be dropped and investigated at last known position');
 c.actors[2].userData.alive=false;c.P.x=200;c.bot.userData.aiScanT=0;c.bot.userData.aiAlert=2;c.bot.userData.aiLastSeenX=9;c.bot.userData.aiLastSeenZ=0;
 d=c.bzV6ChooseEnemyTarget(c.bot,c.bot.userData,.1);
 if(!d.investigate||d.x!==9)throw new Error('lost target should trigger last-known-position investigation');
