@@ -33,6 +33,7 @@ checks={
 'enemy AI temporarily suppresses occluded targets':'u.aiBlockedTarget=target.o||null;u.aiBlockedT=1.0;' in s,
 'squad AI checks visibility before pursuing':'function bzV6ValidateSquadTarget(actor,u,target){' in s and 'if(!hasClearShot(actor.position.x,actor.position.y+1.15,actor.position.z,target.position.x,target.position.y+1.1,target.position.z))' in s,
 'squad AI temporarily suppresses occluded targets':'u.squadBlockedTarget=target;u.squadBlockedT=1.0;' in s,
+'squad LOS cadence is target-specific':'u.squadLosT>0&&u.squadLosTarget===target' in s and 'u.squadLosTarget=target;' in s,
 'frame-loop marker present':'BATTLEZONE_V6_FRAME_LOOP_EFFICIENCY_V1' in s,
 'Android install version incremented':'BATTLEZONE_V6_BUILD_VERSION_1_2_2' in gs and 'versionCode = 5' in gs and 'versionName = \"1.2.2\"' in gs,
 'CC0 tactical voice runtime marker present':'BATTLEZONE_V6_CC0_VOICEOVER_V1' in s and 'audio/cc0_voiceover/' in s,

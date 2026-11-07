@@ -95,6 +95,13 @@ assert.strictEqual(bzV6ValidateSquadTarget(ally,squadState,squadEnemy),null,'blo
 assert.strictEqual(squadRayChecks,blockedChecks,'blocked squad target must not trigger repeated raycasts');
 squadState.squadBlockedT=0;squadState.squadLosT=0;hasClearShot=()=>true;
 assert.strictEqual(bzV6ValidateSquadTarget(ally,squadState,squadEnemy),squadEnemy,'squad can reacquire the target when line of sight returns');
+const cachedVisibleChecks=squadRayChecks;
+assert.strictEqual(bzV6ValidateSquadTarget(ally,squadState,squadEnemy),squadEnemy,'same visible squad target may use the short LOS cache');
+assert.strictEqual(squadRayChecks,cachedVisibleChecks,'same target should reuse its recent visibility result');
+const switchedEnemy={position:{x:7,y:0,z:0}};
+hasClearShot=()=>{squadRayChecks++;return false};
+assert.strictEqual(bzV6ValidateSquadTarget(ally,squadState,switchedEnemy),null,'a newly selected squad target must be raycast even during another target LOS cooldown');
+assert.strictEqual(squadRayChecks,cachedVisibleChecks+1,'target switch must perform a fresh LOS raycast');
 console.log('TACTICAL_LINE_OF_SIGHT_BEHAVIOR_OK checks=11');
 """.replace('__FUNCTIONS__', functions)
 with tempfile.TemporaryDirectory(prefix='bz-los-') as tmp:
