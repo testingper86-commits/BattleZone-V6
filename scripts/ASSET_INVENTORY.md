@@ -97,3 +97,12 @@ This report was generated from the canonical source ZIP and the Build #45 patche
 The final-stage build patcher now replaces the canonical archive's 51 synthetic demo MP3s (whose TTS provider/model commercial terms were not recorded) with a verified, local-only subset of Kenney's Voiceover Pack: 44 OGG files across male and female voices, 22 tactical/match callouts per voice. The patcher removes `audio/voicepacks/` from the extracted distributable project, installs the selected OGGs under `audio/cc0_voiceover/`, and preserves `License.txt`, `Credits.txt`, `PROVENANCE.md` and a per-file `manifest.sha256`. Every OGG is verified by SHA-256 before installation. The source archive download SHA-256 is `2ff0c8c51a959a754df698c4ee1e7c2db007c4abde4d600fd19545a1aea9d835`.
 
 The original canonical ZIP remains unchanged and still contains the legacy 51 MP3s. Do not distribute that raw archive as a cleared audio source. The CI-generated patched source archive and APK are the sanitized distributables. Other unresolved generated-art asset provenance remains as recorded above.
+
+
+## Build #86 procedural visual asset replacement
+
+The 27 PBR texture maps, five VFX sprites, three loading backgrounds and active logo previously lacking file-specific provenance are no longer redistributed from the original archive. The CI transformation deterministically regenerates all 36 at their existing runtime paths using the project-owned `BattleZone-V6-Procedural-Assets` generator. Textures are 512×512 RGB maps, VFX are 256×256 RGBA sprites, and loading/branding art is newly generated JPEG artwork. The canonical input archive remains unchanged.
+
+`PROCEDURAL_ASSET_PROVENANCE.json` records each generated file's path, byte size, SHA-256, generator/version and `original_project_generated` rights basis. The asset ledger accepts this status only when every manifest path is safe, every file exists, generator metadata matches, and byte size/hash match. Missing, modified, duplicated or malformed records fail closed. The legacy third-party source imagery is not included in the sanitized APK/source artifact.
+
+The generated originals replace the 36 unresolved image assets; the 44 Kenney voice files remain independently verified CC0. CI must report zero unverified retained binary assets before the release approval gate can pass. Physical-device visual QA is still required to approve the new art in actual gameplay.

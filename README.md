@@ -44,3 +44,8 @@ The validator and focused regression tests enforce source invariants. The new li
 The final CI stage, `apply_v6_lobby_alignment.py`, loads `v6-lobby-alignment.css` after every prior lobby style. It gives the player/status header, command-deck hero, configuration panel, map selector, character preview, skins action, deploy action and operator navigation one viewport-aware layout with Android safe-area spacing. Landscape short-height and narrow-width layouts have dedicated rules; scrollable panels are bounded and touch targets cannot drift off-screen. The regression suite is `test_v6_lobby_alignment.py`.
 
 On a successful WebGL context restoration, the renderer is resized and allowed to rebuild its resources without reloading the page or resetting the active match. A bounded fatal fallback remains only when the gameplay context never returns. The lobby preview renderer remains isolated from gameplay context-loss reporting.
+
+
+## Procedural visual asset provenance
+
+The distributable build replaces all 36 previously unverified retained image assets (27 PBR maps, five VFX sprites, three loading scenes and the active logo) with deterministic original project-generated artwork. CI pins Pillow, runs the generator and its deterministic/image-decoding regression tests, then verifies every generated file against `PROCEDURAL_ASSET_PROVENANCE.json`. The original input archive is preserved unchanged and is not the cleared distributable. The release ledger must show zero unverified retained binary assets. This provenance check does not replace physical-device visual QA.

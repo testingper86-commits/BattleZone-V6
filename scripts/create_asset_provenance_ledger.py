@@ -39,10 +39,40 @@ def verified_voice_files(root:Path)->tuple[set[str],list[str]]:
     if actual!=set(manifest): raise ValueError("Voice SHA-256 manifest does not exactly cover packaged OGG files")
     return {"audio/cc0_voiceover/"+p for p in actual},evidence
 
+def verified_generated_assets(root:Path)->tuple[dict[str,dict],list[str]]:
+    manifest_path=root/"PROCEDURAL_ASSET_PROVENANCE.json"
+    if not manifest_path.is_file(): return {},[]
+    data=json.loads(manifest_path.read_text(encoding="utf-8"))
+    if data.get("schema_version")!=1 or data.get("generator")!="BattleZone-V6-Procedural-Assets":
+        raise ValueError("Unrecognized procedural asset provenance manifest")
+    if data.get("generator_version")!="1.0.0" or data.get("license")!="original_project_generated":
+        raise ValueError("Procedural asset generator version or rights declaration is invalid")
+    if "no third-party source images or textures" not in data.get("license_basis",""):
+        raise ValueError("Procedural asset provenance does not exclude third-party source media")
+    verified={}
+    for row in data.get("assets",[]):
+        relative=row.get("path","")
+        rel=PurePosixPath(relative)
+        if not relative or rel.is_absolute() or ".." in rel.parts:
+            raise ValueError("Unsafe path in procedural asset provenance manifest")
+        path=root.joinpath(*rel.parts)
+        if not path.is_file(): raise ValueError(f"Generated asset is missing: {relative}")
+        if row.get("generator")!=data["generator"] or row.get("generator_version")!=data["generator_version"]:
+            raise ValueError(f"Generated asset generator metadata mismatch: {relative}")
+        if row.get("license")!="original_project_generated":
+            raise ValueError(f"Generated asset rights declaration mismatch: {relative}")
+        if row.get("size_bytes")!=path.stat().st_size or row.get("sha256")!=sha256_file(path):
+            raise ValueError(f"Generated asset checksum or size mismatch: {relative}")
+        if relative in verified: raise ValueError(f"Duplicate generated asset record: {relative}")
+        verified[relative]=row
+    if not verified: raise ValueError("Procedural asset provenance manifest contains no assets")
+    return verified,["PROCEDURAL_ASSET_PROVENANCE.json"]
+
 def build_ledger(assets_root:Path)->dict:
     root=assets_root.resolve()
     if not root.is_dir(): raise ValueError(f"Asset root does not exist: {root}")
     voice_verified,voice_evidence=verified_voice_files(root)
+    generated_verified,generated_evidence=verified_generated_assets(root)
     rows=[]
     for path in sorted(p for p in root.rglob("*") if p.is_file() and p.suffix.lower() in BINARY_EXTENSIONS):
         rel=path.relative_to(root).as_posix()
@@ -55,10 +85,13 @@ def build_ledger(assets_root:Path)->dict:
             if has_cc0(license_path): license_name="CC0-1.0"; status="verified_cc0"; evidence=["models/characters/kaykit_v1_2/License.txt"]; note="Package-local license explicitly states Creative Commons Zero."
         elif rel in voice_verified:
             license_name="CC0-1.0"; status="verified_cc0"; evidence=voice_evidence; note="CC0 license, creator/source provenance, credits and per-file SHA-256 manifest verified."
+        elif rel in generated_verified:
+            license_name="original_project_generated"; status="verified_original"; evidence=generated_evidence; note="Original deterministic procedural artwork; per-file SHA-256 and generator version verified; no third-party source media used."
         rows.append({"path":rel,"size_bytes":path.stat().st_size,"sha256":sha256_file(path),"license":license_name,"status":status,"evidence":evidence,"note":note})
     verified=sum(row["status"]=="verified_cc0" for row in rows)
-    unverified=len(rows)-verified
-    return {"schema_version":1,"asset_root":"app/src/main/assets/www","hash_algorithm":"sha256","summary":{"binary_asset_count":len(rows),"verified_cc0_count":verified,"unverified_count":unverified,"release_blocked":unverified>0},"assets":rows}
+    original=sum(row["status"]=="verified_original" for row in rows)
+    unverified=len(rows)-verified-original
+    return {"schema_version":1,"asset_root":"app/src/main/assets/www","hash_algorithm":"sha256","summary":{"binary_asset_count":len(rows),"verified_cc0_count":verified,"verified_original_count":original,"unverified_count":unverified,"release_blocked":unverified>0},"assets":rows}
 
 def main()->None:
     parser=argparse.ArgumentParser()
