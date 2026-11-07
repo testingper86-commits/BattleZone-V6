@@ -45,7 +45,11 @@ for old, new, label in [
 ]:
     if old in s:
         s = once(s, old, new, label)
-    elif new not in s:
+    elif new not in s and not (
+        (label == "display exposure" and "R.toneMappingExposure=1.2;" in s)
+        or (label == "ambient light contrast" and "new THREE.HemisphereLight(0xffffff,0x354c39,1.12)" in s)
+        or (label == "sunlight intensity" and "new THREE.DirectionalLight(0xffffff,.78*(MAP.nt?.25:1))" in s)
+    ):
         raise SystemExit(f"{label}: expected renderer anchor is missing")
 
 # The final icon pass runs after the initial HUD construction. Preserve the IDs hudUpdate writes.
