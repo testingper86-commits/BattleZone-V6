@@ -17,18 +17,30 @@ if "function bzPrepareInstanceBoundsSafe(mesh)" not in html:
     html=html.replace(anchor,helper+"\n"+anchor,1)
 # Repair both clean-source and previously generated forms. Unsupported instance methods are
 # never invoked unless feature-detected inside bzPrepareInstanceBoundsSafe.
-html=html.replace("L.computeBoundingSphere();T.computeBoundingSphere();L.frustumCulled=true;T.frustumCulled=true;","bzPrepareInstanceBoundsSafe(L);bzPrepareInstanceBoundsSafe(T);")
+html=html.replace("L.computeBoundingSphere();T.computeBoundingSphere();L.frustumCulled=true;T.frustumCulled=true;","bzPrepareInstanceBoundsSafe(L);bzPrepareInstanceBoundsSafe(T);L.castShadow=false;L.receiveShadow=!LQ;T.castShadow=!LQ;T.receiveShadow=!LQ;")
 html=html.replace("L.frustumCulled=false;T.frustumCulled=false;","bzPrepareInstanceBoundsSafe(L);bzPrepareInstanceBoundsSafe(T);")
-html=html.replace("bzPrepareInstanceBounds(L);bzPrepareInstanceBounds(T);","bzPrepareInstanceBoundsSafe(L);bzPrepareInstanceBoundsSafe(T);")
+html=html.replace("bzPrepareInstanceBounds(L);bzPrepareInstanceBounds(T);","bzPrepareInstanceBoundsSafe(L);bzPrepareInstanceBoundsSafe(T);L.castShadow=false;L.receiveShadow=!LQ;T.castShadow=!LQ;T.receiveShadow=!LQ;")
 html=html.replace("grass.computeBoundingSphere();grass.frustumCulled=true;","bzPrepareInstanceBoundsSafe(grass);")
 html=html.replace("grass.frustumCulled=false;","bzPrepareInstanceBoundsSafe(grass);")
 # Existing tree setup and grass creation are expected to route through the safe helper.
 if "bzPrepareInstanceBoundsSafe(L);bzPrepareInstanceBoundsSafe(T);" not in html:
     tree_anchor="L.frustumCulled=false;T.frustumCulled=false;S.add(L,T);"
-    if html.count(tree_anchor)==1: html=html.replace(tree_anchor,"bzPrepareInstanceBoundsSafe(L);bzPrepareInstanceBoundsSafe(T);S.add(L,T);",1)
+    if html.count(tree_anchor)==1: html=html.replace(tree_anchor,"bzPrepareInstanceBoundsSafe(L);bzPrepareInstanceBoundsSafe(T);L.castShadow=false;L.receiveShadow=!LQ;T.castShadow=!LQ;T.receiveShadow=!LQ;S.add(L,T);",1)
 if "grass.count=placed;" in html and "bzPrepareInstanceBoundsSafe(grass);" not in html:
     for old in ("grass.count=placed;grass.computeBoundingSphere();grass.frustumCulled=true;S.add(grass)","grass.count=placed;grass.frustumCulled=false;S.add(grass)"):
         if old in html: html=html.replace(old,"grass.count=placed;bzPrepareInstanceBoundsSafe(grass);S.add(grass)",1); break
+# Terrain is a regular Mesh, so its geometry sphere is safe to recompute directly.
+if "gr.geometry.computeBoundingSphere();gr.frustumCulled=true" not in html:
+    if "gr.frustumCulled=false;" in html:
+        html=html.replace("gr.frustumCulled=false;","gr.geometry.computeBoundingSphere();gr.frustumCulled=true;",1)
+    elif "gr.frustumCulled=true" in html:
+        html=html.replace("gr.frustumCulled=true","gr.geometry.computeBoundingSphere();gr.frustumCulled=true",1)
+    else:
+        raise SystemExit("Terrain bounds/culling anchor missing")
+# Keep forest shadow behaviour while using the safe bounds helper.
+tree_safe="bzPrepareInstanceBoundsSafe(L);bzPrepareInstanceBoundsSafe(T);"
+if tree_safe in html and "L.castShadow=false;L.receiveShadow=!LQ;T.castShadow=!LQ;T.receiveShadow=!LQ;" not in html:
+    html=html.replace(tree_safe,tree_safe+"L.castShadow=false;L.receiveShadow=!LQ;T.castShadow=!LQ;T.receiveShadow=!LQ;",1)
 if "bzPrepareInstanceBoundsSafe(grass);" not in html:
     raise SystemExit("Grass instance creation is not protected by safe bounds helper")
 if "grass.computeBoundingSphere()" in html or "L.computeBoundingSphere();T.computeBoundingSphere();" in html:
