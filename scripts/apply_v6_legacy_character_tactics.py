@@ -55,7 +55,12 @@ once(old,new,"original circular ally formation")
 old="}else{u.squadTarget=null;u.squadCover=null;const follow=Math.hypot(px-a.position.x,pz-a.position.z);if(bzOrder==='hold'){gx=a.position.x;gz=a.position.z;speed=0}else if(follow>34){gx=px;gz=pz;speed=7.8}else if(follow<5){gx=a.position.x;gz=a.position.z}else if(follow<10){gx=px+Math.cos(P.yaw)*7+Math.sin(P.yaw)*(i-1)*4;gz=pz-Math.sin(P.yaw)*7+Math.cos(P.yaw)*(i-1)*4;speed=3.4}}"
 new="}else{u.squadTarget=null;u.squadCover=null;const follow=Math.hypot(px-a.position.x,pz-a.position.z);if(bzOrder==='hold'){gx=a.position.x;gz=a.position.z;speed=0}else if(follow>34){gx=px;gz=pz;speed=7.8}else if(follow<5){gx=a.position.x;gz=a.position.z}}"
 once(old,new,"legacy ally follow and hold movement")
-once("if(P.down&&follow<3){u.reviveT=(u.reviveT||0)+dt;","if(P.down&&follow<4){u.reviveT=(u.reviveT||0)+dt;","legacy teammate revive radius")
+revive_old="if(P.down&&follow<3){u.reviveT=(u.reviveT||0)+dt;"
+revive_new="if(P.down&&follow<4){u.reviveT=(u.reviveT||0)+dt;"
+if revive_old in s:
+    once(revive_old,revive_new,"legacy teammate revive radius")
+elif revive_new not in s:
+    raise SystemExit("legacy teammate revive radius: expected original or already-restored anchor")
 
 # Verify critical old mechanisms remain after integration.
 required=["function mkScout(","function animSc(","if(P.down&&follow<4)","window.BZSquadOrders?.get()"]
