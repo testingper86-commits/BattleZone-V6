@@ -7,15 +7,18 @@ idx=list(root.rglob("app/src/main/assets/www/index.html")); mods=list(root.rglob
 if len(idx)!=1 or len(mods)!=1: raise SystemExit("Expected one game index.html and models.js")
 h=idx[0].read_text(encoding="utf-8"); m=mods[0].read_text(encoding="utf-8")
 checks={
- "culling marker in game and model runtime": "BATTLEZONE_V6_FRUSTUM_CULLING_V1" in h and "BATTLEZONE_V6_FRUSTUM_CULLING_V1" in m,
+ "culling marker in game and model runtime": "BATTLEZONE_V6_FRUSTUM_CULLING_V2" in h and "BATTLEZONE_V6_FRUSTUM_CULLING_V2" in m,
  "terrain bounds recomputed before culling": "gr.geometry.computeBoundingSphere();gr.frustumCulled=true" in h,
- "instanced tree leaf/trunk bounds prepared safely": "bzPrepareInstanceBounds(L);bzPrepareInstanceBounds(T);" in h,
+ "instanced tree leaf/trunk bounds prepared safely": "bzPrepareInstanceBoundsSafe(L);bzPrepareInstanceBoundsSafe(T);" in h,
+ "instanced bounds API is feature-detected": "typeof mesh.computeBoundingSphere==='function'" in h,
+ "unsupported instanced bounds safely disable culling": "else{mesh.frustumCulled=false}" in h,
+ "grass never calls unsupported InstancedMesh method": "bzPrepareInstanceBoundsSafe(grass);" in h and "grass.computeBoundingSphere()" not in h,
  "InstancedMesh method is feature-detected": "typeof mesh.computeBoundingSphere==='function'" in h,
  "unsupported instance-bound API is never called directly": "L.computeBoundingSphere();T.computeBoundingSphere();" not in h,
- "unsupported instance bounds fall back to safe no-cull": "else mesh.frustumCulled=false" in h,
+ "unsupported instance bounds fall back to safe no-cull": "else{mesh.frustumCulled=false}" in h,
  "high-quality tree trunks cast shadows": "T.castShadow=!LQ;T.receiveShadow=!LQ" in h,
  "tree leaves receive but do not cast shadows": "L.castShadow=false;L.receiveShadow=!LQ" in h,
- "instanced grass bounds recomputed before culling": "grass.computeBoundingSphere();grass.frustumCulled=true" in h,
+ "instanced grass bounds use safe feature detection": "bzPrepareInstanceBoundsSafe(grass);" in h and "grass.computeBoundingSphere()" not in h,
  "skinned actors retain conservative no-cull behavior": "o.frustumCulled=!(o.isSkinnedMesh||o.isInstancedMesh)" in m,
  "global imported-mesh culling disable removed": "root.traverse(o=>{if(o.isMesh)o.frustumCulled=false})" not in m,
  "terrain/grass/forest no longer globally uncullable": "gr.frustumCulled=false" not in h and "grass.frustumCulled=false" not in h and "L.frustumCulled=false;T.frustumCulled=false" not in h,

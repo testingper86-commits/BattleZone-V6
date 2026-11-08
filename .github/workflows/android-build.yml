@@ -113,6 +113,8 @@ jobs:
           python3 scripts/apply_v6_character_camera_repair.py "$project_dir"
           python3 scripts/test_v6_character_camera_repair.py "$project_dir"
           python3 scripts/test_v6_critical_gameplay_repair.py
+          python3 scripts/apply_v6_legacy_character_tactics.py "$project_dir"
+          python3 scripts/test_v6_legacy_character_tactics.py "$project_dir"
           python3 scripts/test_v6_runtime_javascript_syntax.py "$project_dir"
 
       - name: Generate and verify procedural visual replacements
