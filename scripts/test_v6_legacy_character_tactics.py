@@ -21,6 +21,21 @@ checks={
  "line-of-sight prevents shooting through cover":"hasClearShot(a.position.x,a.position.y+1.15" in h,
  "automatic teammate revive radius is restored":"if(P.down&&follow<4){u.reviveT=(u.reviveT||0)+dt" in h,
 }
+models_files=list(root.rglob("app/src/main/assets/www/js/models.js"))
+if len(models_files)!=1: raise SystemExit(f"Expected one models.js, found {len(models_files)}")
+models=models_files[0].read_text(encoding="utf-8")
+char_data=h.find("const BZ_CHAR_DATA={")
+char_ready=h.find("window.BZ_CHAR_DATA_READY=true;",char_data)
+refresh_fn=h.find("function bzRefreshCharacterAppearance(){")
+refresh_guard=h.find("if(!window.BZ_CHAR_DATA_READY)return '';",refresh_fn)
+checks.update({
+ "character appearance refresh is gated before BZ_CHAR_DATA initialization":char_data>=0 and char_ready>char_data and refresh_fn>=0 and refresh_guard>refresh_fn,
+ "pickup registry is published only after pickup initialization": "window.BZPickups=pk;" in h and h.find("window.BZPickups=pk;")>h.find("const pk=[]"),
+ "bot and ally arrays are published after initialization": "window.BZActors=Object.freeze({bots,allies:al});" in h,
+ "match-state bridge is initialized after started binding": "window.BZMatchRuntime=Object.freeze({isStarted:()=>!!started,allies:()=>al});" in h,
+ "tactical UI reads initialized actor and match registries": "window.BZActors?.bots" in h and "window.BZMatchRuntime?.isStarted()" in h,
+ "model loader never uses TDZ-sensitive typeof bots checks": "typeof bots" not in models and "window.BZActors?.bots" in models and "window.BZActors||{}" in models,
+})
 for label,ok in checks.items(): print(("PASS " if ok else "FAIL ")+label)
 if not all(checks.values()): raise SystemExit("Legacy character/tactics regression failed")
 blocks=re.findall(r"<script\b(?![^>]*\bsrc=)[^>]*>(.*?)</script>",h,re.I|re.S)
@@ -31,4 +46,6 @@ try:
  r=subprocess.run(["node","--check",name],capture_output=True,text=True)
  if r.returncode: print(r.stderr);raise SystemExit(r.returncode)
 finally: Path(name).unlink(missing_ok=True)
+r=subprocess.run(["node","--check",str(models_files[0])],capture_output=True,text=True)
+if r.returncode: print(r.stderr);raise SystemExit(r.returncode)
 print("LEGACY_CHARACTER_TACTICS_TESTS_OK")
