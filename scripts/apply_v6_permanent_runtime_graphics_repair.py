@@ -23,10 +23,16 @@ else:
     # Compute base geometry bounds where supported, and disable instance frustum
     # culling when the installed Three.js version cannot calculate instance bounds.
     old_bounds = "L.computeBoundingSphere();T.computeBoundingSphere();L.frustumCulled=true;T.frustumCulled=true;"
-    new_bounds = ("const bzPrepareInstanceBounds=mesh=>{if(mesh.geometry&&typeof mesh.geometry.computeBoundingSphere==='function')mesh.geometry.computeBoundingSphere();"
-                  "if(typeof mesh.computeBoundingSphere==='function'){mesh.computeBoundingSphere();mesh.frustumCulled=true}else mesh.frustumCulled=false};"
-                  "bzPrepareInstanceBounds(L);bzPrepareInstanceBounds(T);")
-    s = replace_once(s, old_bounds, new_bounds, "InstancedMesh bounds compatibility")
+    safe_bounds = "bzPrepareInstanceBoundsSafe(L);bzPrepareInstanceBoundsSafe(T);"
+    if safe_bounds in s and "bzPrepareInstanceBoundsSafe(grass);" in s:
+        pass  # The earlier frustum stage already installed the shared feature-detected helper.
+    elif old_bounds in s:
+        new_bounds = ("function bzPrepareInstanceBoundsSafe(mesh){if(!mesh||!mesh.geometry)return;if(typeof mesh.geometry.computeBoundingSphere==='function')mesh.geometry.computeBoundingSphere();"
+                      "if(typeof mesh.computeBoundingSphere==='function'){mesh.computeBoundingSphere();mesh.frustumCulled=true}else mesh.frustumCulled=false};"
+                      "bzPrepareInstanceBoundsSafe(L);bzPrepareInstanceBoundsSafe(T);")
+        s = replace_once(s, old_bounds, new_bounds, "InstancedMesh bounds compatibility")
+    else:
+        raise SystemExit("InstancedMesh bounds compatibility: safe frustum helper or legacy bounds anchor missing")
 
     # The HUD can be rebuilt/hidden during lobby-to-match transitions. Never let a
     # missing DOM node terminate the simulation loop; validate all required nodes
@@ -36,13 +42,15 @@ else:
                "const bzHudRequired=['ht','hpf','arm','wslots','wic','wnm','am','thrn','gswn'].map(id=>$(id));"
                "if(bzHudRequired.some(node=>!node)){if(window.__bzNote&&!window.__bzHudMissingReported){window.__bzHudMissingReported=true;window.__bzNote('HUD update skipped: required HUD node is unavailable')}return;}"
                "const hp=Math.max(0,Math.ceil(P.hp));")
-    s = replace_once(s, old_hud, new_hud, "HUD lifecycle guard")
+    if new_hud not in s:
+        s = replace_once(s, old_hud, new_hud, "HUD lifecycle guard")
 
     # The operator preview uses the same model rig as gameplay. Increase only the
     # lobby preview instance, leaving in-match actor scale and hitboxes untouched.
     old_preview = "const sc=mkScout((bzSelectedCharacter().color||SKN[ST_.cur][1]),0,PLOOK);ls.add(sc.root);window.lobSc=sc;"
     new_preview = "const sc=mkScout((bzSelectedCharacter().color||SKN[ST_.cur][1]),0,PLOOK);sc.root.scale.multiplyScalar(1.18);ls.add(sc.root);window.lobSc=sc;"
-    s = replace_once(s, old_preview, new_preview, "lobby operator preview scale")
+    if new_preview not in s:
+        s = replace_once(s, old_preview, new_preview, "lobby operator preview scale")
 
     if s.count("</html>") != 1:
         raise SystemExit("Expected exactly one closing html tag")

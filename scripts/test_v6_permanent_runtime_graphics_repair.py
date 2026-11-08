@@ -10,8 +10,8 @@ if len(htmls) != 1:
 s = htmls[0].read_text(encoding="utf-8")
 checks = {
     "repair marker": "BATTLEZONE_V6_PERMANENT_RUNTIME_GRAPHICS_REPAIR_V1" in s,
-    "no unsupported InstancedMesh bounds calls": "L.computeBoundingSphere();T.computeBoundingSphere();" not in s,
-    "version-safe instance bounds": "bzPrepareInstanceBounds" in s and "mesh.frustumCulled=false" in s,
+    "no unsupported InstancedMesh bounds calls": "L.computeBoundingSphere();T.computeBoundingSphere();" not in s and "grass.computeBoundingSphere()" not in s,
+    "version-safe instance bounds": "bzPrepareInstanceBoundsSafe(L);bzPrepareInstanceBoundsSafe(T);" in s and "bzPrepareInstanceBoundsSafe(grass);" in s and "typeof mesh.computeBoundingSphere==='function'" in s and "mesh.frustumCulled=false" in s,
     "HUD validates weapon and inventory": "if(!w||!Array.isArray(P.own))return" in s,
     "HUD validates all required DOM nodes": "bzHudRequired.some(node=>!node)" in s,
     "HUD missing-node diagnostic is one-shot": "__bzHudMissingReported" in s,
