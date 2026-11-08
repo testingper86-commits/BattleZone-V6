@@ -60,7 +60,7 @@ css = r"""/* BATTLEZONE_V6_PERMANENT_RUNTIME_GRAPHICS_V1 */
 @media(orientation:portrait){#char{max-width:24vw!important}#lb-nav{max-width:calc(100vw - 16px)!important;overflow-x:auto;overscroll-behavior-x:contain}#lb-l,#maps{max-height:calc(100dvh - 26vh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}}
 """
 css_path.write_text(css, encoding="utf-8")
-link = '<link rel="stylesheet" href="./css/v6-permanent-runtime-graphics.css">\n'
+link = '<link rel="stylesheet" href="./css/v6-permanent-runtime-graphics.css">' + '\n'
 s = html.read_text(encoding="utf-8")
 if "v6-permanent-runtime-graphics.css" not in s:
     assert s.count("</head>") == 1

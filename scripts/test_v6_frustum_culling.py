@@ -9,7 +9,10 @@ h=idx[0].read_text(encoding="utf-8"); m=mods[0].read_text(encoding="utf-8")
 checks={
  "culling marker in game and model runtime": "BATTLEZONE_V6_FRUSTUM_CULLING_V1" in h and "BATTLEZONE_V6_FRUSTUM_CULLING_V1" in m,
  "terrain bounds recomputed before culling": "gr.geometry.computeBoundingSphere();gr.frustumCulled=true" in h,
- "instanced tree leaf/trunk bounds recomputed": "L.computeBoundingSphere();T.computeBoundingSphere();L.frustumCulled=true;T.frustumCulled=true" in h,
+ "instanced tree leaf/trunk bounds prepared safely": "bzPrepareInstanceBounds(L);bzPrepareInstanceBounds(T);" in h,
+ "InstancedMesh method is feature-detected": "typeof mesh.computeBoundingSphere==='function'" in h,
+ "unsupported instance-bound API is never called directly": "L.computeBoundingSphere();T.computeBoundingSphere();" not in h,
+ "unsupported instance bounds fall back to safe no-cull": "else mesh.frustumCulled=false" in h,
  "high-quality tree trunks cast shadows": "T.castShadow=!LQ;T.receiveShadow=!LQ" in h,
  "tree leaves receive but do not cast shadows": "L.castShadow=false;L.receiveShadow=!LQ" in h,
  "instanced grass bounds recomputed before culling": "grass.computeBoundingSphere();grass.frustumCulled=true" in h,
