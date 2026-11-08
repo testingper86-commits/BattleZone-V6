@@ -29,7 +29,8 @@ char_ready=h.find("window.BZ_CHAR_DATA_READY=true;",char_data)
 refresh_fn=h.find("function bzRefreshCharacterAppearance(){")
 refresh_guard=h.find("if(!window.BZ_CHAR_DATA_READY)return '';",refresh_fn)
 checks.update({
- "character appearance refresh is gated before BZ_CHAR_DATA initialization":char_data>=0 and char_ready>char_data and refresh_fn>=0 and refresh_guard>refresh_fn,
+ "character readiness is reset before any early UI refresh":h.find("window.BZ_CHAR_DATA_READY=false;")>=0 and h.find("window.BZ_CHAR_DATA_READY=false;")<h.find("function updCur(){"),
+ "character readiness is published only after profile data and PLOOK initialize":char_data>=0 and h.find("const PLOOK=")>char_data and char_ready>h.find("const PLOOK=") and refresh_fn>=0 and refresh_guard>refresh_fn,
  "pickup registry is published only after pickup initialization": "window.BZPickups=pk;" in h and h.find("window.BZPickups=pk;")>h.find("const pk=[]"),
  "bot and ally arrays are published after initialization": "window.BZActors=Object.freeze({bots,allies:al});" in h,
  "match-state bridge is initialized after started binding": "window.BZMatchRuntime=Object.freeze({isStarted:()=>!!started,allies:()=>al});" in h,

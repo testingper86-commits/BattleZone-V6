@@ -21,7 +21,7 @@ def once(old,new,label):
 name_anchor="function bzSelectedCharacter(){"
 name_helper="function bzSelectedCharacterName(){try{const p=JSON.parse(localStorage.getItem('bzProfile')||'{}');return BZ_CHAR_DATA[p.equippedCharacter]?p.equippedCharacter:'Recruit'}catch(e){return 'Recruit'}}\n"
 if "function bzSelectedCharacterName()" not in s: once(name_anchor,name_helper+name_anchor,"selected operator identity helper")
-once("};\nfunction bzSelectedCharacterName(){","};\nwindow.BZ_CHAR_DATA_READY=true;\nfunction bzSelectedCharacterName(){","character data initialization barrier")
+once("const $=id=>document.getElementById(id),rnd=","window.BZ_CHAR_DATA_READY=false;\nconst $=id=>document.getElementById(id),rnd=","reset stale character readiness before UI initialization")
 old="charName:(Object.keys(BZ_CHAR_DATA||{}).find(n=>BZ_CHAR_DATA[n].color===jc)||'Recruit')"
 once(old,"charName:bzSelectedCharacterName()","stable operator identity")
 old="mk(cl,gBox(.26,.32,.12),mtl(lk.pack,.9,0),0,0,0);"
@@ -36,6 +36,7 @@ refresh="""function bzRefreshCharacterAppearance(){if(!window.BZ_CHAR_DATA_READY
 window.BZRefreshCharacterAppearance=bzRefreshCharacterAppearance;
 """
 once("function updCur(){",refresh+"function updCur(){","live operator appearance refresh")
+once("function bzOperatorGearStyle(name){","window.BZ_CHAR_DATA_READY=true;\nif(window.BZRefreshCharacterAppearance)window.BZRefreshCharacterAppearance();\nfunction bzOperatorGearStyle(name){","publish character readiness only after PLOOK initialization")
 once("Object.keys(LOOT).forEach(k=>{for(let j=0;j<2;j++)pk.push({m:mkLoot(k,rnd(-395,395),rnd(-395,395)),k})});","Object.keys(LOOT).forEach(k=>{for(let j=0;j<2;j++)pk.push({m:mkLoot(k,rnd(-395,395),rnd(-395,395)),k})});\nwindow.BZPickups=pk;","publish initialized pickup registry")
 once("const al=[],bots=[],bm=new THREE.BoxGeometry(.7,1.2,.5),hm=new THREE.BoxGeometry(.4,.4,.4);","const al=[],bots=[],bm=new THREE.BoxGeometry(.7,1.2,.5),hm=new THREE.BoxGeometry(.4,.4,.4);window.BZActors=Object.freeze({bots,allies:al});","publish initialized actor registry")
 once("const key={};let joy={x:0,y:0},fire=false,started=false;","const key={};let joy={x:0,y:0},fire=false,started=false;window.BZMatchRuntime=Object.freeze({isStarted:()=>!!started,allies:()=>al});","publish initialized match-state registry")
