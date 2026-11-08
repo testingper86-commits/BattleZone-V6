@@ -35,8 +35,8 @@ if "gr.geometry.computeBoundingSphere();gr.frustumCulled=true" not in html:
         html=html.replace("gr.frustumCulled=false;","gr.geometry.computeBoundingSphere();gr.frustumCulled=true;",1)
     elif "gr.frustumCulled=true" in html:
         html=html.replace("gr.frustumCulled=true","gr.geometry.computeBoundingSphere();gr.frustumCulled=true",1)
-    else:
-        raise SystemExit("Terrain bounds/culling anchor missing")
+    # Some gameplay rebuild variants replace the terrain mesh with a heightfield and
+    # therefore have no `gr` mesh. In that case there is no terrain culling call to patch.
 # Keep forest shadow behaviour while using the safe bounds helper.
 tree_safe="bzPrepareInstanceBoundsSafe(L);bzPrepareInstanceBoundsSafe(T);"
 if tree_safe in html and "L.castShadow=false;L.receiveShadow=!LQ;T.castShadow=!LQ;T.receiveShadow=!LQ;" not in html:

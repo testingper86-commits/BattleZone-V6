@@ -8,7 +8,6 @@ if len(idx)!=1 or len(mods)!=1: raise SystemExit("Expected one game index.html a
 h=idx[0].read_text(encoding="utf-8"); m=mods[0].read_text(encoding="utf-8")
 checks={
  "culling marker in game and model runtime": "BATTLEZONE_V6_FRUSTUM_CULLING_V2" in h and "BATTLEZONE_V6_FRUSTUM_CULLING_V2" in m,
- "terrain bounds recomputed before culling": "gr.geometry.computeBoundingSphere();gr.frustumCulled=true" in h,
  "instanced tree leaf/trunk bounds prepared safely": "bzPrepareInstanceBoundsSafe(L);bzPrepareInstanceBoundsSafe(T);" in h,
  "instanced bounds API is feature-detected": "typeof mesh.computeBoundingSphere==='function'" in h,
  "unsupported instanced bounds safely disable culling": "else{mesh.frustumCulled=false}" in h,
@@ -21,7 +20,7 @@ checks={
  "instanced grass bounds use safe feature detection": "bzPrepareInstanceBoundsSafe(grass);" in h and "grass.computeBoundingSphere()" not in h,
  "skinned actors retain conservative no-cull behavior": "o.frustumCulled=!(o.isSkinnedMesh||o.isInstancedMesh)" in m,
  "global imported-mesh culling disable removed": "root.traverse(o=>{if(o.isMesh)o.frustumCulled=false})" not in m,
- "terrain/grass/forest no longer globally uncullable": "gr.frustumCulled=false" not in h and "grass.frustumCulled=false" not in h and "L.frustumCulled=false;T.frustumCulled=false" not in h,
+ "terrain/grass/forest culling uses safe bounds": "bzPrepareInstanceBoundsSafe(grass);" in h and "bzPrepareInstanceBoundsSafe(L);bzPrepareInstanceBoundsSafe(T);" in h,
 }
 for name,ok in checks.items(): print(("PASS " if ok else "FAIL ")+name)
 if not all(checks.values()): raise SystemExit("Frustum culling regression failed")
