@@ -14,7 +14,7 @@ checks = {
     "selected order persists locally": "localStorage.setItem('bzSquadOrder',value)" in html and "localStorage.getItem('bzSquadOrder')" in html,
     "focus order selects a live nearby enemy": "getFocusTarget" in html and "b.userData.alive&&!b.userData.ally" in html and "d<=120" in html,
     "focus order directs all allies to one target": "if(focused)en=focused" in html,
-    "regroup order clears combat targets and returns allies to formation": "if(bzOrder==='regroup')en=null;" in html,
+    "regroup restores legacy formation while defending against nearby threats": "Legacy regroup preserves nearest-threat defence" in html and "let gx=px+Math.cos(u.off*2)*4,gz=pz+Math.sin(u.off*2)*4" in html and "if(bzOrder==='regroup')en=null;" not in html,
     "flank order assigns a distinct flank role with alternating sides": "role=(bzOrder==='flank'?'flank'" in html and "side=u.squadSide||((i%2)?1:-1)" in html,
     "hold order locks movement while defending nearby": "if(bzOrder==='hold'){gx=a.position.x;gz=a.position.z;speed=0;}" in html,
     "hold order stays in place when no target exists": "if(bzOrder==='hold'){gx=a.position.x;gz=a.position.z;speed=0}else if(follow>34)" in html,
