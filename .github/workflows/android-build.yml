@@ -108,6 +108,8 @@ jobs:
           python3 scripts/apply_v6_critical_gameplay_repair.py "$project_dir"
           python3 scripts/apply_v6_gameplay_rebuild.py "$project_dir"
           python3 scripts/test_v6_gameplay_rebuild.py "$project_dir"
+          python3 scripts/apply_v6_permanent_runtime_graphics_repair.py "$project_dir"
+          python3 scripts/test_v6_permanent_runtime_graphics_repair.py "$project_dir"
           python3 scripts/test_v6_critical_gameplay_repair.py
           python3 scripts/test_v6_runtime_javascript_syntax.py "$project_dir"
 
