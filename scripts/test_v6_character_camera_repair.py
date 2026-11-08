@@ -15,7 +15,7 @@ checks={
  "camera has safe minimum obstruction distance":"Math.max(.2,bzCamHit.distance-.28)" in h,
  "camera remains above sampled terrain":"gS(bzCamDesired.x,bzCamDesired.z,bzCamDesired.y)+.28" in h,
  "preview renderer follows rebuilt host dimensions":"host.clientWidth" in h and "host.clientHeight" in h,
- "preview renderer uses capped device pixel ratio":"Math.min(window.devicePixelRatio||1,1.5)" in h,
+ "preview renderer preserves the existing low-power DPR cap":"Math.min(devicePixelRatio||1,1)" in h and "Math.min(window.devicePixelRatio||1,1.5)" not in h,
  "preview camera is framed closer":"lc.position.set(0,1.05,3.8)" in h,
 }
 for name,ok in checks.items(): print(("PASS " if ok else "FAIL ")+name)

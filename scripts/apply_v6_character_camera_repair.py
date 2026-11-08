@@ -32,7 +32,7 @@ if marker not in s:
     old="ld.position.set(3,5,4);ls.add(ld);"
     new=("ld.position.set(3,5,4);ls.add(ld);"
          "const fitLobbyRenderer=()=>{const w=Math.max(1,host.clientWidth||220),h=Math.max(1,host.clientHeight||300);"
-         "lr.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));lr.setSize(w,h,false);lc.aspect=w/h;lc.updateProjectionMatrix()};"
+         "lr.setPixelRatio(Math.min(devicePixelRatio||1,1));lr.setSize(w,h,false);lc.aspect=w/h;lc.updateProjectionMatrix()};"
          "fitLobbyRenderer();window.addEventListener('resize',fitLobbyRenderer,{passive:true});")
     s=replace_once(s,old,new,"responsive lobby preview sizing")
     old="lc.position.set(0,1.1,4.6);lc.lookAt(0,1,0);"
