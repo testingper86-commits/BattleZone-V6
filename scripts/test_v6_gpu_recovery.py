@@ -10,7 +10,7 @@ html = files[0].read_text(encoding="utf-8")
 checks = {
     "GPU recovery marker present": "BATTLEZONE_V6_GPU_RECOVERY_V1" in html,
     "recovery listener is attached only to the gameplay canvas": "var cv=r.domElement;if(cv&&cv.id==='c'){" in html,
-    "preview renderer keeps its intentional context release outside game recovery": "if(cv&&cv.id==='c')" in html and "lr.forceContextLoss()" in html,
+    "preview renderer keeps its intentional context release outside game recovery": "activeRenderer.forceContextLoss()" in html and "if(cv)cv.remove()" in html and "activeRenderer=lr" in html,
     "context loss is prevented and recovery is awaited": "e.preventDefault();window.__bzWebglContextLost=true" in html and "waiting for WebGL restoration" in html,
     "context restore clears timeout and preserves the active match": "webglcontextrestored" in html and "clearTimeout(window.__bzWebglRecoveryTimer)" in html and "r.setSize(window.innerWidth,window.innerHeight,false)" in html and "without resetting the match" in html and "setTimeout(function(){location.reload()},250)" not in html,
     "failed GPU restoration has bounded fatal fallback": "},10000);" in html and "Graphics context could not recover" in html,
