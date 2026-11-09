@@ -130,6 +130,8 @@ jobs:
           python3 scripts/test_v6_edge_control_system.py
           python3 scripts/apply_v6_pubg_hud.py "$project_dir"
           python3 scripts/test_v6_pubg_hud.py
+          python3 scripts/apply_v6_screenshot_hardening.py "$project_dir"
+          python3 scripts/test_v6_screenshot_hardening.py "$project_dir"
 
       - name: Generate and verify procedural visual replacements
         shell: bash
