@@ -115,7 +115,16 @@ jobs:
           python3 scripts/test_v6_critical_gameplay_repair.py
           python3 scripts/apply_v6_legacy_character_tactics.py "$project_dir"
           python3 scripts/test_v6_legacy_character_tactics.py "$project_dir"
+          python3 scripts/apply_v6_runtime_javascript_syntax.py "$project_dir"
           python3 scripts/test_v6_runtime_javascript_syntax.py "$project_dir"
+
+      - name: Install screenshot-driven screen lifecycle repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_dir="${{ steps.project.outputs.dir }}"
+          python3 scripts/apply_v6_screen_lifecycle_repair.py "$project_dir"
+          python3 scripts/test_v6_screen_lifecycle_repair.py
 
       - name: Generate and verify procedural visual replacements
         shell: bash
@@ -188,6 +197,7 @@ jobs:
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_tactical_line_of_sight.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_cc0_voiceover.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_runtime_javascript_syntax.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_screen_lifecycle_repair.py"
 
       - name: Run unit tests and build debug and unsigned release APKs
         shell: bash
