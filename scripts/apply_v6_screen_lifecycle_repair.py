@@ -130,6 +130,7 @@ if marker not in source:
 else:
     if f"./css/{css_name}" not in source or f"./js/{js_name}" not in source:
         raise SystemExit("Lifecycle marker exists but stylesheet or script link is missing")
+html.write_text(source, encoding="utf-8")
 css_path.write_text(css, encoding="utf-8")
 js_path.write_text(js, encoding="utf-8")
 print("BATTLEZONE_V6_SCREEN_LIFECYCLE_REPAIR_APPLIED", html, css_path, js_path)
