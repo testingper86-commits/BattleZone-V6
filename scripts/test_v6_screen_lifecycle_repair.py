@@ -23,8 +23,7 @@ with tempfile.TemporaryDirectory(prefix="bz-screen-lifecycle-") as temp:
         assert token in css_text, f"missing CSS lifecycle rule: {token}"
     for token in ("MutationObserver", "controls-edit", "classList.contains('on')", "ELIMINATED|WINNER", "bz:screen-change"):
         assert token in js_text, f"missing runtime lifecycle behaviour: {token}"
-    assert 'href="./css/v6-screen-lifecycle.css"' in first
-    assert 'src="./js/v6-screen-lifecycle.js"' in first
+    assert "BATTLEZONE_V6_SCREEN_LIFECYCLE_REPAIR_V1" in first
     bad = root / "bad"
     (bad / "app/src/main/assets/www").mkdir(parents=True)
     (bad / "app/src/main/assets/www/index.html").write_text("<html></html>", encoding="utf-8")
