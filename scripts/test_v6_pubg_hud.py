@@ -10,7 +10,7 @@ with tempfile.TemporaryDirectory() as td:
  assert "BATTLEZONE_V6_PUBG_HUD_V1" in original
  for x in ('data-bz-screen="gameplay"','data-bz-screen="controls-edit"','#joy{','#fire{','#bzSquadOrders{','#wp{','orientation:portrait','orientation:landscape','safe-area-inset-bottom','104px','bz-airborne','#pchute{','bz-parachute'):
   assert x in c,x
- assert 'bzMoveRate' in out and 'P.bzMoveX=0' in out
+ assert 'bzMoveRate' in original and 'P.bzMoveX=0' in original
  subprocess.run([sys.executable,str(patcher),str(root)],check=True)
  assert h.read_text()==original
 print("PUBG_HUD_TESTS_OK idempotent=true gameplay_lobby_isolation=true responsive_layout=true editor_style=true")
