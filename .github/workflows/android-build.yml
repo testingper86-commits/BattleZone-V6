@@ -126,6 +126,8 @@ jobs:
           python3 scripts/test_v6_screen_lifecycle_repair.py
           python3 scripts/apply_v6_touch_control_rebuild.py "$project_dir"
           python3 scripts/test_v6_touch_control_rebuild.py
+          python3 scripts/apply_v6_edge_control_system.py "$project_dir"
+          python3 scripts/test_v6_edge_control_system.py
 
       - name: Generate and verify procedural visual replacements
         shell: bash
