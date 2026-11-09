@@ -34,10 +34,10 @@ if marker not in source:
      if(fps<26){bzQualityBad++;bzQualityGood=0;if(bzQualityBad>=2){bzQualityTier=Math.max(0,bzQualityTier-1);bzQualityBad=0}}
      else if(fps>50){bzQualityGood++;bzQualityBad=0;if(bzQualityGood>=3){bzQualityTier=Math.min(2,bzQualityTier+1);bzQualityGood=0}}
      else{bzQualityBad=0;bzQualityGood=0}
-     const ratio=[.82,1,1.2][bzQualityTier];
+     const ratio=[.88,1.12,1.32][bzQualityTier];
      R.setPixelRatio(Math.min(window.devicePixelRatio||1,ratio));
      const shadows=bzQualityTier>0;
-     if(sun.castShadow!==shadows||R.shadowMap.enabled!==shadows){sun.castShadow=shadows;R.shadowMap.enabled=shadows}
+     if(sun.castShadow===shadows||R.shadowMap.enabled!==shadows){sun.castShadow=shadows;R.shadowMap.enabled=shadows}
      window.BZPerformance={fps:Math.round(fps*10)/10,qualityTier:bzQualityTier,frameTimeMs:Math.round(bzQualityElapsedMs/Math.max(1,bzQualityFrames)*10)/10};
      bzQualityElapsedMs=0;bzQualityFrames=0;
     }
