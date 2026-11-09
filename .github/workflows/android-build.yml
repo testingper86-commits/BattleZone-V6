@@ -124,6 +124,8 @@ jobs:
           project_dir="${{ steps.project.outputs.dir }}"
           python3 scripts/apply_v6_screen_lifecycle_repair.py "$project_dir"
           python3 scripts/test_v6_screen_lifecycle_repair.py
+          python3 scripts/apply_v6_touch_control_rebuild.py "$project_dir"
+          python3 scripts/test_v6_touch_control_rebuild.py
 
       - name: Generate and verify procedural visual replacements
         shell: bash
