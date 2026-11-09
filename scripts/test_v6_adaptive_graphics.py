@@ -52,7 +52,7 @@ const high=ctx.makeMaterial('grass',3,.98);
 if(!high.bumpMap||high.bumpMap.name!=='grass_height'||high.bumpScale!==.028)throw new Error('high-quality terrain relief was not configured');
 if(!calls.includes('grass_height'))throw new Error('high-quality mode did not load the height map');
 ctx.LQ=true;ctx._m={};calls.length=0;const low=ctx.makeMaterial('grass',3,.98);
-if(low.bumpMap===null||low.bumpScale!==0||calls.some(n=>n.endsWith('_height')))throw new Error("low-quality mode must not load or apply height maps");
+if(low.bumpMap!==null||low.bumpScale!==0||calls.some(n=>n.endsWith('_height')))throw new Error("low-quality mode must not load or apply height maps");
 console.log('TERRAIN_RELIEF_QUALITY_GATE_OK');
 """.replace("__MATERIAL__", repr(material_function))
 material_run=subprocess.run(["node","-e",material_node],capture_output=True,text=True)
