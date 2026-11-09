@@ -47,7 +47,7 @@ material_function=source[mat_start:mat_end]
 material_node=r"""
 const vm=require('node:vm');const calls=[];
 const ctx={_m:{},LQ:false,BZTexture:(name,repeat)=>{calls.push(name);return {name,repeat}},THREE:{MeshStandardMaterial:function(options){return options}}};
-vm.createContext(ctx);vm.runInContext(__MATERIAL__+'\globalThis.makeMaterial=BZMaterial;'-ctx);
+vm.createContext(ctx);vm.runInContext(__MATERIAL__+'\\nglobalThis.makeMaterial=BZMaterial;',ctx);
 const high=ctx.makeMaterial('grass',3,.98);
 if(!high.bumpMap||high.bumpMap.name!=='grass_height'||high.bumpScale!==.028)throw new Error('high-quality terrain relief was not configured');
 if(!calls.includes('grass_height'))throw new Error('high-quality mode did not load the height map');
