@@ -11,6 +11,7 @@ with tempfile.TemporaryDirectory(prefix="bz-touch-rebuild-") as temp:
     html.write_text("""<!doctype html><html><head></head><body>
 let CL={};try{CL=JSON.parse(sg('bzc2')||'{}')}catch(e){}
 const bind=(id,d,u)=>{const el=$(id);el.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();try{el.setPointerCapture(e.pointerId)}catch(x){}if(CE){el._dr=1;return}el.classList.add('on');d()});  el.addEventListener('pointermove',e=>{if(CE&&el._dr){CL[id]={x:(e.clientX-el.offsetWidth/2)/Math.max(1,innerWidth),y:(e.clientY-el.offsetHeight/2)/Math.max(1,innerHeight)};applyCL()}});  const up=e=>{el._dr=0;if(!el.classList.contains('on'))return;el.classList.remove('on');if(u)u()};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('lostpointercapture',up)};
+bind('fire',()=>fire=true,()=>fire=false);
 if(P.y<=1.6){P.air=0;P.y=1.6;P.vy=0;P.tp=true;P.lnT=1;msg('Landed! Find a weapon')}
 </body></html>""", encoding="utf-8")
     subprocess.run([sys.executable, str(patcher), str(root)], check=True)
