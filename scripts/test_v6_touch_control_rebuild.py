@@ -27,7 +27,7 @@ if(P.y<=1.6){P.air=0;P.y=1.6;P.vy=0;P.tp=true;P.lnT=1;msg('Landed! Find a weapon
     for token in ("#joy{", "#fire{", "#jump{", "#crouch{", "#prone{", "#scope{", "#bzSquadOrders{", "safe-area-inset-bottom", "orientation:portrait", "orientation:landscape"):
         assert token in c, f"missing responsive control rule: {token}"
     assert "body:not(.bz-control-edit)" in c
-    assert "bz-control-edit" in js
+    assert "bz-control-edit" in js.read_text(encoding="utf-8")
     subprocess.run([sys.executable, str(patcher), str(root)], check=True)
     assert first == html.read_text(encoding="utf-8"), "patcher must be idempotent"
     bad = root / "bad"
