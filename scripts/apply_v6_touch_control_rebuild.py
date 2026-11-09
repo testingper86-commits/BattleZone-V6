@@ -33,11 +33,10 @@ if marker not in s:
               "else{ss('bzc2','{}');ss('bzControlLayoutVersion',BZ_CONTROL_LAYOUT_VERSION)}}catch(e){CL={}}")
     s = once(s, old_cl, new_cl, "versioned migration of obsolete overlapping touch positions")
 
-    old_bind = ("const bind=(id,d,u)=>{const el=$(id);el.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();"
-                "try{el.setPointerCapture(e.pointerId)}catch(x){}if(CE){el._dr=1;return}el.classList.add('on');d()});"
-                "  el.addEventListener('pointermove',e=>{if(CE&&el._dr){CL[id]={x:(e.clientX-el.offsetWidth/2)/Math.max(1,innerWidth),y:(e.clientY-el.offsetHeight/2)/Math.max(1,innerHeight)};applyCL()}});"
-                "  const up=e=>{el._dr=0;if(!el.classList.contains('on'))return;el.classList.remove('on');if(u)u()};"
-                "el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('lostpointercapture',up)};")
+    bind_start = s.find("const bind=(id,d,u)=>{")
+    bind_end = s.find("bind('fire',", bind_start)
+    if bind_start < 0 or bind_end < 0:
+        raise SystemExit("Touch action binding block was not found")
     new_bind = ("const bind=(id,d,u)=>{const el=$(id),activePointers=new Set();"
                 "el.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();try{el.setPointerCapture(e.pointerId)}catch(x){}"
                 "if(CE){el._dr=1;return}const wasActive=activePointers.size>0;activePointers.add(e.pointerId);"
@@ -46,7 +45,8 @@ if marker not in s:
                 "const up=e=>{el._dr=0;if(!activePointers.delete(e.pointerId)||activePointers.size)return;"
                 "el.classList.remove('on');if(u)u()};"
                 "el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);el.addEventListener('lostpointercapture',up)};")
-    s = once(s, old_bind, new_bind, "multi-pointer-safe action button input lifecycle")
+    s = s[:bind_start] + new_bind + s[bind_end:]
+
 
     if s.count("</head>") != 1 or s.count("</body>") != 1:
         raise SystemExit("Expected one head and body closing tag")
