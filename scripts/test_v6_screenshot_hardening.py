@@ -12,7 +12,7 @@ checks={
  "final stylesheet linked after all competing HUD styles": h.rfind("v6-screenshot-hardening.css")>max(h.rfind("v6-pubg-hud.css"),h.rfind("v6-edge-control-system.css"),h.rfind("v6-touch-control-rebuild.css")),
  "Android landscape navigation rail reserved": "--bz-rail:88px" in c and "var(--bz-rail)" in c,
  "fire, jump, aim, crouch and prone respect reserved edge": all(x in c for x in ("#fire{","#jump{","#scope{","#crouch{","#prone{")) and c.count("var(--bz-rail)")>=8,
- "touch controls remain fixed and interactive": ".b{position:fixed!important" in c and "pointer-events:auto!important" in c,
+ "touch controls remain fixed and interactive": ".b{position:fixed!important" in c and "pointer-events:auto!important" in c and "#thr{right:" in c and "#gsw{right:" in c,
  "bottom navigation is contained and scrollable": "#lb-nav{display:flex!important" in c and "overflow-x:auto!important" in c and "#lb-nav b{position:relative!important" in c,
  "deployment button stays in its own column": "#go2{left:calc(12px + var(--bz-fl))!important" in c,
  "character preview scales with available viewport": "#char{left:58%!important" in c and "height:clamp(250px,48vh,340px)" in c,

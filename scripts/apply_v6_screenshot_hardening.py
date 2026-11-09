@@ -31,7 +31,7 @@ css=r'''/* BATTLEZONE_V6_SCREENSHOT_HARDENING_V1: final authoritative rules */
 :root[data-bz-screen="gameplay"] #prone{right:calc(var(--bz-fr) + var(--bz-rail) + 144px)!important;left:auto!important;top:auto!important;bottom:calc(var(--bz-fb) + 104px)!important}
 :root[data-bz-screen="gameplay"] #rel{right:calc(var(--bz-fr) + var(--bz-rail) + 78px)!important;left:auto!important;top:auto!important;bottom:calc(var(--bz-fb) + 14px)!important}
 :root[data-bz-screen="gameplay"] #swap{right:calc(var(--bz-fr) + var(--bz-rail) + 144px)!important;left:auto!important;top:auto!important;bottom:calc(var(--bz-fb) + 14px)!important}
-:root[data-bz-screen="gameplay"] #thr,:root[data-bz-screen="gameplay"] #gsw{display:none!important}
+:root[data-bz-screen="gameplay"] #thr{right:calc(var(--bz-fr) + var(--bz-rail) + 210px)!important;left:auto!important;top:auto!important;bottom:calc(var(--bz-fb) + 14px)!important}:root[data-bz-screen="gameplay"] #gsw{right:calc(var(--bz-fr) + var(--bz-rail) + 210px)!important;left:auto!important;top:auto!important;bottom:calc(var(--bz-fb) + 76px)!important}
 :root[data-bz-screen="gameplay"] #sprint{left:calc(var(--bz-fl) + 160px)!important;right:auto!important;top:auto!important;bottom:calc(var(--bz-fb) + 14px)!important}
 :root[data-bz-screen="gameplay"] #vw{left:calc(var(--bz-fl) + 160px)!important;right:auto!important;top:auto!important;bottom:calc(var(--bz-fb) + 76px)!important}
 :root[data-bz-screen="gameplay"] #fire2{left:calc(var(--bz-fl) + 160px)!important;right:auto!important;top:auto!important;bottom:calc(var(--bz-fb) + 138px)!important;width:50px!important;height:50px!important;min-width:50px!important;min-height:50px!important}
