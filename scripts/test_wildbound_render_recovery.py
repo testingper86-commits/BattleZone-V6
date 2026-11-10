@@ -35,6 +35,9 @@ if node:
     if syntax.returncode: print(syntax.stderr)
 else:
     raise SystemExit("Node.js is required for runtime syntax validation")
+scene_start=r.find("function makeScene(){")
+scene_end=r.find("function resize(){",scene_start)
+checks["renderer construction does not initialize lobby UI"] = scene_start >= 0 and scene_end > scene_start and "W.ui.init(game);" not in r[scene_start:scene_end]
 failed=[name for name,ok in checks.items() if not ok]
 for name,ok in checks.items(): print(("PASS" if ok else "FAIL")+" "+name,flush=True)
 if failed: raise SystemExit("render recovery regressions: "+", ".join(failed))
