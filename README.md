@@ -14,6 +14,7 @@ See `docs/WILDBOUND_ARCHITECTURE.md` and `app/src/main/assets/www/js/wildbound/R
 
 ## Current playable slice
 
+- Camera-relative keyboard/touch movement with an independent orbit camera, clamped vertical look and pointer/focus-loss recovery
 - One playable hunter using the bundled KayKit CC0 skinned character and local animation clips, with a procedural fallback
 - Grave Stalker, Wraithcaller and Ironmaw AI archetypes
 - Three-phase Hollow King boss
@@ -24,6 +25,6 @@ See `docs/WILDBOUND_ARCHITECTURE.md` and `app/src/main/assets/www/js/wildbound/R
 
 ## Validation
 
-Run `python3 scripts/apply_wildbound_transformation.py <android-project-root>` to install the deterministic transformation into a canonical source extraction, then run `python3 scripts/test_wildbound_vertical_slice.py <android-project-root>`. CI runs 23 gameplay/architecture regression checks, 13 project checks, offline-security tests and a zero-unverified-asset ledger before building the APK.
+Run `python3 scripts/apply_wildbound_transformation.py <android-project-root>` to install the deterministic transformation into a canonical source extraction, then run `python3 scripts/test_wildbound_vertical_slice.py <android-project-root>`. CI runs the 23-check gameplay/architecture regression suite, the 11-check camera-control regression, 13 project checks, offline-security tests and a zero-unverified-asset ledger before building the APK.
 
 The vertical slice is not represented as a finished large-scale commercial game. Final Android installation and physical-device performance still require device validation.
