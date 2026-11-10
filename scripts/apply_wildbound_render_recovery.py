@@ -14,11 +14,22 @@ r=rp.read_text();c=cp.read_text();marker="WILDBOUND_RENDER_RECOVERY_V1"
 def repair_three_binding(source):
  old_binding="const W=window.WILDBOUND,T=()=>window.THREE,$=id=>document.getElementById(id);"
  new_binding="const W=window.WILDBOUND,T=window.THREE,$=id=>document.getElementById(id);"
- if source.count(new_binding)==1: pass
- elif source.count(old_binding)==1: source=source.replace(old_binding,new_binding,1)
- else: raise SystemExit("Three.js namespace binding mismatch; refusing unsafe rewrite")
- if source.count("let t=T();")==1: source=source.replace("let t=T();","let t=T;",1)
- elif source.count("let t=T;")!=1: raise SystemExit("Three.js scene initialization binding mismatch")
+ if source.count(new_binding)==1:
+  pass
+ elif source.count(old_binding)==1:
+  source=source.replace(old_binding,new_binding,1)
+ else:
+  raise SystemExit("Three.js namespace binding mismatch; refusing unsafe rewrite")
+ if source.count("let t=T();")==1:
+  source=source.replace("let t=T();","let t=T;",1)
+ elif source.count("let t=T;")!=1:
+  raise SystemExit("Three.js scene initialization binding mismatch")
+ # The runtime must use the namespace object, never the accessor function.
+ source=source.replace("new (T()).Vector3", "new T.Vector3")
+ if source.count("new T.Vector3") != 2:
+  raise SystemExit("Expected exactly two Three.js Vector3 constructor calls")
+ if "T=()=>window.THREE" in source or "new (T()).Vector3" in source:
+  raise SystemExit("Three.js namespace normalization postcondition failed")
  return source
 if marker in r:
  required=("webglcontextlost","webglcontextrestored","getRenderDiagnostics","fault","retryRenderer")
@@ -62,3 +73,4 @@ r='/* '+marker+' */\n'+r
 c+='\n/* '+marker+' */\n.render-recovery{display:none;position:absolute;z-index:50;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,calc(100vw - 32px));padding:16px;background:rgba(7,13,18,.98);border:1px solid #e66e69;box-shadow:0 14px 50px #000c;color:#e9f0ec;pointer-events:auto}.render-recovery.visible{display:block}.render-recovery b{display:block;color:#f0b2a9;font-size:11px;letter-spacing:.13em}.render-recovery pre{max-height:100px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;color:#a9b8b4;font:9px/1.4 monospace}.render-recovery button{width:100%}\n'
 r=repair_three_binding(r)
 rp.write_text(r);cp.write_text(c);print('WILDBOUND_RENDER_RECOVERY_AND_THREE_BINDING_PATCHED')
+
