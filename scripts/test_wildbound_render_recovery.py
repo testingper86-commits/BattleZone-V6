@@ -41,9 +41,10 @@ else:
     raise SystemExit("Node.js is required for runtime syntax validation")
 scene_start=r.find("function makeScene(){")
 scene_end=r.find("function resize(){",scene_start)
-ui_init=r.find("W.ui.init(game);",scene_start,scene_end)
-first_render=r.find("game.renderer.render(game.scene,game.camera)",scene_start,scene_end)
-checks["renderer first frame completes before UI initialization"] = scene_start >= 0 and scene_end > scene_start and first_render >= 0 and ui_init > first_render
+ensure_ui="W.main.ensureUi=()=>{if(!uiInitialized){W.ui.init(game);uiInitialized=true}};"
+initialize="W.main.initialize=()=>{startupStage='lobby UI initialization';W.main.ensureUi();startupStage='scene construction';makeScene();"
+checks["startup coordinator owns one-time UI initialization"] = ensure_ui in r and initialize in r
+checks["renderer construction does not initialize lobby UI"] = scene_start >= 0 and scene_end > scene_start and "W.ui.init(game);" not in r[scene_start:scene_end]
 failed=[name for name,ok in checks.items() if not ok]
 for name,ok in checks.items(): print(("PASS" if ok else "FAIL")+" "+name,flush=True)
 if failed: raise SystemExit("render recovery regressions: "+", ".join(failed))
