@@ -175,34 +175,41 @@ helper = r'''    // WILDBOUND_STARTUP_RECOVERY_V1
         view.loadDataWithBaseURL("https://appassets.androidplatform.net/assets/www/", html, "text/html", "UTF-8", null)
     }
 '''
-activity = one(activity,
-    '    @SuppressLint("SetJavaScriptEnabled")',
-    helper + '    @SuppressLint("SetJavaScriptEnabled")',
-    "insert Android document failure handler")
-activity = one(activity,
-    "                override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {",
-    """                override fun onReceivedError(
-                    view: WebView,
-                    request: WebResourceRequest,
-                    error: android.webkit.WebResourceError
-                ) {
-                    android.util.Log.e("WILDBOUND", "Resource failed (mainFrame=" + request.isForMainFrame + ", code=" + error.errorCode + "): " + request.url + " " + error.description)
-                    if (request.isForMainFrame) showDocumentFailure(view, error.description.toString())
-                }
-                override fun onReceivedHttpError(
-                    view: WebView,
-                    request: WebResourceRequest,
-                    response: android.webkit.WebResourceResponse
-                ) {
-                    android.util.Log.e("WILDBOUND", "HTTP " + response.statusCode + " for " + request.url)
-                    if (request.isForMainFrame && response.statusCode >= 400) showDocumentFailure(view, "WILDBOUND document failed with HTTP " + response.statusCode + ".")
-                }
-                override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {""",
-    "add main-document WebView failure recovery")
-activity = one(activity,
-    '        webView.loadUrl("https://appassets.androidplatform.net/assets/www/index.html")',
-    '        android.util.Log.i("WILDBOUND", "Loading bundled offline game document")\n        webView.loadUrl("https://appassets.androidplatform.net/assets/www/index.html")',
-    "trace bundled WebView launch")
+if MARKER not in activity:
+    activity = one(activity,
+        '    @SuppressLint("SetJavaScriptEnabled")',
+        helper + '    @SuppressLint("SetJavaScriptEnabled")',
+        "insert Android document failure handler")
+    activity = one(activity,
+        "                override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {",
+        """                override fun onReceivedError(
+                        view: WebView,
+                        request: WebResourceRequest,
+                        error: android.webkit.WebResourceError
+                    ) {
+                        android.util.Log.e("WILDBOUND", "Resource failed (mainFrame=" + request.isForMainFrame + ", code=" + error.errorCode + "): " + request.url + " " + error.description)
+                        if (request.isForMainFrame) showDocumentFailure(view, error.description.toString())
+                    }
+                    override fun onReceivedHttpError(
+                        view: WebView,
+                        request: WebResourceRequest,
+                        response: android.webkit.WebResourceResponse
+                    ) {
+                        android.util.Log.e("WILDBOUND", "HTTP " + response.statusCode + " for " + request.url)
+                        if (request.isForMainFrame && response.statusCode >= 400) showDocumentFailure(view, "WILDBOUND document failed with HTTP " + response.statusCode + ".")
+                    }
+                    override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {""",
+        "add main-document WebView failure recovery")
+    activity = one(activity,
+        '        webView.loadUrl("https://appassets.androidplatform.net/assets/www/index.html")',
+        '        android.util.Log.i("WILDBOUND", "Loading bundled offline game document")\n        webView.loadUrl("https://appassets.androidplatform.net/assets/www/index.html")',
+        "trace bundled WebView launch")
+else:
+    required_activity = ("onReceivedError", "onReceivedHttpError", "showDocumentFailure", "RETRY GAME STARTUP")
+    missing_activity = [item for item in required_activity if item not in activity]
+    if missing_activity:
+        raise SystemExit("Android startup marker exists but is incomplete: " + ", ".join(missing_activity))
+
 if MARKER not in activity:
     raise SystemExit("Android startup recovery marker missing after patch")
 
