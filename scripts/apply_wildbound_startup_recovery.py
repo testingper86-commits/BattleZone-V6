@@ -33,7 +33,18 @@ if all(MARKER in value for value in (runtime, boot, css, activity)):
     missing = [item for item in required if item not in combined]
     if missing:
         raise SystemExit("Startup recovery marker exists but is incomplete: " + ", ".join(missing))
-    print("WILDBOUND_STARTUP_RECOVERY_ALREADY_APPLIED")
+    scene_start = runtime.find("function makeScene(){")
+    scene_end = runtime.find("function resize(){", scene_start)
+    if scene_start < 0 or scene_end < 0:
+        raise SystemExit("Startup recovery cannot isolate makeScene for UI initialization validation")
+    scene = runtime[scene_start:scene_end]
+    if "W.ui.init(game);" in scene:
+        scene = scene.replace("W.ui.init(game);", "", 1)
+        runtime = runtime[:scene_start] + scene + runtime[scene_end:]
+        runtime_path.write_text(runtime, encoding="utf-8")
+        print("WILDBOUND_STARTUP_RECOVERY_UI_INIT_REPAIRED")
+    else:
+        print("WILDBOUND_STARTUP_RECOVERY_ALREADY_APPLIED")
     raise SystemExit(0)
 
 legacy_ui_anchor = "window.addEventListener('resize',resize);W.ui.init(game);;W.bus.on('contract-complete',()=>{game.done=true});"

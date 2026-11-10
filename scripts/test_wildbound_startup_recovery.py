@@ -23,7 +23,7 @@ checks = {
     "renderer failure cannot leave the splash as the only screen": "3D initialization failed at:" in boot,
     "UI controls initialize independently of WebGL": "W.main.ensureUi=()=>{if(!uiInitialized){W.ui.init(game);uiInitialized=true}}" in runtime and "W.ui.init(game);;W.bus.on" not in runtime,
     "real-scene lobby animation survives UI initialization extraction": "function lobbyLoop(now)" in runtime and "raf=requestAnimationFrame(lobbyLoop)" in runtime,
-    "renderer construction no longer owns lobby UI initialization": "W.ui.init(game);" not in runtime.split("function makeScene(){",1)[1].split("let uiInitialized=false;",1)[0],
+    "renderer construction no longer owns lobby UI initialization": "W.ui.init(game);" not in runtime.split("function makeScene(){",1)[1].split("function resize(){",1)[0],
     "missing Three.js produces an explicit diagnostic": "The bundled Three.js engine did not load" in runtime,
     "partial renderer state is cleaned after failure": "game.renderer=null;game.scene=null;game.camera=null" in runtime,
     "scene startup stage is identified in error diagnostics": "W.main.getStartupStage=()=>startupStage" in runtime and "W.main.getStartupStage?W.main.getStartupStage()" in boot,
