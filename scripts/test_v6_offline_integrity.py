@@ -12,7 +12,7 @@ spec.loader.exec_module(module)
 
 def fixture(root: Path) -> None:
     (root / "app/src/main/java/com/example/battlezone").mkdir(parents=True, exist_ok=True)
-    (root / "app/src/main/assets/www/js").mkdir(parents=True, exist_ok=True)
+    (root / "app/src/main/assets/www/js/wildbound/core").mkdir(parents=True, exist_ok=True)
     (root / "app/src/main/assets/www/css").mkdir(parents=True, exist_ok=True)
     (root / "app/src/main/AndroidManifest.xml").write_text("<manifest package='test' />", encoding="utf-8")
     (root / "app/src/main/java/com/example/battlezone/MainActivity.kt").write_text(
@@ -20,7 +20,7 @@ def fixture(root: Path) -> None:
     )
     html = """<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'"><script src="./js/game.js"></script>"""
     (root / "app/src/main/assets/www/index.html").write_text(html, encoding="utf-8")
-    (root / "app/src/main/assets/www/js/models.js").write_text("const localModels = true;", encoding="utf-8")
+    (root / "app/src/main/assets/www/js/wildbound/core/config.js").write_text("window.WILDBOUND = {};", encoding="utf-8")
     (root / "app/src/main/assets/www/css/game.css").write_text("body { background: #000; }", encoding="utf-8")
 
 

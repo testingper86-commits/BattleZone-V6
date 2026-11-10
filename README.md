@@ -1,60 +1,29 @@
-# Battle Zone V6 Offline
+# WILDBOUND
 
-This repository contains the source archives and CI build workflow for Battle Zone V6 Offline only. It is kept separate from Battle Zone V6 Online and all unrelated projects.
+**An offline third-person supernatural hunting game for Android.**
 
-## Canonical source and architecture
+WILDBOUND replaces the former Battle Zone identity with a local-only hunting experience: a 3D hunter, Blackpine Reserve, three anomaly archetypes, a multi-phase Hollow King encounter, tactical melee and ether abilities, headquarters systems, progression and recoverable local saves.
 
-- Canonical archive for CI: BattleZone_V6_GitHub_Actions_Ready.zip.
-- BattleZone_V6_Cloud_Build_Ready.zip is preserved as an original archive but is not extracted by CI; the two archives differ and must not be overlaid.
-- The Android package is Kotlin/Gradle plus Android WebView hosting an HTML/JavaScript Three.js game. It is not a native 3D engine project.
-- All GitHub repository, branch, commit, CI, APK and artifact operations for this project are routed through Composio.
+## Build
 
-## Offline-only patch
+Open the Android project in Android Studio or run `./gradlew :app:assembleDebug`. The Gradle pre-build task vendors Three.js r128 and optional local GLTF loaders into the APK. The installed game itself has no network permissions and blocks non-local WebView requests.
 
-The workflow extracts only the canonical Actions archive, then runs the offline pairing-removal stage. That stage removes local LAN/device-pairing UI, JavaScript bridge, TCP/UDP socket/discovery code, remote-player relay, Android network permissions and obsolete multiplayer source/docs. Offline Battle Royale, TDM, FFA, AI enemies, TDM teammates and other local gameplay are retained.
+## Runtime architecture
 
-## Verified preparation documents
+See `docs/WILDBOUND_ARCHITECTURE.md` and `app/src/main/assets/www/js/wildbound/README.md`. The game runtime is split into core, backend, gameplay, AI, actors, world, rendering, UI and audio modules.
 
-- scripts/ASSET_INVENTORY.md records the original asset tree, runtime references, SHA-256 duplicates and license/provenance gaps.
-- scripts/ANDROID_GAMEPLAY_QA_MATRIX.md defines the physical Android release test matrix.
+## Current playable slice
 
-## CI outputs
+- One playable hunter using the bundled KayKit CC0 skinned character and local animation clips, with a procedural fallback
+- Grave Stalker, Wraithcaller and Ironmaw AI archetypes
+- Three-phase Hollow King boss
+- Blackpine Reserve with instanced vegetation, rocks, ward arena and local PBR ground texture
+- Strike combos, stamina, dodge, ether rift, ultimate charge, weak points, tracking and field tonics
+- Headquarters, bestiary, inventory, disciplines, graphics/audio settings and mission results
+- Versioned local save with backup recovery
 
-A successful GitHub Actions run publishes three artifacts:
+## Validation
 
-- BattleZone-debug-APK: debug APK for device testing.
-- BattleZone-release-unsigned-APK: release-variant APK without a distribution signing key.
-- BattleZone-Offline-Patched-Source: canonical source after offline, gameplay, reliability and progression-integrity processing.
+Run `python3 scripts/apply_wildbound_transformation.py <android-project-root>` to install the deterministic transformation into a canonical source extraction, then run `python3 scripts/test_wildbound_vertical_slice.py <android-project-root>`. CI runs these gates before building the APK.
 
-The release artifact is intentionally unsigned because no production keystore is stored in the repository or available to CI. It must be signed with the owner's protected release key before distribution. A successful build proves compilation and packaging only. Physical Android device tests remain required for offline launch, gameplay, WebGL/GPU recovery, controls, performance, memory and thermal stability.
-
-## Gameplay quality and reliability
-
-The Android workflow applies guarded quality and reliability transformations after offline removal. These include allocation-free actor iteration, throttled HUD/minimap rendering, terrain/POI map detail, procedural combat poses, startup and renderer recovery, safe immersive-mode requests, and bounded lobby preview rendering. GPU-loss recovery is scoped strictly to the gameplay canvas: the lobby preview deliberately releases its own WebGL context at deployment, and that intentional release must never be treated as a gameplay GPU failure. Landscape orientation is owned by the Android activity manifest; the Web page does not call the unsupported browser orientation-lock API.
-
-## Progression and local data integrity
-
-The V6 progression-integrity stage uses one shared local wallet for gameplay and Player Hub, prevents match-start taps from granting rewards, validates imported wallet/profile values, and includes the player profile, offline match history and AI doctrine in backup/restore. All progression remains device-local; there is no account service, remote matchmaking, backend database or online synchronization in this offline build.
-
-The validator and focused regression tests enforce source invariants. The new live squad-order system adds persistent Regroup, Focus, Flank and Hold commands to offline AI teammates; commands directly change ally targeting and movement and are hidden when no squad is deployed. Physical-device performance, gameplay and animation behavior still require device QA.
-
-
-## Lobby alignment and GPU lifecycle hardening
-
-The final CI stage, `apply_v6_lobby_alignment.py`, loads `v6-lobby-alignment.css` after every prior lobby style. It gives the player/status header, command-deck hero, configuration panel, map selector, character preview, skins action, deploy action and operator navigation one viewport-aware layout with Android safe-area spacing. Landscape short-height and narrow-width layouts have dedicated rules; scrollable panels are bounded and touch targets cannot drift off-screen. The regression suite is `test_v6_lobby_alignment.py`.
-
-On a successful WebGL context restoration, the renderer is resized and allowed to rebuild its resources without reloading the page or resetting the active match. A bounded fatal fallback remains only when the gameplay context never returns. The lobby preview renderer remains isolated from gameplay context-loss reporting.
-
-
-## Procedural visual asset provenance
-
-The distributable build replaces all 36 previously unverified retained image assets (27 PBR maps, five VFX sprites, three loading scenes and the active logo) with deterministic original project-generated artwork. CI pins Pillow, runs the generator and its deterministic/image-decoding regression tests, then verifies every generated file against `PROCEDURAL_ASSET_PROVENANCE.json`. The original input archive is preserved unchanged and is not the cleared distributable. The release ledger must show zero unverified retained binary assets. This provenance check does not replace physical-device visual QA.
-
-
-## Release integrity, offline rebuild and signing
-
-CI now fails closed unless every retained binary asset has verified CC0 or original-project provenance with matching per-file SHA-256 evidence. It regenerates the 36 previously unresolved visual assets from deterministic project-authored procedural artwork; the raw canonical archive is preserved but is not the cleared distributable.
-
-After the normal dependency-fetching build, CI performs a clean Gradle rebuild with outbound IPv4/IPv6 networking blocked and Gradle offline mode enabled. This proves the clean build can complete from the already-warmed dependency cache without network access; it is not a cold-cache build on a machine with no preloaded dependencies.
-
-Production signing is enabled when all four owner-controlled GitHub repository secrets are configured: `BATTLEZONE_RELEASE_KEYSTORE_BASE64`, `BATTLEZONE_RELEASE_KEY_ALIAS`, `BATTLEZONE_RELEASE_STORE_PASSWORD`, and `BATTLEZONE_RELEASE_KEY_PASSWORD`. The keystore is decoded only into the runner's temporary directory, used to sign and verify the release APK, then deleted. Without these secrets, CI intentionally publishes only the clearly labelled unsigned release APK. Never commit the keystore or place passwords in source files or chat.
+The vertical slice is not represented as a finished large-scale commercial game. Final Android installation and physical-device performance still require device validation.

@@ -63,8 +63,8 @@ def verify_source(root: Path) -> list[str]:
     manifest_path = root / "app/src/main/AndroidManifest.xml"
     activity_path = root / "app/src/main/java/com/example/battlezone/MainActivity.kt"
     html_path = root / "app/src/main/assets/www/index.html"
-    models_path = root / "app/src/main/assets/www/js/models.js"
-    required = (manifest_path, activity_path, html_path, models_path)
+    config_path = root / "app/src/main/assets/www/js/wildbound/core/config.js"
+    required = (manifest_path, activity_path, html_path, config_path)
     for path in required:
         if not path.is_file():
             failures.append(f"missing required source: {path.relative_to(root)}")
@@ -86,8 +86,10 @@ def verify_source(root: Path) -> list[str]:
     for path in sorted(p for p in assets.rglob("*") if p.is_file() and p.suffix.lower() in RUNTIME_ASSET_SUFFIXES):
         _check_runtime_text(path.relative_to(root).as_posix(), path.read_text(encoding="utf-8", errors="ignore"), failures)
 
-    if "settings.blockNetworkLoads = true" not in activity:
+    if "blockNetworkLoads = true" not in activity:
         failures.append("WebView network loads are not explicitly blocked")
+    if (assets / "js/models.js").exists():
+        failures.append("legacy model/network bridge remains: js/models.js")
     if (assets / "js/netplay.js").exists():
         failures.append("LAN runtime file remains: js/netplay.js")
     if "./js/netplay.js" in html or "netplay.js" in html:

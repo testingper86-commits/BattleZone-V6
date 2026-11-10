@@ -141,6 +141,8 @@ jobs:
           python3 -m pip install --disable-pip-version-check --no-cache-dir Pillow==12.3.0
           python3 scripts/apply_v6_procedural_asset_replacement.py "$project_dir"
           python3 scripts/test_v6_procedural_asset_replacement.py
+          python3 scripts/apply_wildbound_transformation.py "$project_dir"
+          python3 scripts/test_wildbound_vertical_slice.py "$project_dir"
 
       - name: Create per-file asset provenance ledger
         shell: bash
