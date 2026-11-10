@@ -5,7 +5,15 @@ app/src/main/assets/www/
 ├── index.html                 Local entrypoint and CSP
 ├── css/wildbound.css          Responsive headquarters and combat HUD
 ├── js/wildbound/
+│   ├── frontend/              Boot orchestration and screen lifecycle
+│   ├── data/                  Local monster, mission, rank and equipment catalogs
+│   ├── physics/               Shared collision, attack-arc and world-bound primitives
+│   ├── utils/                 Deterministic math and reusable helpers
 │   ├── core/                  Configuration, state and event bus
+│   ├── data/                  Local monster, mission, rank and equipment catalogs
+│   ├── physics/               Shared collision, attack-arc and world-bound primitives
+│   ├── utils/                 Deterministic math and reusable helpers
+│   ├── frontend/              Boot orchestration and screen lifecycle
 │   ├── backend/               Local save/recovery, progression, mission transitions
 │   ├── gameplay/              Combat rules, abilities, stamina, damage
 │   ├── ai/                    Monster perception, pursuit, attacks and boss phases
@@ -22,7 +30,7 @@ app/src/main/java/com/example/battlezone/MainActivity.kt
 
 ## Dependency direction
 
-`core` is the shared contract. `backend` persists and mutates authoritative offline state. `gameplay` and `ai` consume state and emit events. `actors`, `world` and `rendering` provide presentation/runtime objects. `ui` invokes public gameplay/backend actions and observes events. `audio` exposes local effect methods. Runtime script order is explicit in `index.html`; modules do not load scripts dynamically.
+`core` is the shared contract. `data` owns static content definitions; `physics` and `utils` expose reusable engine primitives; `frontend` owns application boot orchestration. `data` owns static content definitions; `physics` and `utils` expose reusable engine primitives; `frontend` owns application boot orchestration. `backend` persists and mutates authoritative offline state. `gameplay` and `ai` consume state and emit events. `actors`, `world` and `rendering` provide presentation/runtime objects. `ui` invokes public gameplay/backend actions and observes events. `audio` exposes local effect methods. Runtime script order is explicit in `index.html`; modules do not load scripts dynamically.
 
 ## State and persistence
 
