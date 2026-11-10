@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create deterministic provenance for the transformed BattleZone Android source tree."""
+"""Create deterministic provenance for the transformed WILDBOUND Android source tree."""
 from __future__ import annotations
 import argparse, hashlib, json, os, re
 from pathlib import Path
@@ -65,7 +65,7 @@ def main() -> None:
     if gh:
         with open(gh, "a", encoding="utf-8") as stream:
             stream.write(f"source_sha256={source_hash}\n")
-            stream.write(f"artifact_name=BattleZone-Offline-Patched-Source-{source_hash[:16]}\n")
+            stream.write(f"artifact_name=WILDBOUND-Offline-Patched-Source-{source_hash[:16]}\n")
     print(f"BUILD_PROVENANCE_OK archive_sha256={manifest['canonical_source_archive']['sha256']} source_sha256={source_hash} files={file_count} patchers={len(patchers)}")
 
 if __name__ == "__main__":

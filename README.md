@@ -17,13 +17,13 @@ See `docs/WILDBOUND_ARCHITECTURE.md` and `app/src/main/assets/www/js/wildbound/R
 - One playable hunter using the bundled KayKit CC0 skinned character and local animation clips, with a procedural fallback
 - Grave Stalker, Wraithcaller and Ironmaw AI archetypes
 - Three-phase Hollow King boss
-- Blackpine Reserve with instanced vegetation, rocks, ward arena and local PBR ground texture
+- Blackpine Reserve with instanced vegetation, rocks, ward arena, PBR ground materials and corrupted-ground hazards
 - Strike combos, stamina, dodge, ether rift, ultimate charge, weak points, tracking and field tonics
-- Headquarters, bestiary, inventory, disciplines, graphics/audio settings and mission results
+- Headquarters, bestiary, inventory, disciplines, functional Low/Medium/High/Ultra graphics profiles, audio settings and mission results
 - Versioned local save with backup recovery
 
 ## Validation
 
-Run `python3 scripts/apply_wildbound_transformation.py <android-project-root>` to install the deterministic transformation into a canonical source extraction, then run `python3 scripts/test_wildbound_vertical_slice.py <android-project-root>`. CI runs these gates before building the APK.
+Run `python3 scripts/apply_wildbound_transformation.py <android-project-root>` to install the deterministic transformation into a canonical source extraction, then run `python3 scripts/test_wildbound_vertical_slice.py <android-project-root>`. CI runs 22 gameplay/architecture regression checks, 12 project checks, offline-security tests and a zero-unverified-asset ledger before building the APK.
 
 The vertical slice is not represented as a finished large-scale commercial game. Final Android installation and physical-device performance still require device validation.

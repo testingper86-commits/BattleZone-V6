@@ -26,9 +26,11 @@ checks = {
     "boss has three phases": "pct<.3?3:pct<.65?2:1" in ai,
     "strike, rift and dodge mechanics exist": all(x in combat for x in ["attack(game", "ability(game", "dodge(game"]),
     "signature tracking and touch controls exist": 'id="track"' in index and "pointerdown" in (www / "js/wildbound/ui/interface.js").read_text(),
+    "locked-landscape touch controls layer above the game canvas": "@media(pointer:coarse) and (orientation:landscape)" in (www / "css/wildbound.css").read_text() and "#game #view" in (www / "css/wildbound.css").read_text() and "z-index:8" in (www / "css/wildbound.css").read_text(),
+    "corrupted terrain hazards are active": "hazards" in (www / "js/wildbound/world/world.js").read_text() and "CORRUPTED GROUND" in (www / "js/wildbound/rendering/runtime.js").read_text(),
     "renderer loads bundled Three.js locally": './libs/three.min.js' in index,
     "rigged CC0 character and license are bundled": (www / "models/characters/kaykit_v1_2/Animations/gltf/KayKit_AnimatedCharacter_v1.2.glb").is_file() and "Creative Commons Zero" in (www / "models/characters/kaykit_v1_2/License.txt").read_text(),
-    "forest material uses a bundled texture": (www / "textures/forest_floor_basecolor.png").is_file(),
+    "forest material uses bundled PBR maps": all((www / ("textures/" + n)).is_file() for n in ["forest_floor_basecolor.png", "forest_floor_roughness.png", "forest_floor_height.png"]) and (www / "PROCEDURAL_ASSET_PROVENANCE.json").is_file(),
     "adaptive graphics profiles and pooled projectiles are wired": "setQuality(q)" in (www / "js/wildbound/rendering/runtime.js").read_text() and "setQuality(q)" in (www / "js/wildbound/world/world.js").read_text() and "projectilePool" in (www / "js/wildbound/rendering/runtime.js").read_text(),
     "real rig animation and monster locomotion are integrated": "GLTFLoader" in (www / "js/wildbound/actors/actors.js").read_text() and "m.legs.forEach" not in (www / "js/wildbound/ai/monster-ai.js").read_text() and "u.legs.forEach" in (www / "js/wildbound/ai/monster-ai.js").read_text(),
 }

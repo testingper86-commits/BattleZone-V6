@@ -1,4 +1,4 @@
-name: Build BattleZone Offline Android APK
+name: Build WILDBOUND Offline Android APK
 
 on:
   workflow_dispatch:
@@ -27,7 +27,7 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Extract canonical source and remove local pairing
+      - name: Extract canonical source and install WILDBOUND
         id: source
         shell: bash
         run: |
@@ -172,7 +172,7 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Run static source validation
+      - name: Run WILDBOUND static and offline validation
         shell: bash
         run: |
           set -euo pipefail
@@ -181,32 +181,9 @@ jobs:
           python3 validate_project.py
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_offline_integrity.py"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_build_provenance.py"
-          python3 "$GITHUB_WORKSPACE/scripts/verify_offline_integrity.py" --source "$GITHUB_WORKSPACE/${{ steps.project.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_battlezone_v6_enhancement.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_runtime_reliability.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_voice_startup_fix.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_gpu_recovery.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_progression_integrity.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_encrypted_backup.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_squad_command_system.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_lobby_alignment.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_tactical_command_ui.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_adaptive_enemy_ai.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_animation_action_integration.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_adaptive_graphics.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_offline_webview_security.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_webview_recovery.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_build_hardening.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_battlezone_v6_overhaul.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_world_tactical_integrity.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_map_atlas.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_operator_gear_variants.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_frustum_culling.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_render_diagnostics.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_tactical_line_of_sight.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_cc0_voiceover.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_runtime_javascript_syntax.py" "$GITHUB_WORKSPACE/${{ steps.source.outputs.dir }}"
-          python3 "$GITHUB_WORKSPACE/scripts/test_v6_screen_lifecycle_repair.py"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_asset_provenance.py"
+          python3 "$GITHUB_WORKSPACE/scripts/verify_offline_integrity.py" --source "$project_dir"
+          python3 "$GITHUB_WORKSPACE/scripts/test_wildbound_vertical_slice.py" "$project_dir"
 
       - name: Run unit tests and build debug and unsigned release APKs
         shell: bash
@@ -273,7 +250,7 @@ jobs:
           chmod 600 "$key_store"
           release_apk="$(find "${{ steps.project.outputs.dir }}/app/build/outputs/apk/release" -maxdepth 1 -type f -name '*.apk' | head -n 1)"
           test -n "$release_apk"
-          signed_apk="$RUNNER_TEMP/BattleZone-release-signed.apk"
+          signed_apk="$RUNNER_TEMP/WILDBOUND-release-signed.apk"
           cp "$release_apk" "$signed_apk"
           apksigner="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
           test -x "$apksigner"
@@ -282,27 +259,27 @@ jobs:
           sha256sum "$signed_apk"
           echo "signed_apk=$signed_apk" >> "$GITHUB_OUTPUT"
 
-      - name: Upload debug APK
+      - name: Upload WILDBOUND debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: BattleZone-debug-APK
+          name: WILDBOUND-debug-APK
           path: ${{ steps.project.outputs.dir }}/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
 
-      - name: Upload unsigned release APK
+      - name: Upload WILDBOUND unsigned release APK
         uses: actions/upload-artifact@v4
         with:
-          name: BattleZone-release-unsigned-APK
+          name: WILDBOUND-release-unsigned-APK
           path: ${{ steps.project.outputs.dir }}/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
           retention-days: 14
 
-      - name: Upload signed production release APK
+      - name: Upload WILDBOUND signed production release APK
         if: steps.sign_release.outputs.signed_apk != ''
         uses: actions/upload-artifact@v4
         with:
-          name: BattleZone-release-signed-APK
+          name: WILDBOUND-release-signed-APK
           path: ${{ steps.sign_release.outputs.signed_apk }}
           if-no-files-found: error
           retention-days: 90
@@ -313,9 +290,9 @@ jobs:
           set -euo pipefail
           cd "${{ steps.project.outputs.dir }}"
           find . -type f \( -name '*.download' -o -name '*.replaced-backup' \) -delete
-          zip -qr "$GITHUB_WORKSPACE/BattleZone_V6_Offline_Patched_Source.zip" . \
+          zip -qr "$GITHUB_WORKSPACE/WILDBOUND_Offline_Patched_Source.zip" . \
             -x 'build/**' '**/build/**' '.gradle/**' '**/.gradle/**' '.kotlin/**' '**/.kotlin/**' '.git/**' '*/.git/*'
-          if zipinfo -1 "$GITHUB_WORKSPACE/BattleZone_V6_Offline_Patched_Source.zip" | grep -v '/$' | grep -Eq '(^|/)(\.gradle|\.kotlin|build)/'; then
+          if zipinfo -1 "$GITHUB_WORKSPACE/WILDBOUND_Offline_Patched_Source.zip" | grep -v '/$' | grep -Eq '(^|/)(\.gradle|\.kotlin|build)/'; then
             echo "Build caches leaked into the patched source artifact." >&2
             exit 1
           fi
@@ -324,6 +301,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.provenance.outputs.artifact_name }}
-          path: BattleZone_V6_Offline_Patched_Source.zip
+          path: WILDBOUND_Offline_Patched_Source.zip
           if-no-files-found: error
           retention-days: 90
