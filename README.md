@@ -14,6 +14,7 @@ See `docs/WILDBOUND_ARCHITECTURE.md` and `app/src/main/assets/www/js/wildbound/R
 
 ## Current playable slice
 
+- Startup-safe lobby lifecycle: the real lobby appears before 3D initialization, renderer failures remain visible and retryable, and Android WebView document failures show a local retry screen
 - Camera-relative keyboard/touch movement with an independent orbit camera, clamped vertical look and pointer/focus-loss recovery
 - One playable hunter using the bundled KayKit CC0 skinned character and local animation clips, with a procedural fallback
 - Grave Stalker, Wraithcaller and Ironmaw AI archetypes
