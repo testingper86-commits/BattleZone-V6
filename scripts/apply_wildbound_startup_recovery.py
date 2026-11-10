@@ -48,9 +48,21 @@ runtime = one(runtime,
     "W.main.initialize=()=>{makeScene();W.main.setQuality(W.state.settings.quality||'high');W.ui.refresh()};W.main.resize=resize})();",
     """let uiInitialized=false;
 W.main.ensureUi=()=>{if(!uiInitialized){W.ui.init(game);uiInitialized=true}};
+let startupStage='runtime initialization';
+W.main.getStartupStage=()=>startupStage;
 const makeSceneBeforeRecovery=makeScene;
-makeScene=function(){try{return makeSceneBeforeRecovery()}catch(error){try{if(game.renderer){game.renderer.dispose();if(game.renderer.forceContextLoss)game.renderer.forceContextLoss()}}catch(cleanupError){console.error('[WILDBOUND] renderer cleanup failed',cleanupError)}game.renderer=null;game.scene=null;game.camera=null;game.previewScene=null;game.previewCamera=null;throw error}};
-W.main.initialize=()=>{W.main.ensureUi();makeScene();W.main.setQuality(W.state.settings.quality||'high');W.ui.refresh()};
+makeScene=function(){
+ const stage=(name,operation)=>{startupStage=name;try{return operation()}catch(error){error.message='WILDBOUND startup stage ['+name+']: '+(error&&error.message||error);throw error}};
+ try{
+  stage('Three.js and scene allocation',()=>makeSceneBeforeRecovery());
+  startupStage='scene ready';
+ }catch(error){
+  try{if(game.renderer){game.renderer.dispose();if(game.renderer.forceContextLoss)game.renderer.forceContextLoss()}}catch(cleanupError){console.error('[WILDBOUND] renderer cleanup failed',cleanupError)}
+  game.renderer=null;game.scene=null;game.camera=null;game.previewScene=null;game.previewCamera=null;
+  throw error;
+ }
+};
+W.main.initialize=()=>{startupStage='lobby UI initialization';W.main.ensureUi();startupStage='scene construction';makeScene();startupStage='graphics quality setup';W.main.setQuality(W.state.settings.quality||'high');startupStage='lobby refresh';W.ui.refresh();startupStage='ready'};
 W.main.resize=resize;
 })();""",
     "initialize actual lobby controls before WebGL")
@@ -115,7 +127,7 @@ function boot(){
  catch(error){
   revealLobby();
   try{ensureUi();}catch(uiError){status('The lobby is visible, but its controls could not initialize.',String(uiError&&uiError.stack||uiError));return;}
-  status('The lobby is available, but the 3D renderer could not initialize. No fake scene is shown.',error&&error.stack||error);
+  status('The lobby is available, but 3D initialization failed at: '+(W.main.getStartupStage?W.main.getStartupStage():'unknown stage')+'. No fake scene is shown.',error&&error.stack||error);
  }
  guardDeploy();
  try{if(W.ui&&typeof W.ui.refresh==='function')W.ui.refresh()}catch(error){status('The lobby loaded, but its status display could not refresh.',error&&error.stack||error);}
@@ -130,19 +142,17 @@ window.addEventListener('unhandledrejection',event=>{
 });
 if(W)W.frontend={boot};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-})();"""
-
+})();
+"""
 css += r"""
-
 /* WILDBOUND_STARTUP_RECOVERY_V1 */
-.startup-status{display:none;position:fixed;z-index:80;left:50%;bottom:clamp(18px,4vh,42px);transform:translateX(-50%);width:min(560px,calc(100vw - 28px));max-height:42vh;overflow:auto;padding:16px 18px;background:rgba(10,16,22,.97);border:1px solid rgba(230,110,105,.65);box-shadow:0 18px 60px #000b;color:#e9f0ec}
+.startup-status{display:none;position:fixed;z-index:1000;left:50%;top:8px;bottom:8px;transform:translateX(-50%);width:min(560px,calc(100vw - 28px));max-height:none;overflow:auto;padding:16px 18px;background:rgba(10,16,22,.98);border:1px solid rgba(230,110,105,.65);box-shadow:0 18px 60px #000b;color:#e9f0ec}
 .startup-status.visible{display:block}
 .startup-status-title{display:block;color:#f0b2a9;font-size:11px;letter-spacing:.14em}
 .startup-status-copy{font-size:12px;line-height:1.5;color:#d6e0dc;margin:9px 0}
-.startup-status-detail{white-space:pre-wrap;overflow-wrap:anywhere;max-height:120px;overflow:auto;color:#a9b8b4;font:10px/1.45 ui-monospace,monospace;margin:0 0 10px}
+.startup-status-detail{white-space:pre-wrap;overflow-wrap:anywhere;max-height:38vh;overflow:auto;color:#a9b8b4;font:10px/1.45 ui-monospace,monospace;margin:0 0 10px}
 .startup-status-retry{width:100%;margin:0}
 """
-
 helper = r'''    // WILDBOUND_STARTUP_RECOVERY_V1
     private fun showDocumentFailure(view: WebView, message: String) {
         val safeMessage = message
@@ -164,39 +174,36 @@ helper = r'''    // WILDBOUND_STARTUP_RECOVERY_V1
         """.trimIndent()
         view.loadDataWithBaseURL("https://appassets.androidplatform.net/assets/www/", html, "text/html", "UTF-8", null)
     }
-
 '''
 activity = one(activity,
     '    @SuppressLint("SetJavaScriptEnabled")',
     helper + '    @SuppressLint("SetJavaScriptEnabled")',
     "insert Android document failure handler")
 activity = one(activity,
-    """            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {""",
-    """            override fun onReceivedError(
-                view: WebView,
-                request: WebResourceRequest,
-                error: android.webkit.WebResourceError
-            ) {
-                android.util.Log.e("WILDBOUND", "Resource failed (mainFrame=" + request.isForMainFrame + ", code=" + error.errorCode + "): " + request.url + " " + error.description)
-                if (request.isForMainFrame) showDocumentFailure(view, error.description.toString())
-            }
-            override fun onReceivedHttpError(
-                view: WebView,
-                request: WebResourceRequest,
-                response: WebResourceResponse
-            ) {
-                android.util.Log.e("WILDBOUND", "HTTP " + response.statusCode + " for " + request.url)
-                if (request.isForMainFrame && response.statusCode >= 400) {
-                    showDocumentFailure(view, "WILDBOUND document failed with HTTP " + response.statusCode + ".")
+    "                override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {",
+    """                override fun onReceivedError(
+                    view: WebView,
+                    request: WebResourceRequest,
+                    error: android.webkit.WebResourceError
+                ) {
+                    android.util.Log.e("WILDBOUND", "Resource failed (mainFrame=" + request.isForMainFrame + ", code=" + error.errorCode + "): " + request.url + " " + error.description)
+                    if (request.isForMainFrame) showDocumentFailure(view, error.description.toString())
                 }
-            }
-            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {""",
+                override fun onReceivedHttpError(
+                    view: WebView,
+                    request: WebResourceRequest,
+                    response: android.webkit.WebResourceResponse
+                ) {
+                    android.util.Log.e("WILDBOUND", "HTTP " + response.statusCode + " for " + request.url)
+                    if (request.isForMainFrame && response.statusCode >= 400) showDocumentFailure(view, "WILDBOUND document failed with HTTP " + response.statusCode + ".")
+                }
+                override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {""",
     "add main-document WebView failure recovery")
 activity = one(activity,
     '        webView.loadUrl("https://appassets.androidplatform.net/assets/www/index.html")',
     '        android.util.Log.i("WILDBOUND", "Loading bundled offline game document")\n        webView.loadUrl("https://appassets.androidplatform.net/assets/www/index.html")',
     "trace bundled WebView launch")
-if "WILDBOUND_STARTUP_RECOVERY_V1" not in activity:
+if MARKER not in activity:
     raise SystemExit("Android startup recovery marker missing after patch")
 
 for path, content in ((runtime_path, runtime), (boot_path, boot), (css_path, css), (activity_path, activity)):
