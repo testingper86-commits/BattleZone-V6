@@ -146,8 +146,6 @@ jobs:
           python3 scripts/test_wildbound_actor_constructors.py "$project_dir"
           python3 scripts/apply_wildbound_camera_control.py "$project_dir"
           python3 scripts/test_wildbound_camera_control.py "$project_dir"
-          python3 scripts/apply_wildbound_startup_recovery.py "$project_dir"
-          python3 scripts/test_wildbound_startup_recovery.py "$project_dir"
           python3 scripts/apply_wildbound_playable_prototype.py "$project_dir"
           python3 scripts/test_wildbound_playable_prototype.py "$project_dir"
           python3 scripts/test_wildbound_vertical_slice.py "$project_dir"
