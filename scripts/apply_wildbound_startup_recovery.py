@@ -36,10 +36,16 @@ if all(MARKER in value for value in (runtime, boot, css, activity)):
     print("WILDBOUND_STARTUP_RECOVERY_ALREADY_APPLIED")
     raise SystemExit(0)
 
-runtime = one(runtime,
-    "window.addEventListener('resize',resize);W.ui.init(game);;W.bus.on('contract-complete',()=>{game.done=true});",
-    "window.addEventListener('resize',resize);W.bus.on('contract-complete',()=>{game.done=true});",
-    "move lobby UI initialization out of renderer construction")
+legacy_ui_anchor = "window.addEventListener('resize',resize);W.ui.init(game);;W.bus.on('contract-complete',()=>{game.done=true});"
+animated_ui_anchor = "window.addEventListener('resize',resize);W.ui.init(game);W.bus.on('contract-complete',()=>{game.done=true});raf=requestAnimationFrame(lobbyLoop);"
+if runtime.count(legacy_ui_anchor) == 1:
+    runtime = runtime.replace(legacy_ui_anchor,
+        "window.addEventListener('resize',resize);W.bus.on('contract-complete',()=>{game.done=true});", 1)
+elif runtime.count(animated_ui_anchor) == 1:
+    runtime = runtime.replace(animated_ui_anchor,
+        "window.addEventListener('resize',resize);W.bus.on('contract-complete',()=>{game.done=true});raf=requestAnimationFrame(lobbyLoop);", 1)
+else:
+    raise SystemExit("move lobby UI initialization out of renderer construction: expected one supported source anchor")
 runtime = one(runtime,
     "function makeScene(){let t=T();game.THREE=t;",
     "function makeScene(){let t=T();if(!t||!t.WebGLRenderer)throw new Error('The bundled Three.js engine did not load. Check the local libs/three.min.js asset.');game.THREE=t;",
