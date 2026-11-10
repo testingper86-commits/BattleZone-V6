@@ -27,7 +27,11 @@ r=runtime.read_text();c=css.read_text();checks={
 "original hunt start preserved": "function start()" in r and "W.state.screen='game'" in r,
 "original combat update preserved": "function update(dt)" in r and "W.ai.update(game,dt)" in r,
 "original rendering preserved": "game.renderer.render(game.scene,game.camera)" in r,
-"quality controls preserved": "setQuality(q)" in r}
+"quality controls preserved": "setQuality(q)" in r,
+"Three.js namespace captured as object": "T=window.THREE" in r and "T=()=>window.THREE" not in r,
+"Three.js scene uses object binding": "let t=T;" in r and "let t=T();" not in r,
+"Vector3 projectile and camera constructors resolve": "new T.Vector3()" in r and "new T.Vector3(p.position.x+Math.sin(game.cameraYaw)*5" in r,
+"tracking marker Three.js constructors resolve": "new T.Mesh(new T.TorusGeometry" in r}
 node=shutil.which("node")
 if node:
     syntax=subprocess.run([node,"--check",str(runtime)],capture_output=True,text=True,timeout=30)
@@ -37,7 +41,9 @@ else:
     raise SystemExit("Node.js is required for runtime syntax validation")
 scene_start=r.find("function makeScene(){")
 scene_end=r.find("function resize(){",scene_start)
-checks["renderer construction does not initialize lobby UI"] = scene_start >= 0 and scene_end > scene_start and "W.ui.init(game);" not in r[scene_start:scene_end]
+ui_init=r.find("W.ui.init(game);",scene_start,scene_end)
+first_render=r.find("game.renderer.render(game.scene,game.camera)",scene_start,scene_end)
+checks["renderer first frame completes before UI initialization"] = scene_start >= 0 and scene_end > scene_start and first_render >= 0 and ui_init > first_render
 failed=[name for name,ok in checks.items() if not ok]
 for name,ok in checks.items(): print(("PASS" if ok else "FAIL")+" "+name,flush=True)
 if failed: raise SystemExit("render recovery regressions: "+", ".join(failed))

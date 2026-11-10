@@ -11,11 +11,22 @@ def locate(rel):
 rp=locate("app/src/main/assets/www/js/wildbound/rendering/runtime.js")
 cp=locate("app/src/main/assets/www/css/wildbound.css")
 r=rp.read_text();c=cp.read_text();marker="WILDBOUND_RENDER_RECOVERY_V1"
+def repair_three_binding(source):
+ old_binding="const W=window.WILDBOUND,T=()=>window.THREE,$=id=>document.getElementById(id);"
+ new_binding="const W=window.WILDBOUND,T=window.THREE,$=id=>document.getElementById(id);"
+ if source.count(new_binding)==1: pass
+ elif source.count(old_binding)==1: source=source.replace(old_binding,new_binding,1)
+ else: raise SystemExit("Three.js namespace binding mismatch; refusing unsafe rewrite")
+ if source.count("let t=T();")==1: source=source.replace("let t=T();","let t=T;",1)
+ elif source.count("let t=T;")!=1: raise SystemExit("Three.js scene initialization binding mismatch")
+ return source
 if marker in r:
  required=("webglcontextlost","webglcontextrestored","getRenderDiagnostics","fault","retryRenderer")
  missing=[x for x in required if x not in r]
  if missing: raise SystemExit("render marker incomplete: "+str(missing))
- print("RENDER_RECOVERY_ALREADY_APPLIED");raise SystemExit(0)
+ r=repair_three_binding(r)
+ rp.write_text(r)
+ print("RENDER_RECOVERY_ALREADY_APPLIED_AND_THREE_BINDING_VERIFIED");raise SystemExit(0)
 old="function resize(){if(!game.renderer)return;game.camera.aspect=innerWidth/innerHeight;game.camera.updateProjectionMatrix();if(W.state.screen==='game'){game.renderer.setSize(innerWidth,innerHeight,false)}else{const stage=document.querySelector('.hunter-stage');if(stage){game.camera.aspect=Math.max(1,stage.clientWidth)/Math.max(1,stage.clientHeight);game.camera.updateProjectionMatrix();game.renderer.setSize(Math.max(1,stage.clientWidth),Math.max(1,stage.clientHeight),false);game.renderer.render(game.scene,game.camera)}}}"
 new="function resize(){if(!game.renderer||!game.camera)return;const host=W.state.screen==='game'?$('game'):document.querySelector('.hunter-stage');if(!host)return;const width=Math.max(1,Math.floor(host.clientWidth||innerWidth));const height=Math.max(1,Math.floor(host.clientHeight||innerHeight));game.camera.aspect=width/height;game.camera.updateProjectionMatrix();game.renderer.setSize(width,height,false);if(W.state.screen!=='game')game.renderer.render(game.scene,game.camera)}"
 if r.count(old)!=1: raise SystemExit("resize anchor mismatch: "+str(r.count(old)))
@@ -49,4 +60,5 @@ if r.count(anchor)!=1: raise SystemExit("public main API anchor mismatch")
 r=r.replace(anchor,"W.main={start,pause,toLobby,track,input:game.input,getRenderDiagnostics:()=>renderRecovery.diagnostics(),retryRenderer:()=>renderRecovery.retry(),",1)
 r='/* '+marker+' */\n'+r
 c+='\n/* '+marker+' */\n.render-recovery{display:none;position:absolute;z-index:50;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,calc(100vw - 32px));padding:16px;background:rgba(7,13,18,.98);border:1px solid #e66e69;box-shadow:0 14px 50px #000c;color:#e9f0ec;pointer-events:auto}.render-recovery.visible{display:block}.render-recovery b{display:block;color:#f0b2a9;font-size:11px;letter-spacing:.13em}.render-recovery pre{max-height:100px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;color:#a9b8b4;font:9px/1.4 monospace}.render-recovery button{width:100%}\n'
-rp.write_text(r);cp.write_text(c);print('WILDBOUND_RENDER_RECOVERY_PATCHED')
+r=repair_three_binding(r)
+rp.write_text(r);cp.write_text(c);print('WILDBOUND_RENDER_RECOVERY_AND_THREE_BINDING_PATCHED')
