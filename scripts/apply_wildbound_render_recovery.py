@@ -3,6 +3,8 @@ from pathlib import Path
 import sys
 root=Path(sys.argv[1] if len(sys.argv)>1 else ".").resolve()
 def locate(rel):
+ direct=root/rel
+ if direct.is_file(): return direct
  xs=list(root.rglob(rel))
  if len(xs)!=1: raise SystemExit(f"{rel}: expected 1 file, got {len(xs)}")
  return xs[0]

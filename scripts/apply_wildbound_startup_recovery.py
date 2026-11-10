@@ -13,6 +13,9 @@ def one(source: str, old: str, new: str, label: str) -> str:
     return source.replace(old, new, 1)
 
 def locate(relative: str) -> Path:
+    direct = ROOT / relative
+    if direct.is_file():
+        return direct
     found = list(ROOT.rglob(relative))
     if len(found) != 1:
         raise SystemExit(f"Expected exactly one {relative}, found {len(found)}")
