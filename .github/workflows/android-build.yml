@@ -151,6 +151,8 @@ jobs:
           python3 scripts/apply_wildbound_playable_prototype.py "$project_dir"
           python3 scripts/test_wildbound_playable_prototype.py "$project_dir"
           python3 scripts/test_wildbound_vertical_slice.py "$project_dir"
+          python3 scripts/apply_wildbound_startup_recovery.py "$project_dir"
+          python3 scripts/test_wildbound_startup_recovery.py "$project_dir"
 
       - name: Install WILDBOUND WebGL context recovery
         timeout-minutes: 3
