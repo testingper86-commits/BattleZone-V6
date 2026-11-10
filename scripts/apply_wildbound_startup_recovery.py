@@ -181,7 +181,7 @@ if MARKER not in activity:
         helper + '    @SuppressLint("SetJavaScriptEnabled")',
         "insert Android document failure handler")
     activity = one(activity,
-        "                override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {",
+        "            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {",
         """                override fun onReceivedError(
                         view: WebView,
                         request: WebResourceRequest,
