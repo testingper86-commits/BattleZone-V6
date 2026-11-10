@@ -18,6 +18,7 @@ for key, path in paths.items():
 runtime, boot, css, activity = (paths[k].read_text() for k in ("runtime", "boot", "css", "activity"))
 checks = {
     "startup recovery is installed in all final runtime files": all("WILDBOUND_STARTUP_RECOVERY_V1" in p.read_text() for p in paths.values()),
+    "canonical frontend boot module remains registered": "W.frontend={boot}" in boot,
     "lobby is revealed before WebGL initialization": boot.index("revealLobby();") < boot.index("W.main.initialize();"),
     "renderer failure cannot leave the splash as the only screen": "the 3D renderer could not initialize" in boot,
     "UI controls initialize independently of WebGL": "W.main.ensureUi=()=>{if(!uiInitialized){W.ui.init(game);uiInitialized=true}}" in runtime and "W.ui.init(game);;W.bus.on" not in runtime,

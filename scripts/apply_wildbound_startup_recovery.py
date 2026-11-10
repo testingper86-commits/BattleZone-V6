@@ -128,6 +128,7 @@ window.addEventListener('error',event=>{
 window.addEventListener('unhandledrejection',event=>{
  if(event&&event.reason)status('A game startup task failed.',event.reason.stack||event.reason);
 });
+if(W)W.frontend={boot};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();"""
 
