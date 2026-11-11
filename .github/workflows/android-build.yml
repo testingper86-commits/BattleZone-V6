@@ -32,6 +32,8 @@ jobs:
           rm -rf _cloud_source
           mkdir -p _cloud_source
           unzip -oq "$archive" -d _cloud_source
+          mkdir -p _cloud_source/.github/workflows
+          cp .github/workflows/android-build.yml _cloud_source/.github/workflows/android-build.yml
           python3 scripts/apply_offline_pairing_removal.py _cloud_source
           python3 scripts/apply_gameplay_overhaul.py _cloud_source
           python3 scripts/apply_gameplay_quality.py _cloud_source
