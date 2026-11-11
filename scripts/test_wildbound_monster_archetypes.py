@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify distinct melee archetype timings, damage and reach."""
+"""Verify distinct melee archetype timings, damage, reach and boss/ranged isolation."""
 from pathlib import Path
 import subprocess,sys
 root=Path(sys.argv[1] if len(sys.argv)>1 else '.').resolve()
@@ -7,13 +7,13 @@ p=root/'app/src/main/assets/www/js/wildbound/ai/monster-ai.js'
 s=p.read_text(encoding='utf-8')
 checks={
  'archetype profile marker present':'WILDBOUND_MONSTER_ARCHETYPE_PROFILES_V1' in s,
- 'Grave Stalker has faster lunge windup':"u.kind==='melee'?.42" in s and "type:brute?'slam':'lunge'" in s,
- 'Ironmaw has slower heavy slam windup':"brute?.92" in s and "brute?2.15:1.65" in s,
- 'Ironmaw heavy strike damage is scaled':"damage:u.damage*(brute?1.3:1)" in s,
- 'archetype-specific strike reach is stored':"reach:u.range*(brute?1.55:u.kind==='melee'?1.38:1.28)" in s,
- 'strike validates its stored reach':'d<=pending.reach' in s,
- 'boss attack phase logic remains independent':"if(u.kind==='boss')" in s and "W.bus.emit('boss-slam-warning')" in s,
- 'ranged casting telegraph remains intact':"type:'ranged',duration:.48" in s,
+ 'distinct Grave Stalker lunge profile':"attackProfile:type==='stalker'?{windup:.28,recovery:.48,damageScale:1,reachScale:1.38,attack:'lunge'}" in (root/'app/src/main/assets/www/js/wildbound/actors/actors.js').read_text(encoding='utf-8'),
+ 'distinct Ironmaw heavy slam profile':"type==='ironmaw'||type==='brute'?{windup:.92,recovery:1.12,damageScale:1.3,reachScale:1.55,attack:'slam'}" in (root/'app/src/main/assets/www/js/wildbound/actors/actors.js').read_text(encoding='utf-8'),
+ 'canonical AI consumes windup and recovery':"u.attackWindup=profile.windup" in s and "u.attackRecovery=u.attackProfile?u.attackProfile.recovery" in s,
+ 'Ironmaw damage multiplier is applied':'u.damage*(profile.damageScale||1)' in s,
+ 'archetype-specific reach is stored and validated':'u.pendingAttackReach=archetypeReach' in s and 'd<=strikeReach' in s,
+ 'boss attack phase logic remains independent':"if(kind==='boss')" in s and "W.bus.emit('boss-slam-warning'" in s,
+ 'ranged casting telegraph remains intact':"attack:'ether-bolt'" in s and "u.attackWindup=.5" in s,
 }
 for k,v in checks.items(): print(('PASS' if v else 'FAIL'),k)
 if not all(checks.values()): raise SystemExit('MONSTER_ARCHETYPE_PROFILE_FAILED')
