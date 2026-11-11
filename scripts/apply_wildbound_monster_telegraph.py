@@ -7,8 +7,8 @@ p=root/'app/src/main/assets/www/js/wildbound/ai/monster-ai.js'
 if not p.is_file(): raise SystemExit(f'Missing monster AI module: {p}')
 s=p.read_text(encoding='utf-8')
 marker='WILDBOUND_MONSTER_TELEGRAPH_COMBAT_V1'
-if marker in s:
- print('WILDBOUND_MONSTER_TELEGRAPH_ALREADY_APPLIED'); raise SystemExit(0)
+if marker in s or "u.attackWindup=Math.max(0,(u.attackWindup||0)-dt)" in s:
+ print('WILDBOUND_MONSTER_TELEGRAPH_HANDLED_BY_CANONICAL_AI'); raise SystemExit(0)
 repls=[
 ("u.attackCd-=dt;u.stagger=Math.max(0,u.stagger-dt);", "u.attackCd-=dt;u.stagger=Math.max(0,u.stagger-dt);if(u.stagger>0&&u.pendingAttack){u.pendingAttack=null;u.attackWindup=0;W.bus.emit('monster-telegraph-cancel',m)}"),
 ("u.body.material.emissive.setHex(u.hitFlash>0?0x7d3027:0x000000);", "u.body.material.emissive.setHex(u.hitFlash>0?0x7d3027:u.pendingAttack?0xff6b32:0x000000);"),
