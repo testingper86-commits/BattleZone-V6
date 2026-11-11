@@ -24,4 +24,9 @@ r = subprocess.run(["node", "--check", str(actor)], capture_output=True, text=Tr
 if r.returncode:
     raise SystemExit("Actor JavaScript syntax failed:\n" + r.stderr)
 print("PASS actor JavaScript syntax")
-print("WILDBOUND_ACTOR_CONSTRUCTORS_OK", len(checks) + 1, "checks")
+harness = Path(__file__).resolve().parents[1] / "runtime-tests/wildbound-actor-constructor.test.js"
+runtime = subprocess.run(["node", str(harness), str(root / "app/src/main/assets/www")], capture_output=True, text=True)
+if runtime.returncode:
+    raise SystemExit("Actor constructor runtime regression failed:\n" + runtime.stdout + runtime.stderr)
+print(runtime.stdout.strip())
+print("WILDBOUND_ACTOR_CONSTRUCTORS_OK", len(checks) + 2, "checks")

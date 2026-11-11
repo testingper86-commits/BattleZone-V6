@@ -30,7 +30,7 @@ r=runtime.read_text();c=css.read_text();checks={
 "quality controls preserved": "setQuality(q)" in r,
 "Three.js namespace captured as object": "T=window.THREE" in r and "T=()=>window.THREE" not in r,
 "Three.js scene uses object binding": "let t=T;" in r and "let t=T();" not in r,
-"Vector3 projectile and camera constructors resolve": "new T.Vector3()" in r and "new T.Vector3(p.position.x+Math.sin(game.cameraYaw)*5" in r,
+"Vector3 projectile and camera constructors resolve": "new T.Vector3()" in r and "new T.Vector3(p.position.x-Math.sin(game.cameraYaw)*5" in r,
 "tracking marker Three.js constructors resolve": "new T.Mesh(new T.TorusGeometry" in r}
 node=shutil.which("node")
 if node:

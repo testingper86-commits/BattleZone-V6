@@ -7,14 +7,14 @@ a=(base/"actors/actors.js").read_text(encoding="utf-8")
 b=(base/"ai/monster-ai.js").read_text(encoding="utf-8")
 checks={
  "patrol marker present":"WILDBOUND_MONSTER_AMBIENT_PATROL_V1" in b,
- "monster spawn records its home position":"homeX:x,homeZ:z" in a,
- "ambient patrol runs outside detection range":"if(d>=34&&u.kind!==\'boss\')" in b,
- "patrol remains bounded around spawn":"Math.cos(phase)*3.5" in b and "Math.sin(phase)*3.5" in b,
- "patrol movement is delta-time scaled":"u.speed*.24*dt" in b,
- "patrol movement is capped by remaining distance":"Math.min(pd,u.speed*.24*dt)" in b,
- "boss remains excluded from ambient patrol":"u.kind!==\'boss\'" in b,
- "hostile pursuit logic remains intact":"m.position.x+=dx/(d||1)*u.speed*dt" in b,
- "telegraph attack state remains intact":"u.pendingAttack" in b and "W.bus.emit(\'monster-telegraph\'" in b,
+ "monster spawn records its home position":"spawnX:x,spawnZ:z" in a,
+ "ambient patrol runs outside detection range":"if(distance>=notice)" in b and "state.roamRadius>0" in b,
+ "patrol remains bounded around spawn":"Math.cos(state.patrolPhase)*state.roamRadius" in b and "Math.sin(state.patrolPhase)*state.roamRadius" in b,
+ "patrol movement is delta-time scaled":"state.speed*.36*dt" in b,
+ "patrol movement is capped by remaining distance":"if(travel>.4)" in b,
+ "boss remains excluded from ambient patrol":"roamRadius:king?0:10" in a,
+ "hostile pursuit logic remains intact":"monster.position.x+=dx/(distance||1)*state.speed*dt" in b,
+ "telegraph attack state remains intact":"state.attackState='windup'" in b and "W.bus.emit('monster-telegraph'" in b,
 }
 for k,v in checks.items(): print(("PASS" if v else "FAIL"),k)
 if not all(checks.values()): raise SystemExit("MONSTER_PATROL_REGRESSION_FAILED")

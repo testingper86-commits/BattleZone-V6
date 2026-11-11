@@ -7,7 +7,7 @@ p=root/'app/src/main/assets/www/js/wildbound/world/world.js'
 if not p.is_file(): raise SystemExit(f'Missing world module: {p}')
 s=p.read_text(encoding='utf-8')
 marker='WILDBOUND_BLACKPINE_CANOPY_WIND_V1'
-if marker in s or 'haze=new t.Group()' in s or 'const haze=new t.Group()' in s:
+if marker in s or 'uBlackpineWindTime' in s or 'windUniform=null' in s:
  print('WILDBOUND_BLACKPINE_ATMOSPHERE_HANDLED_BY_CANONICAL_WORLD'); raise SystemExit(0)
 old="const trunkMat=new t.MeshStandardMaterial({color:0x4b3d30,roughness:1}),leafMat=new t.MeshStandardMaterial({color:0x315747,roughness:1}),stoneMat="
 new="const trunkMat=new t.MeshStandardMaterial({color:0x4b3d30,roughness:1}),leafMat=new t.MeshStandardMaterial({color:0x315747,roughness:1});let windUniform=null;leafMat.onBeforeCompile=shader=>{shader.uniforms.uBlackpineWindTime={value:0};windUniform=shader.uniforms.uBlackpineWindTime;shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>'+String.fromCharCode(10)+'uniform float uBlackpineWindTime;').replace('#include <begin_vertex>','#include <begin_vertex>'+String.fromCharCode(10)+'float canopyWindWeight=max(0.0,position.y+0.5);transformed.x+=sin(uBlackpineWindTime+position.x*0.7+position.z*0.5)*0.075*canopyWindWeight;transformed.z+=cos(uBlackpineWindTime*0.72+position.x*0.35)*0.04*canopyWindWeight;');};const stoneMat="

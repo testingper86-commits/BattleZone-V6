@@ -7,14 +7,14 @@ p=root/'app/src/main/assets/www/js/wildbound/ai/monster-ai.js'
 if not p.is_file(): raise SystemExit(f'Missing monster AI module: {p}')
 s=p.read_text(encoding='utf-8')
 checks={
- 'canonical AI state machine present':"u.attackWindup=Math.max(0,(u.attackWindup||0)-dt)" in s and "u.attackRecovery=Math.max(0,(u.attackRecovery||0)-dt)" in s,
- 'melee attacks emit an explicit windup event':"u.attackWindup=profile.windup" in s and "W.bus.emit('monster-telegraph'" in s and "duration:u.attackWindup" in s,
- 'ranged attacks have a readable cast windup':"attack:'ether-bolt'" in s and "u.attackWindup=.5" in s,
- 'telegraph events expose type and position':"W.bus.emit('monster-telegraph'" in s and "position:m.position.clone()" in s,
- 'melee damage resolves after windup':"if(u.attackWindup<=0&&u.attackState==='windup')" in s and "ps.hp=Math.max(0,ps.hp-damage" in s,
- 'dodge invulnerability is respected at strike time':'if(d<=strikeReach&&game.invulnerable<=0)' in s,
- 'stagger interrupts a pending windup':'u.stagger>0||u.attackRecovery>0' in s,
- 'ranged projectile launches after windup':"game.spawnProjectile(origin,u.damage,kind==='wraith'?0x9d7ef2:0xa58bff" in s,
+ 'canonical AI state machine present':"state.attackWindup=Math.max(0,(state.attackWindup||0)-dt)" in s and "state.attackRecovery=Math.max(0,(state.attackRecovery||0)-dt)" in s,
+ 'melee attacks emit an explicit windup event':"state.attackWindup=profile.windup" in s and "W.bus.emit('monster-telegraph'" in s and "duration:state.attackWindup" in s,
+ 'ranged attacks have a readable cast windup':"attack:'ether-bolt'" in s and "state.attackWindup=.5" in s,
+ 'telegraph events expose type and position':"W.bus.emit('monster-telegraph'" in s and "position:monster.position.clone()" in s,
+ 'melee damage resolves after windup':"if(state.attackWindup<=0&&state.attackState==='windup')" in s and "playerState.hp=Math.max(0,playerState.hp-damage" in s,
+ 'dodge invulnerability is respected at strike time':'if(distance<=strikeReach&&game.invulnerable<=0)' in s,
+ 'stagger interrupts a pending windup':"state.stagger>0||state.attackRecovery>0" in s,
+ 'ranged projectile launches after windup':"game.spawnProjectile(origin,state.damage,kind==='wraith'?0x9d7ef2:0xa58bff" in s,
  'boss phase and slam logic remain intact':"if(kind==='boss')" in s and "boss-slam-warning" in s and "phase===3" in s,
  'existing ward damage mitigation remains':'W.state.skills.ward||0' in s,
 }

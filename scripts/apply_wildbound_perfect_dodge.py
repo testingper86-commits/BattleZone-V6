@@ -15,9 +15,9 @@ if marker not in s:
  s=s.replace(anchor,replacement,1); s='/* '+marker+' */\n'+s; combat.write_text(s,encoding='utf-8')
 h=ui.read_text(encoding='utf-8'); hm='WILDBOUND_PERFECT_DODGE_HUD_V1'
 if hm not in h and "W.bus.on('perfect-dodge'" not in h:
- anchor="W.bus.on('boss-slam-warning',()=>W.toast('VOID SLAM · DODGE NOW'));"
+ anchor="W.bus.on('boss-telegraph',e=>W.toast('HOLLOW KING · "
  if h.count(anchor)!=1:
-  print('WILDBOUND_PERFECT_DODGE_HUD_HANDLED_BY_CANONICAL_UI')
- else:
-  h=h.replace(anchor,anchor+"W.bus.on('perfect-dodge',()=>W.toast('COUNTER WINDOW · ANOMALY EXPOSED'));/* "+hm+" */",1); ui.write_text(h,encoding='utf-8')
+  raise SystemExit(f'Perfect-dodge HUD insertion anchor count: {h.count(anchor)}')
+ h=h.replace(anchor,"W.bus.on('perfect-dodge',()=>W.toast('COUNTER WINDOW · ANOMALY EXPOSED'));/* "+hm+" */"+anchor,1)
+ ui.write_text(h,encoding='utf-8')
 print('WILDBOUND_PERFECT_DODGE_PATCHED')

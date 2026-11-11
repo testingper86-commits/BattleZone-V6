@@ -53,7 +53,6 @@ jobs:
           python3 scripts/apply_v6_adaptive_enemy_ai.py _cloud_source
           python3 scripts/apply_v6_animation_action_integration.py _cloud_source
           python3 scripts/apply_v6_adaptive_graphics.py _cloud_source
-          python3 scripts/apply_v6_offline_webview_security.py _cloud_source
           python3 scripts/apply_v6_webview_recovery.py _cloud_source
           python3 scripts/apply_v6_build_hardening.py _cloud_source
           python3 scripts/apply_battlezone_v6_overhaul.py _cloud_source
@@ -167,6 +166,8 @@ jobs:
           python3 scripts/test_wildbound_vertical_slice.py "$project_dir"
           python3 scripts/apply_wildbound_startup_recovery.py "$project_dir"
           python3 scripts/test_wildbound_startup_recovery.py "$project_dir"
+          python3 scripts/apply_v6_offline_webview_security.py "$project_dir"
+          python3 scripts/test_v6_offline_webview_security.py "$project_dir"
 
       - name: Install WILDBOUND WebGL context recovery
         timeout-minutes: 3
@@ -209,6 +210,7 @@ jobs:
           project_dir="${{ steps.project.outputs.dir }}"
           cd "$project_dir"
           python3 validate_project.py
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_offline_webview_security.py" .
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_offline_integrity.py"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_build_provenance.py"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_asset_provenance.py"

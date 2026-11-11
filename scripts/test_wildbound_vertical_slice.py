@@ -14,6 +14,8 @@ save = (www / "js/wildbound/backend/save.js").read_text()
 actors = (www / "js/wildbound/actors/actors.js").read_text()
 ai = (www / "js/wildbound/ai/monster-ai.js").read_text()
 combat = (www / "js/wildbound/gameplay/combat.js").read_text()
+runtime = (www / "js/wildbound/rendering/runtime.js").read_text()
+sync = (Path(__file__).resolve().parent / "sync_wildbound_sources.py").read_text()
 checks = {
     "all architectural modules exist": not missing,
     "content, physics and utilities are independent modules": "W.data={" in (www / "js/wildbound/data/catalog.js").read_text() and "W.physics={" in (www / "js/wildbound/physics/collision.js").read_text() and "W.utils={" in (www / "js/wildbound/utils/math.js").read_text() and "W.frontend={" in (www / "js/wildbound/frontend/boot.js").read_text(),
@@ -24,7 +26,7 @@ checks = {
     "Android app requests no network permissions": "INTERNET" not in manifest.read_text() and "ACCESS_NETWORK_STATE" not in manifest.read_text() and "ACCESS_WIFI_STATE" not in manifest.read_text() and "CHANGE_WIFI_MULTICAST_STATE" not in manifest.read_text() and "ACCESS_WIFI_STATE" not in manifest.read_text() and "CHANGE_WIFI_MULTICAST_STATE" not in manifest.read_text(),
     "local save has versioned backup recovery": "wildbound.save.v1" in save and "wildbound.save.backup" in save,
     "three monsters and boss are distinct archetypes": all(x in (www / "js/wildbound/data/catalog.js").read_text() for x in ["stalker:", "wraith:", "ironmaw:", "king:"]) and "W.ai={" in ai,
-    "boss has three phases": "pct<.3?3:pct<.65?2:1" in ai,
+    "boss has three phases": "healthRatio<.3?3:healthRatio<.65?2:1" in ai,
     "strike, rift and dodge mechanics exist": all(x in combat for x in ["attack(game", "ability(game", "dodge(game"]),
     "signature tracking and touch controls exist": 'id="track"' in index and "pointerdown" in (www / "js/wildbound/ui/interface.js").read_text(),
     "locked-landscape touch controls layer above the game canvas": "@media(pointer:coarse) and (orientation:landscape)" in (www / "css/wildbound.css").read_text() and "#game #view" in (www / "css/wildbound.css").read_text() and "z-index:8" in (www / "css/wildbound.css").read_text(),
@@ -33,7 +35,12 @@ checks = {
     "rigged CC0 character and license are bundled": (www / "models/characters/kaykit_v1_2/Animations/gltf/KayKit_AnimatedCharacter_v1.2.glb").is_file() and "Creative Commons Zero" in (www / "models/characters/kaykit_v1_2/License.txt").read_text(),
     "forest material uses bundled PBR maps": all((www / ("textures/" + n)).is_file() for n in ["forest_floor_basecolor.png", "forest_floor_roughness.png", "forest_floor_height.png"]) and (www / "PROCEDURAL_ASSET_PROVENANCE.json").is_file(),
     "adaptive graphics profiles and pooled projectiles are wired": "setQuality(q)" in (www / "js/wildbound/rendering/runtime.js").read_text() and "setQuality(q)" in (www / "js/wildbound/world/world.js").read_text() and "projectilePool" in (www / "js/wildbound/rendering/runtime.js").read_text(),
-    "real rig animation and monster locomotion are integrated": "GLTFLoader" in (www / "js/wildbound/actors/actors.js").read_text() and "m.legs.forEach" not in (www / "js/wildbound/ai/monster-ai.js").read_text() and "u.legs.forEach" in (www / "js/wildbound/ai/monster-ai.js").read_text(),
+    "real rig animation and monster locomotion are integrated": "GLTFLoader" in actors and "W.actors.updateMonster" in ai and "state.legs.forEach" in actors,
+    "canonical actor and AI modules are installed after transformation": "js/wildbound/actors/actors.js" in sync and "js/wildbound/ai/monster-ai.js" in sync and "js/wildbound/world/world.js" in sync,
+    "pooled VFX particles and environmental wind update during gameplay": "game.vfx.update(dt)" in runtime and "W.world.update(game.environment,dt,game.elapsed)" in runtime and "uBlackpineWindTime" in (www / "js/wildbound/world/world.js").read_text(),
+    "corrupted-ground hazards have an initialized and decrementing damage timer": "hazardTick:0" in runtime and "game.hazardTick=Math.max(0,game.hazardTick-dt)" in runtime,
+    "third-person camera orbit drives camera-relative movement": "game.cameraYaw" in runtime and "moveX=x*cos-z*sin" in runtime and "game.camera.lookAt(p.position.x+Math.sin(game.cameraYaw)*2" in runtime,
+    "dodge emits its visual event and remains inside world bounds": "hunter-dodge" in combat and "W.physics.clampWorld(p.position" in combat,
 }
 for rel in (www / "js/wildbound").rglob("*.js"):
     result = subprocess.run(["node", "--check", str(rel)], capture_output=True, text=True)

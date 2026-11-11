@@ -1,31 +1,31 @@
 # WILDBOUND
 
-**An offline third-person supernatural hunting game for Android.**
+**An offline third-person supernatural monster-hunting game for Android.**
 
-WILDBOUND replaces the former Battle Zone identity with a local-only hunting experience: a 3D hunter, Blackpine Reserve, three anomaly archetypes, a multi-phase Hollow King encounter, tactical melee and ether abilities, headquarters systems, progression and recoverable local saves.
+WILDBOUND is a local-only hunting experience built around one playable hunter, Blackpine Reserve, three anomaly archetypes, a multi-phase Hollow King encounter, tactical melee and ether abilities, headquarters systems, progression and recoverable local saves.
 
 ## Build
 
-Open the Android project in Android Studio or run `./gradlew :app:assembleDebug`. The Gradle pre-build task vendors Three.js r128 and optional local GLTF loaders into the APK. The installed game itself has no network permissions and blocks non-local WebView requests.
+Use the repository's `Build WILDBOUND Offline Android APK` GitHub Actions workflow as the canonical build path. It assembles the Android source, installs the six canonical WILDBOUND modules, applies the final WebView security and recovery layers, verifies the asset ledger, runs offline/gameplay regression checks, and builds debug plus unsigned release APKs. The installed game has no network permission and rejects non-local WebView requests.
 
 ## Runtime architecture
 
-See `docs/WILDBOUND_ARCHITECTURE.md` and `app/src/main/assets/www/js/wildbound/README.md`. The game runtime is split into core, backend, gameplay, AI, actors, world, rendering, UI and audio modules.
+See `docs/WILDBOUND_ARCHITECTURE.md` and `docs/WILDBOUND_PHASE_REGISTER.md`. The runtime is separated into core, backend, gameplay, AI, actors, world, rendering, UI and audio modules. Runtime source-of-truth files live under `scripts/wildbound-source/js/wildbound/` and are synchronized into the Android project by `scripts/sync_wildbound_sources.py` after the base transformation.
 
 ## Current playable slice
 
-- Startup-safe lobby lifecycle: the real lobby appears before 3D initialization, renderer failures remain visible and retryable, and Android WebView document failures show a local retry screen
-- Camera-relative keyboard/touch movement with an independent orbit camera, clamped vertical look and pointer/focus-loss recovery
-- One playable hunter using the bundled KayKit CC0 skinned character and local animation clips, with a procedural fallback
-- Grave Stalker, Wraithcaller and Ironmaw AI archetypes
-- Three-phase Hollow King boss
-- Blackpine Reserve with instanced vegetation, rocks, ward arena, PBR ground materials and corrupted-ground hazards
-- Strike combos, stamina, dodge, ether rift, ultimate charge, weak points, tracking and field tonics
-- Headquarters, bestiary, inventory, disciplines, functional Low/Medium/High/Ultra graphics profiles, audio settings and mission results
-- Versioned local save with backup recovery
+- Startup-safe lobby and renderer recovery; the real lobby remains available if WebGL creation fails.
+- Camera-relative movement with an independent touch/mouse orbit camera, bounded vertical look and pointer/focus-loss recovery.
+- One playable hunter using the bundled KayKit CC0 skinned character, local animation clips and a procedural fallback.
+- Grave Stalker, Wraithcaller and Ironmaw with distinct articulated procedural silhouettes, attack profiles, patrols and telegraphed attacks.
+- Four-arm Hollow King with a three-phase encounter, phase-one heavy swing, projectile attack and ground slam.
+- Blackpine Reserve with instanced vegetation/rocks, generated PBR ground, haze, canopy wind and damaging corrupted-ground hazards.
+- Strike combos, stamina, dodge, perfect-dodge counter windows, ether rift, ultimate charge, weak points, tracking and field tonics.
+- Headquarters, bestiary, inventory, disciplines, mission results, local progression and versioned save recovery.
+- Adaptive graphics profiles, a bounded 72-slot GPU particle pool and a 12-voice procedural audio limit.
 
-## Validation
+## Validation and scope
 
-Run `python3 scripts/apply_wildbound_transformation.py <android-project-root>` to install the deterministic transformation into a canonical source extraction, then run `python3 scripts/test_wildbound_vertical_slice.py <android-project-root>`. CI runs the 23-check gameplay/architecture regression suite, the 11-check camera-control regression, 13 project checks, offline-security tests and a zero-unverified-asset ledger before building the APK.
+CI validates canonical source synchronization, actor constructors, monster AI, boss phases, camera controls, combat feedback, WebGL recovery, Android offline security, project integrity and asset provenance before producing APK artifacts.
 
-The vertical slice is not represented as a finished large-scale commercial game. Final Android installation and physical-device performance still require device validation.
+This is a playable offline vertical slice, not a finished photorealistic AAA production. The current monster silhouettes are procedural, and the hunter uses a stylized CC0 character asset. Photorealistic creature/hunter assets, motion-capture polish and physical Android frame-time, memory, audio-focus and thermal acceptance remain production gates.

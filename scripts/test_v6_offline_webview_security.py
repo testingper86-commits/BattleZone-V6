@@ -12,16 +12,16 @@ assert "BATTLEZONE_V6_OFFLINE_WEBVIEW_SECURITY_V1" in html and "BATTLEZONE_V6_OF
 match = re.search(r'<meta http-equiv="Content-Security-Policy" content="([^"]+)"', html)
 assert match, "CSP meta policy missing"
 csp = match.group(1)
-for directive in ("default-src 'self'", "script-src 'self' 'unsafe-inline'", "style-src 'self' 'unsafe-inline'", "img-src 'self' data: blob:", "connect-src 'self'", "object-src 'none'", "base-uri 'self'", "frame-src 'none'", "form-action 'none'"):
+for directive in ("default-src 'self'", "script-src 'self'", "style-src 'self' 'unsafe-inline'", "img-src 'self' data: blob:", "connect-src 'self'", "object-src 'none'", "base-uri 'self'", "frame-src 'none'", "form-action 'none'"):
     assert directive in csp, f"CSP directive missing: {directive}"
 assert "unsafe-eval" not in csp
 for token in ("private fun isTrustedAssetUri", "OfflineAssetPolicy.isTrustedAssetUri"):
     assert token in kotlin, f"WebView hardening missing: {token}"
 assert "URLDecoder.decode" in policy and "decoded.split('/')" in policy
 for token in (
-    "settings.allowFileAccess = false", "settings.allowContentAccess = false",
-    "settings.blockNetworkLoads = true", "settings.databaseEnabled = false",
-    "settings.safeBrowsingEnabled = true", "request.deny()",
+    "allowFileAccess = false", "allowContentAccess = false", "allowFileAccessFromFileURLs = false", "allowUniversalAccessFromFileURLs = false",
+    "blockNetworkLoads = true", "databaseEnabled = false",
+    "safeBrowsingEnabled = true", "request.deny()",
     'blockedResponse(403, "Blocked")', 'blockedResponse(404, "Not Found")',
     "!isTrustedAssetUri(request.url)",
 ):

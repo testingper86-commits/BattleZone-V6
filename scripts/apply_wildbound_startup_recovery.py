@@ -52,12 +52,16 @@ if all(MARKER in value for value in (runtime, boot, css, activity)):
 
 legacy_ui_anchor = "window.addEventListener('resize',resize);W.ui.init(game);;W.bus.on('contract-complete',()=>{game.done=true});"
 animated_ui_anchor = "window.addEventListener('resize',resize);W.ui.init(game);W.bus.on('contract-complete',()=>{game.done=true});raf=requestAnimationFrame(lobbyLoop);"
+canonical_ui_anchor = "bindResponsiveResize();W.ui.init(game);W.bus.on('contract-complete',()=>{game.done=true});raf=requestAnimationFrame(lobbyLoop);"
 if runtime.count(legacy_ui_anchor) == 1:
     runtime = runtime.replace(legacy_ui_anchor,
         "window.addEventListener('resize',resize);W.bus.on('contract-complete',()=>{game.done=true});", 1)
 elif runtime.count(animated_ui_anchor) == 1:
     runtime = runtime.replace(animated_ui_anchor,
         "window.addEventListener('resize',resize);W.bus.on('contract-complete',()=>{game.done=true});raf=requestAnimationFrame(lobbyLoop);", 1)
+elif runtime.count(canonical_ui_anchor) == 1:
+    runtime = runtime.replace(canonical_ui_anchor,
+        "bindResponsiveResize();W.bus.on('contract-complete',()=>{game.done=true});raf=requestAnimationFrame(lobbyLoop);", 1)
 elif "function makeScene(){let t=T;" in runtime and "W.main.ensureUi" in runtime:
     print("WILDBOUND_CANONICAL_STARTUP_INITIALIZATION_ALREADY_SAFE")
 else:

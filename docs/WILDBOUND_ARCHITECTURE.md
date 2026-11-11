@@ -1,63 +1,74 @@
 # WILDBOUND architecture
 
+## Runtime layout
+
 ```text
 app/src/main/assets/www/
-├── index.html                 Local entrypoint and CSP
-├── css/wildbound.css          Responsive headquarters and combat HUD
+├── index.html                 Local entrypoint and strict CSP
+├── css/wildbound.css          Responsive headquarters, combat HUD and recovery UI
 ├── js/wildbound/
 │   ├── frontend/              Boot orchestration and screen lifecycle
 │   ├── data/                  Local monster, mission, rank and equipment catalogs
-│   ├── physics/               Shared collision, attack-arc and world-bound primitives
+│   ├── physics/               Collision, attack arcs and world bounds
 │   ├── utils/                 Deterministic math and reusable helpers
 │   ├── core/                  Configuration, state and event bus
-│   ├── data/                  Local monster, mission, rank and equipment catalogs
-│   ├── physics/               Shared collision, attack-arc and world-bound primitives
-│   ├── utils/                 Deterministic math and reusable helpers
-│   ├── frontend/              Boot orchestration and screen lifecycle
-│   ├── backend/               Local save/recovery, progression, mission transitions
-│   ├── gameplay/              Combat rules, abilities, stamina, damage
-│   ├── ai/                    Monster perception, pursuit, attacks and boss phases
-│   ├── actors/                Hunter and monster rigs, animation integration
-│   ├── world/                 Blackpine environment generation and density tiers
-│   ├── rendering/             Shared WebGL context, 3D lobby preview, camera and frame loop
-│   ├── ui/                    Headquarters, bestiary, inventory, disciplines, HUD and touch
+│   ├── backend/               Local save/recovery, progression and missions
+│   ├── gameplay/              Combat rules, abilities, stamina and damage
+│   ├── ai/                    Monster perception, patrol, attacks and boss phases
+│   ├── actors/                Hunter and monster rigs, anatomy and animation
+│   ├── world/                 Blackpine generation, PBR ground, instancing and wind
+│   ├── rendering/             Shared WebGL context, VFX, camera and frame loop
+│   ├── ui/                    Headquarters, bestiary, inventory, disciplines and HUD
 │   └── audio/                 Procedural local Web Audio effects
 └── models/, textures/, libs/  Locally bundled licensed models, textures and engine
 
-app/src/main/java/com/example/battlezone/MainActivity.kt
-└── WebViewAssetLoader only; no LAN sockets, Wi-Fi discovery, JavaScript bridge or internet permission
+scripts/wildbound-source/js/wildbound/
+├── actors/actors.js           Canonical actor constructors and animation integration
+├── ai/monster-ai.js           Canonical AI state machine and attack resolution
+├── audio/audio.js             Canonical bounded Web Audio lifecycle
+├── gameplay/combat.js        Canonical player combat and dodge events
+├── rendering/runtime.js      Canonical scene, camera, VFX and render lifecycle
+└── world/world.js             Canonical environment, hazards and canopy wind
+
+app/src/main/java/com/example/battlezone/
+├── MainActivity.kt            Local WebView host and request/navigation policy
+└── OfflineAssetPolicy.kt      Strict appassets URI validation
 ```
+
+`sync_wildbound_sources.py` installs the six canonical modules after the base project transformation and synchronizes the generated project's phase-threshold validator. Build-time transformations that remain are limited to features not yet promoted to a canonical module, such as UI additions and Android shell recovery.
 
 ## Dependency direction
 
-`core` is the shared contract. `data` owns static content definitions; `physics` and `utils` expose reusable engine primitives; `frontend` owns application boot orchestration. `data` owns static content definitions; `physics` and `utils` expose reusable engine primitives; `frontend` owns application boot orchestration. `backend` persists and mutates authoritative offline state. `gameplay` and `ai` consume state and emit events. `actors`, `world` and `rendering` provide presentation/runtime objects. `ui` invokes public gameplay/backend actions and observes events. `audio` exposes local effect methods. Runtime script order is explicit in `index.html`; modules do not load scripts dynamically.
+`core` owns shared state and event contracts. `data` owns static content. `physics` and `utils` expose reusable primitives. `frontend` owns application boot. `backend` persists authoritative offline state. `gameplay` and `ai` consume state and emit events. `actors`, `world` and `rendering` own presentation/runtime objects. `ui` invokes public gameplay/backend actions and observes events. `audio` exposes local effect methods. Runtime script order is explicit in `index.html`; modules do not load scripts dynamically.
 
 ## State and persistence
 
-The game state is owned by `core/state.js`. Progression and contract state are handled by backend services. `backend/save.js` stores a versioned JSON snapshot in localStorage, rotates the previous valid snapshot into a backup key, restores the backup on primary corruption, and flushes on page hide.
+`core/state.js` owns runtime state. Backend services handle progression and contract state. `backend/save.js` stores versioned local snapshots, rotates the last valid snapshot into a backup key, restores from backup on primary corruption, and flushes on page hide. Android local storage and assets remain available without a network connection.
 
 ## Offline security
 
-The Android manifest requests no network permissions. The WebView blocks network loads, intercepts only `appassets.androidplatform.net` through `WebViewAssetLoader`, returns 403 for other requests, rejects external navigation, and applies a restrictive CSP with `connect-src 'self'`. All runtime scripts, models and textures are local.
+The Android manifest requests no network permission. `MainActivity` disables network loads, file/content access, file-URL universal access, database storage and geolocation; it denies WebView camera/microphone permission requests. `OfflineAssetPolicy` validates scheme, host, port, user info and decoded path before `WebViewAssetLoader` serves local assets. External navigation and non-local requests are blocked. The CSP allows local scripts only, local/data/blob media, local connections, and denies objects, frames and form submissions. No JavaScript bridge is exposed.
 
-## Performance strategy
+## Actors, AI and combat
 
-One WebGL renderer/context is shared between the static 3D headquarters showcase and gameplay. The forest uses instanced meshes for tree trunks, crowns, rocks and ward structures. Corrupted ground pools act as damaging environmental hazards. Landscape touch controls are always available on coarse-pointer Android devices and render above the WebGL canvas. Antialiasing and real-time shadows are disabled for mobile baseline stability. Graphics profiles alter pixel ratio and environment instance density. Hostile projectiles are pooled and animation mixers update only during gameplay.
+The hunter has a bundled CC0 rigged GLB and a procedural fallback. The fallback includes layered armor, gauntlets, articulated arm/leg pivots and a local weapon. Grave Stalker, Wraithcaller, Ironmaw and Hollow King use distinct articulated procedural silhouettes, emissive weak-point anchors, species-specific details and independent arm/leg animation. Hollow King has four arm pivots and three combat phases.
 
-## Camera and touch control
+Monster AI updates patrol animation outside aggro range, keeps patrol routes inside world bounds, and uses explicit windup/attack/recovery states. Grave Stalker and Ironmaw have separate lunge/slam timing, damage and reach profiles. Hollow King phase one has a telegraphed heavy swing; later phases retain projectile and ground-slam attacks. Perfect dodge interrupts an active windup, staggers the attacker, opens a counter window and charges ultimate meter. Dodge events drive the same pooled VFX path as combat impacts.
 
-The hunter facing and camera orbit are separate state. Right-side touch or mouse drag rotates camera yaw and a bounded camera height; movement input is transformed through the camera yaw so joystick-forward remains camera-relative. Pointer cancellation, lost pointer capture and window focus loss clear active look/movement state. The camera patch is installed after the canonical WILDBOUND source transformation and guarded by a dedicated syntax and regression suite.
+## World and rendering
 
-## Licensed assets
+One WebGL renderer/context is shared between the headquarters showcase and gameplay. Blackpine uses instanced trunks, crowns, rocks and ward structures, deterministic local PBR ground maps, atmospheric haze and GPU-driven two-axis canopy wind. Environmental hazards use an initialized, delta-time-driven damage timer. Camera orbit is independent of hunter facing; right-side pointer drag controls yaw and bounded height, and movement input is transformed through camera yaw. Pointer cancellation, lost pointer capture and window focus loss clear active controls.
 
-The hunter uses the already-bundled KayKit Animated Character v1.2 GLB and local animation clips under CC0; its license is retained beside the files. The procedural hunter remains as a fallback if optional loaders are unavailable. The reserve and monsters are generated by the project runtime. Three terrain PBR maps are generated deterministically by the repository procedural asset generator and their exact hashes are retained in `PROCEDURAL_ASSET_PROVENANCE.json`. The final asset ledger is release-blocking when any binary asset is unverified.
+The combat renderer uses a fixed 72-slot GPU point-particle pool. Hit strength, weak-point strikes, kills, boss phase changes and hunter dodges emit bounded bursts. The pool updates in both lobby and gameplay loops and is disposed before scene reinitialization. The procedural Web Audio layer caps concurrent voices at 12, disconnects nodes on completion, and resumes suspended contexts after foregrounding or user interaction.
 
+Graphics profiles control pixel ratio and environment instance density. The render loop checks WebGL context health, pauses safely on context loss, resumes after context restoration, reports game/lobby frame exceptions, and exposes renderer diagnostics. Resize handling uses host dimensions, `ResizeObserver` and `visualViewport` so Android orientation and inset changes do not leave a stale viewport.
 
-## Startup and screen lifecycle
+## Licensed assets and honest scope
 
-The Android WebView must never depend on successful WebGL creation to reveal the real WILDBOUND lobby. The frontend boot controller reveals the existing lobby first, initializes lobby controls independently of the renderer, and reports renderer/deployment exceptions in an in-lobby diagnostic panel with a local retry action. Failed renderer construction disposes partial state before another attempt. The Android shell surfaces main-document load/HTTP failures with a same-origin retry page. These repairs run after the canonical WILDBOUND transformation because that transformation replaces the HTML, runtime, and Android activity; applying older BattleZone screen patches before it would silently overwrite them. CI exercises both successful and failing startup paths and checks the final transformed files.
+The hunter uses the bundled KayKit Animated Character v1.2 GLB and local animation clips under CC0; the license is retained with the asset. Terrain PBR maps are generated deterministically and recorded in `PROCEDURAL_ASSET_PROVENANCE.json`. Other monster silhouettes are procedural project geometry, not photorealistic third-party creature scans or motion-capture rigs.
 
+The current deliverable is an offline, playable vertical slice with a complete core hunting loop, not a finished large-scale photorealistic AAA production. Premium photorealistic creature/hunter asset creation, motion-capture polish and physical Android frame-time, memory, audio-focus and thermal acceptance remain separate production gates. CI success does not substitute for device QA.
 
-## Final integration: VFX, audio lifecycle and mobile budgets
+## Startup and recovery
 
-The combat renderer adds a fixed 72-slot GPU point-particle pool. Hit strength, weak-point strikes, kills, boss phase changes and hunter dodges emit bounded bursts; particle buffers are reused and updated from the existing frame loop rather than creating one scene object per impact. The procedural Web Audio layer caps concurrent voices at 12, disconnects oscillator/gain nodes on completion, and resumes a suspended context after foregrounding or a user gesture. These changes preserve the local-only asset/runtime model and are installed after the canonical transformation and gameplay patches. Physical-device frame pacing, memory, audio-focus and thermal acceptance remain release gates.
+The frontend reveals the real lobby before attempting WebGL construction. UI initialization is independent of renderer creation. Missing Three.js, renderer construction errors, context loss and frame exceptions surface a local recovery panel with safe retry behavior. The Android shell surfaces main-document failures with a same-origin retry page. Recovery listeners and resize observers are bound once; the renderer namespace is captured as the Three.js object, not repeatedly invoked as a function.

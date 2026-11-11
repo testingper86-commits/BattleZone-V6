@@ -19,8 +19,17 @@ ui = read("js/wildbound/ui/interface.js")
 world = read("js/wildbound/world/world.js")
 save = read("js/wildbound/backend/save.js")
 progression = read("js/wildbound/backend/progression.js")
+validator = (root / "validate_project.py").read_text(encoding="utf-8")
 mission = read("js/wildbound/backend/mission.js")
+startup_step = workflow.find("apply_wildbound_startup_recovery.py")
+security_step = workflow.find('apply_v6_offline_webview_security.py "$project_dir"')
+static_validation_step = workflow.find('test_v6_offline_webview_security.py\" .')
+validate_project_step = workflow.find("python3 validate_project.py")
+render_step = workflow.find("apply_wildbound_render_recovery.py")
 required_markers = {
+    "final WebView security runs after startup recovery and before render recovery": startup_step >= 0 and security_step > startup_step and render_step > security_step,
+    "obsolete pre-transformation WebView security pass is absent": "apply_v6_offline_webview_security.py _cloud_source" not in workflow,
+    "final offline WebView test runs in the static validation gate": validate_project_step >= 0 and static_validation_step > validate_project_step,
     "premium headquarters": "WILDBOUND_PREMIUM_HEADQUARTERS_V1" in index,
     "monster telegraph combat": "WILDBOUND_MONSTER_TELEGRAPH_COMBAT_V1" in ai,
     "monster archetype profiles": "WILDBOUND_MONSTER_ARCHETYPE_PROFILES_V1" in ai,
@@ -34,9 +43,10 @@ required_markers = {
     "render recovery": "WILDBOUND_RENDER_RECOVERY_V1" in runtime,
     "namespace final guard": "T=window.THREE" in runtime and "let t=T;" in runtime,
     "phase 10 headquarters UI": "THE ASHEN VEIL" in ui and "FIELD RECORD" in ui,
-    "pooled VFX": "WILDBOUND_PHASE_11_13_VFX_AUDIO_PERFORMANCE_V1" in runtime,
-    "audio lifecycle": "WILDBOUND_PHASE_11_13_VFX_AUDIO_PERFORMANCE_V1" in audio,
-    "dodge VFX event": "WILDBOUND_DODGE_VFX_EVENT_V1" in combat,
+    "pooled VFX": "WILDBOUND_PHASE_11_13_VFX_AUDIO_PERFORMANCE_V1" in runtime and "const count=72" in runtime and "game.vfx.update(dt)" in runtime,
+    "audio lifecycle": "WILDBOUND_PHASE_11_13_VFX_AUDIO_PERFORMANCE_V1" in audio and "MAX_VOICES=12" in audio and "o.onended=()=>" in audio and "ctx.resume()" in audio,
+    "dodge VFX event": "WILDBOUND_DODGE_VFX_EVENT_V1" in combat and "W.bus.emit('hunter-dodge'" in combat and "W.bus.on('hunter-dodge'" in runtime,
+    "project validator matches canonical boss phase thresholds": "healthRatio<.3?3:healthRatio<.65?2:1" in validator and "pct<.3?3:pct<.65?2:1" not in validator,
 }
 for name, ok in required_markers.items(): print(("PASS" if ok else "FAIL"), "phase marker:", name)
 if not all(required_markers.values()): raise SystemExit("WILDBOUND_PHASE_MARKER_AUDIT_FAILED")

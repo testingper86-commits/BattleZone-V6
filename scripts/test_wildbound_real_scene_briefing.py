@@ -13,10 +13,10 @@ checks = {
     "actual player is visible in briefing": "game.player.position.set(0,0,0)" in s,
     "all three encounter monsters are shown": all(x in s for x in ["'stalker',-4,-4", "'wraith',0,-6", "'ironmaw',4,-4"]),
     "real player rig is loaded": "W.actors.loadRigged([game.player])" in s,
-    "lobby resize rerenders real scene": "game.camera.aspect=Math.max(1,stage.clientWidth)/Math.max(1,stage.clientHeight)" in s,
+    "lobby resize rerenders real scene": "function resize(){if(!game.renderer||!game.camera)return" in s and "new ResizeObserver" in s and "visualViewport" in s and "game.renderer.render(game.scene,game.camera)" in s,
     "deployment resets gameplay spawn": "game.player.position.set(0,0,12)" in s,
     "briefing continuously animates the real hunter and enemies": "function lobbyLoop(now)" in s and "W.actors.updateHunter(game.player,dt,false,false)" in s,
-    "briefing animation starts after lobby controls initialize": "W.ui.init(game);W.bus.on('contract-complete',()=>{game.done=true});raf=requestAnimationFrame(lobbyLoop)" in s,
+    "briefing animation starts after lobby controls initialize": "bindResponsiveResize();W.ui.init(game);W.bus.on('contract-complete',()=>{game.done=true});raf=requestAnimationFrame(lobbyLoop)" in s,
     "briefing animation resumes after returning to lobby": "W.ui.refresh();raf=requestAnimationFrame(lobbyLoop)" in s,
 }
 for label, ok in checks.items(): print(("PASS" if ok else "FAIL"), label)
