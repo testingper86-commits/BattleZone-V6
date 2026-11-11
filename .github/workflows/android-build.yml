@@ -125,7 +125,7 @@ jobs:
           python3 scripts/apply_v6_screenshot_hardening.py "$project_dir"
           python3 scripts/test_v6_screenshot_hardening.py "$project_dir"
 
-      - name: Generate and verify procedural visual replacements
+      - name: Generate procedural assets and assemble canonical WILDBOUND sources
         shell: bash
         run: |
           set -euo pipefail
@@ -134,6 +134,7 @@ jobs:
           python3 scripts/apply_v6_procedural_asset_replacement.py "$project_dir"
           python3 scripts/test_v6_procedural_asset_replacement.py
           python3 scripts/apply_wildbound_transformation.py "$project_dir"
+          python3 scripts/sync_wildbound_sources.py "$project_dir"
           python3 scripts/apply_wildbound_premium_headquarters.py "$project_dir"
           python3 scripts/test_wildbound_premium_headquarters.py "$project_dir"
           python3 scripts/apply_wildbound_monster_telegraph.py "$project_dir"
@@ -163,8 +164,6 @@ jobs:
           python3 scripts/test_wildbound_vertical_slice.py "$project_dir"
           python3 scripts/apply_wildbound_startup_recovery.py "$project_dir"
           python3 scripts/test_wildbound_startup_recovery.py "$project_dir"
-          python3 scripts/apply_wildbound_vfx_audio_performance.py "$project_dir"
-          python3 scripts/test_wildbound_vfx_audio_performance.py "$project_dir"
 
       - name: Install WILDBOUND WebGL context recovery
         timeout-minutes: 3
