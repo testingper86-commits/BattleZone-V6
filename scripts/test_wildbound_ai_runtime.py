@@ -3,7 +3,7 @@
 from pathlib import Path
 import subprocess, sys
 root = Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
-source = Path(__file__).resolve().parents[1] / "runtime-tests" / "wildbound-ai-runtime.test.js"
+source = Path(__file__).resolve().parents[1] / "runtime-tests/wildbound-ai-runtime.test.js"
 if not source.is_file():
     raise SystemExit(f"Missing AI runtime harness: {source}")
 www = root / "app/src/main/assets/www"
