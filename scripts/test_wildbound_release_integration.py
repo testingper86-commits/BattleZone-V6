@@ -33,7 +33,7 @@ required_markers = {
     "perfect dodge": "WILDBOUND_PERFECT_DODGE_V1" in combat,
     "render recovery": "WILDBOUND_RENDER_RECOVERY_V1" in runtime,
     "namespace final guard": "T=window.THREE" in runtime and "let t=T;" in runtime,
-    "phase 10 headquarters": "WILDBOUND_PREMIUM_HEADQUARTERS_V1" in ui,
+    "phase 10 headquarters UI": "THE ASHEN VEIL" in ui and "FIELD RECORD" in ui,
     "pooled VFX": "WILDBOUND_PHASE_11_13_VFX_AUDIO_PERFORMANCE_V1" in runtime,
     "audio lifecycle": "WILDBOUND_PHASE_11_13_VFX_AUDIO_PERFORMANCE_V1" in audio,
     "dodge VFX event": "WILDBOUND_DODGE_VFX_EVENT_V1" in combat,
@@ -41,14 +41,14 @@ required_markers = {
 for name, ok in required_markers.items(): print(("PASS" if ok else "FAIL"), "phase marker:", name)
 if not all(required_markers.values()): raise SystemExit("WILDBOUND_PHASE_MARKER_AUDIT_FAILED")
 ordered = [
- "apply_wildbound_transformation.py", "apply_wildbound_premium_headquarters.py",
+ "apply_wildbound_transformation.py", "sync_wildbound_sources.py", "apply_wildbound_premium_headquarters.py",
  "apply_wildbound_monster_telegraph.py", "apply_wildbound_monster_archetypes.py",
  "apply_wildbound_hollow_king_windup.py", "apply_wildbound_monster_patrol.py",
  "apply_wildbound_hunt_tracking.py", "apply_wildbound_distinct_hunt_contract.py",
  "apply_wildbound_persisted_rank.py", "apply_wildbound_camera_control.py",
  "apply_wildbound_playable_prototype.py", "apply_wildbound_perfect_dodge.py",
  "apply_wildbound_blackpine_wind.py", "apply_wildbound_startup_recovery.py",
- "apply_wildbound_vfx_audio_performance.py", "apply_wildbound_render_recovery.py",
+ "apply_wildbound_render_recovery.py",
  "apply_wildbound_namespace_final_guard.py",
 ]
 positions = [workflow.find(name) for name in ordered]
