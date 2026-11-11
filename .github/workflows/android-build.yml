@@ -217,6 +217,7 @@ jobs:
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_asset_provenance.py"
           python3 "$GITHUB_WORKSPACE/scripts/verify_offline_integrity.py" --source .
           python3 "$GITHUB_WORKSPACE/scripts/test_wildbound_vertical_slice.py" .
+          python3 "$GITHUB_WORKSPACE/scripts/test_wildbound_release_integration.py" .
 
       - name: Run unit tests and build debug and unsigned release APKs
         shell: bash
