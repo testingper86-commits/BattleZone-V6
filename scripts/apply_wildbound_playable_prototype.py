@@ -12,8 +12,8 @@ for p in (actors, world, runtime, combat):
     if not p.is_file():
         raise SystemExit(f"Missing canonical WILDBOUND module: {p}")
 marker = "WILDBOUND_PLAYABLE_VERTICAL_SLICE_V1"
-if marker in runtime.read_text(encoding="utf-8"):
-    print("WILDBOUND_PLAYABLE_VERTICAL_SLICE_ALREADY_APPLIED")
+if marker in runtime.read_text(encoding="utf-8") or "IcosahedronGeometry(defs.r*.72,2)" in actors.read_text(encoding="utf-8"):
+    print("WILDBOUND_PLAYABLE_DETAILS_HANDLED_BY_CANONICAL_ACTORS_AND_WORLD")
     raise SystemExit(0)
 a = actors.read_text(encoding="utf-8")
 old = "if(type==='king'){for(let i=0;i<6;i++){let spike=mesh(new T.ConeGeometry(.18,.9,5),accent,g,Math.cos(i*Math.PI/3)*1.0,2.9,Math.sin(i*Math.PI/3)*.65);spike.rotation.z=Math.cos(i*Math.PI/3)*.7;spike.rotation.x=Math.sin(i*Math.PI/3)*.5}}let aura=mesh(new T.SphereGeometry(defs.r*1.5,12,8),accent,g,0,defs.h*.55,0);"
