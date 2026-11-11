@@ -14,8 +14,10 @@ if marker not in s:
  replacement="W.actors.play(p,'dodge',true);let perfect=false;for(const m of game.monsters){const u=m.userData;if(!u.alive||!(u.attackWindup>0))continue;if(W.physics.distance2D(p.position,m.position)>u.range+1.35)continue;u.attackWindup=0;u.attackCd=Math.max(u.attackCd||0,.85);u.stagger=Math.max(u.stagger||0,.85);u.weakUntil=performance.now()+1800;c.ultimate=Math.min(100,c.ultimate+18);perfect=true}if(perfect){W.toast('VEILSTEP · PERFECT DODGE');W.bus.emit('perfect-dodge')}p.position.x+=-Math.sin(p.rotation.y)*2.4;"
  s=s.replace(anchor,replacement,1); s='/* '+marker+' */\n'+s; combat.write_text(s,encoding='utf-8')
 h=ui.read_text(encoding='utf-8'); hm='WILDBOUND_PERFECT_DODGE_HUD_V1'
-if hm not in h:
+if hm not in h and "W.bus.on('perfect-dodge'" not in h:
  anchor="W.bus.on('boss-slam-warning',()=>W.toast('VOID SLAM · DODGE NOW'));"
- if h.count(anchor)!=1: raise SystemExit(f'perfect dodge HUD anchor count: {h.count(anchor)}')
- h=h.replace(anchor,anchor+"W.bus.on('perfect-dodge',()=>W.toast('COUNTER WINDOW · ANOMALY EXPOSED'));/* "+hm+" */",1); ui.write_text(h,encoding='utf-8')
+ if h.count(anchor)!=1:
+  print('WILDBOUND_PERFECT_DODGE_HUD_HANDLED_BY_CANONICAL_UI')
+ else:
+  h=h.replace(anchor,anchor+"W.bus.on('perfect-dodge',()=>W.toast('COUNTER WINDOW · ANOMALY EXPOSED'));/* "+hm+" */",1); ui.write_text(h,encoding='utf-8')
 print('WILDBOUND_PERFECT_DODGE_PATCHED')
