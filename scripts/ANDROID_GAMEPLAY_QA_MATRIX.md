@@ -1,4 +1,4 @@
-# Battle Zone V6 Offline — Android Gameplay QA Matrix
+# Battle Zone V6 Offline â Android Gameplay QA Matrix
 
 **Release gate:** run on physical Android devices. CI build and static validation do not replace these checks. All tests must be performed with airplane mode enabled after install, except the install/build steps themselves.
 
@@ -101,3 +101,17 @@ QA-35 through QA-37 require physical-device verification. CI checks the source i
 | QA-40 | Operator gear silhouettes | Preview and spawn all 17 operators; inspect each in idle, run, jump, freefall, shoot and reload on a low/mid/high Android device. | Eight equipment styles remain distinct; headwear, masks, radios, shoulder plates and packs stay attached without clipping or animation detachment; no material/geometry errors or noticeable frame-time regression. | Operator roster screenshots + animation screen recordings + logcat/FPS capture |
 
 | QA-41 | Offline Map Atlas | Open the atlas on all ten maps; pan/zoom; inspect six POIs and their 3D beacons; toggle terrain/water/hazard layers; plot routes around lakes, rivers and the sea boundary; create, rename, move, delete and reload waypoints; repeat in airplane mode. | Map coordinates and beacons stay aligned; water is never crossed except at the configured bridge; routes avoid blocked terrain; waypoint edits persist per map; no network request, collision regression or material FPS drop. | Device screen recording + map screenshots + offline manifest/network capture + Perfetto/FPS log |
+
+
+## WILDBOUND implementation phase acceptance
+
+| ID | Area | Test | Expected result | Evidence |
+|---|---|---|---|---|
+| QA-37 | Monster telegraphs | Engage Grave Stalker, Wraithcaller and Ironmaw at attack range; stagger each during its windup. | Each attack has a readable warning; Stalker lunge is faster, Ironmaw slam is slower/heavier, ranged cast launches only after its tell, and stagger cancels pending attacks. | 60 fps screen recording + combat events |
+| QA-38 | Boss phase one | Fight Hollow King above 65% HP; dodge its melee swing, then continue into phases two and three. | Phase-one swing has a clear windup and can miss; phase-two projectile and phase-three slam still trigger with their original weak-core windows. | Screen recording + boss phase log |
+| QA-39 | Ambient monster patrol | Observe non-boss monsters with the hunter beyond 34 world units, then approach. | Monsters patrol smoothly within a 3.5-unit home radius, stop ambient patrol on aggro, and resume existing pursuit when detected. | Screen recording + position trace |
+| QA-40 | Hunt signature tracking | Track a living monster, wait 6.5 seconds, use tracking again after cooldown, then restart the encounter. | Last-known marker pulses and expires; cooldown returns to zero after 8 seconds; no-target attempts do not consume cooldown; restart disposes marker resources. | Screen recording + memory snapshot |
+| QA-41 | Hunt contract | Kill each of the three standard anomaly species; attempt duplicate species where additional spawns are available; restart and repeat. | Only unique species advance the 3/3 purge objective; duplicate species do not advance it; Hollow King unlocks after all required species; progress resets on a new contract. | HUD recording + saved state |
+| QA-42 | Blackpine wind | Compare low and ultra graphics while observing instanced canopy foliage for 2 minutes. | Canopy sway is smooth and time-based, instancing and quality density remain intact, and no sustained frame-time or thermal regression occurs. | Device video + Perfetto trace |
+| QA-43 | Rank persistence | Cross each 500 XP rank threshold, background/restart the app, and reopen the HUD. | Rank advances once, rank-up notification matches the rank catalog, and the saved rank/HUD remain consistent after reload including legacy saves. | Before/after HUD + local save snapshot |
+
