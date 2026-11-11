@@ -30,7 +30,7 @@ jobs:
             exit 1
           fi
           rm -rf _cloud_source
-          mkdir _cloud_source
+          mkdir -p _cloud_source
           unzip -oq "$archive" -d _cloud_source
           mkdir -p _cloud_source/.github/workflows
           cp .github/workflows/android-build.yml _cloud_source/.github/workflows/android-build.yml
@@ -47,7 +47,7 @@ jobs:
           python3 scripts/apply_v6_gpu_recovery.py _cloud_source
           python3 scripts/apply_v6_progression_integrity.py _cloud_source
           python3 scripts/apply_v6_encrypted_backup.py _cloud_source
-          python#3 scripts/apply_v6_squad_command_system.py _cloud_source
+          python3 scripts/apply_v6_squad_command_system.py _cloud_source
           python3 scripts/apply_v6_lobby_alignment.py _cloud_source
           python3 scripts/apply_v6_tactical_command_ui.py _cloud_source
           python3 scripts/apply_v6_adaptive_enemy_ai.py _cloud_source
@@ -72,5 +72,267 @@ jobs:
         run: |
           set -euo pipefail
           source_dir="${{ steps.source.outputs.dir }}"
-          settings_file="$(find "$source_dir" -type f \= -name settings.gradle o- name settings.gradle.kts [\.\\n."\hs")\\" | head -n 1)"
-          6 not ok
+          settings_file="$(find "$source_dir" -type f \( -name settings.gradle -o -name settings.gradle.kts \) | head -n 1)"
+          if [ -z "$settings_file" ]; then
+            echo "No settings.gradle or settings.gradle.kts found in $source_dir."
+            exit 1
+          fi
+          project_dir="$(dirname "$settings_file")"
+          if [ ! -d "$project_dir/app" ]; then
+            echo "Found Gradle settings at $project_dir but no app/ module beside it."
+            exit 1
+          fi
+          echo "dir=$project_dir" >> "$GITHUB_OUTPUT"
+          echo "Project root: $project_dir"
+
+      - name: Enforce supported Android Gradle plugin compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_dir="${{ steps.project.outputs.dir }}"
+          python3 scripts/apply_v6_gradle_compatibility.py "$project_dir"
+          python3 scripts/test_v6_gradle_compatibility.py "$project_dir"
+
+      - name: Repair critical gameplay runtime and tactical controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_dir="${{ steps.project.outputs.dir }}"
+          python3 scripts/apply_v6_critical_gameplay_repair.py "$project_dir"
+          python3 scripts/apply_v6_gameplay_rebuild.py "$project_dir"
+          python3 scripts/apply_v6_frustum_culling.py "$project_dir"
+          python3 scripts/test_v6_gameplay_rebuild.py "$project_dir"
+          python3 scripts/apply_v6_permanent_runtime_graphics_repair.py "$project_dir"
+          python3 scripts/test_v6_permanent_runtime_graphics_repair.py "$project_dir"
+          python3 scripts/apply_v6_character_camera_repair.py "$project_dir"
+          python3 scripts/test_v6_character_camera_repair.py "$project_dir"
+          python3 scripts/test_v6_critical_gameplay_repair.py
+          python3 scripts/apply_v6_legacy_character_tactics.py "$project_dir"
+          python3 scripts/test_v6_legacy_character_tactics.py "$project_dir"
+          python3 scripts/test_v6_runtime_javascript_syntax.py "$project_dir"
+
+      - name: Install screenshot-driven screen lifecycle repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_dir="${{ steps.project.outputs.dir }}"
+          python3 scripts/apply_v6_screen_lifecycle_repair.py "$project_dir"
+          python3 scripts/test_v6_screen_lifecycle_repair.py
+          python3 scripts/apply_v6_touch_control_rebuild.py "$project_dir"
+          python3 scripts/test_v6_touch_control_rebuild.py
+          python3 scripts/apply_v6_edge_control_system.py "$project_dir"
+          python3 scripts/test_v6_edge_control_system.py
+          python3 scripts/apply_v6_pubg_hud.py "$project_dir"
+          python3 scripts/test_v6_pubg_hud.py
+          python3 scripts/apply_v6_screenshot_hardening.py "$project_dir"
+          python3 scripts/test_v6_screenshot_hardening.py "$project_dir"
+
+      - name: Generate procedural assets and assemble canonical WILDBOUND sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_dir="${{ steps.project.outputs.dir }}"
+          python3 -m pip install --disable-pip-version-check --no-cache-dir Pillow==12.3.0
+          python3 scripts/apply_v6_procedural_asset_replacement.py "$project_dir"
+          python3 scripts/test_v6_procedural_asset_replacement.py
+          python3 scripts/apply_wildbound_transformation.py "$project_dir"
+          python3 scripts/sync_wildbound_sources.py "$project_dir"
+          python3 scripts/apply_wildbound_premium_headquarters.py "$project_dir"
+          python3 scripts/test_wildbound_premium_headquarters.py "$project_dir"
+          python3 scripts/apply_wildbound_monster_telegraph.py "$project_dir"
+          python3 scripts/apply_wildbound_monster_archetypes.py "$project_dir"
+          python3 scripts/test_wildbound_monster_telegraph.py "$project_dir"
+          python3 scripts/test_wildbound_monster_archetypes.py "$project_dir"
+          python3 scripts/apply_wildbound_hollow_king_windup.py "$project_dir"
+          python3 scripts/test_wildbound_hollow_king_windup.py "$project_dir"
+          python3 scripts/apply_wildbound_monster_patrol.py "$project_dir"
+          python3 scripts/test_wildbound_monster_patrol.py "$project_dir"
+          python3 scripts/test_wildbound_ai_runtime.py "$project_dir"
+          python3 scripts/apply_wildbound_hunt_tracking.py "$project_dir"
+          python3 scripts/test_wildbound_hunt_tracking.py "$project_dir"
+          python3 scripts/apply_wildbound_distinct_hunt_contract.py "$project_dir"
+          python3 scripts/test_wildbound_distinct_hunt_contract.py "$project_dir"
+          python3 scripts/apply_wildbound_persisted_rank.py "$project_dir"
+          python3 scripts/test_wildbound_persisted_rank.py "$project_dir"
+          python3 scripts/test_wildbound_real_scene_briefing.py "$project_dir"
+          python3 scripts/test_wildbound_actor_constructors.py "$project_dir"
+          python3 scripts/apply_wildbound_camera_control.py "$project_dir"
+          python3 scripts/test_wildbound_camera_control.py "$project_dir"
+          python3 scripts/apply_wildbound_playable_prototype.py "$project_dir"
+          python3 scripts/test_wildbound_playable_prototype.py "$project_dir"
+          python3 scripts/apply_wildbound_perfect_dodge.py "$project_dir"
+          python3 scripts/test_wildbound_perfect_dodge.py "$project_dir"
+          python3 scripts/apply_wildbound_blackpine_wind.py "$project_dir"
+          python3 scripts/test_wildbound_blackpine_wind.py "$project_dir"
+          python3 scripts/test_wildbound_vertical_slice.py "$project_dir"
+          python3 scripts/apply_wildbound_startup_recovery.py "$project_dir"
+          python3 scripts/test_wildbound_startup_recovery.py "$project_dir"
+
+      - name: Install WILDBOUND WebGL context recovery
+        timeout-minutes: 3
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_dir="${{ steps.project.outputs.dir }}"
+          python3 scripts/apply_wildbound_render_recovery.py "$project_dir"
+          python3 scripts/test_wildbound_render_recovery.py "$project_dir"
+          python3 scripts/apply_wildbound_namespace_final_guard.py "$project_dir"
+          python3 scripts/test_wildbound_namespace_final_guard.py "$project_dir"
+
+      - name: Create per-file asset provenance ledger
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_dir="${{ steps.project.outputs.dir }}"
+          python3 scripts/test_v6_asset_provenance.py
+          python3 scripts/create_asset_provenance_ledger.py \
+            --assets-root "$project_dir/app/src/main/assets/www" \
+            --output "$project_dir/app/src/main/assets/ASSET_PROVENANCE_LEDGER.json" \
+            --require-verified
+
+      - name: Create content-addressed source provenance
+        id: provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_dir="${{ steps.project.outputs.dir }}"
+          python3 scripts/create_build_provenance.py \
+            --archive "$GITHUB_WORKSPACE/BattleZone_V6_GitHub_Actions_Ready.zip" \
+            --source "$project_dir" \
+            --workflow "$GITHUB_WORKSPACE/.github/workflows/android-build.yml" \
+            --commit "$GITHUB_SHA"
+
+      - name: Run WILDBOUND static and offline validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_dir="${{ steps.project.outputs.dir }}"
+          cd "$project_dir"
+          python3 validate_project.py
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_offline_integrity.py"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_build_provenance.py"
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_asset_provenance.py"
+          python3 "$GITHUB_WORKSPACE/scripts/verify_offline_integrity.py" --source .
+          python3 "$GITHUB_WORKSPACE/scripts/test_wildbound_vertical_slice.py" .
+          python3 "$GITHUB_WORKSPACE/scripts/test_wildbound_release_integration.py" .
+
+      - name: Run unit tests and build debug and unsigned release APKs
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "${{ steps.project.outputs.dir }}"
+          test_source_count="$(find app/src/test -type f -name '*.kt' 2>/dev/null | wc -l)"
+          if [ "$test_source_count" -lt 1 ]; then
+            echo "No Android JVM unit-test sources found; refusing a misleading NO-SOURCE test build." >&2
+            exit 1
+          fi
+          echo "Android JVM unit-test source files: $test_source_count"
+          if [ -f ./gradlew ]; then
+            chmod +x ./gradlew
+            ./gradlew --no-daemon :app:testDebugUnitTest :app:testReleaseUnitTest :app:assembleDebug :app:assembleRelease
+          else
+            gradle --no-daemon :app:testDebugUnitTest :app:testReleaseUnitTest :app:assembleDebug :app:assembleRelease
+          fi
+          for apk in app/build/outputs/apk/debug/*.apk app/build/outputs/apk/release/*.apk; do
+            test -f "$apk"
+            python3 "$GITHUB_WORKSPACE/scripts/verify_offline_integrity.py" --apk "$apk"
+          done
+
+      - name: Rebuild clean with outbound networking disabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "${{ steps.project.outputs.dir }}"
+          sudo iptables -I OUTPUT 1 -o lo -j ACCEPT
+          sudo iptables -I OUTPUT 2 -j DROP
+          sudo ip6tables -I OUTPUT 1 -o lo -j ACCEPT
+          sudo ip6tables -I OUTPUT 2 -j DROP
+          restore_network() {
+            sudo iptables -D OUTPUT -j DROP || true
+            sudo iptables -D OUTPUT -o lo -j ACCEPT || true
+            sudo ip6tables -D OUTPUT -j DROP || true
+            sudo ip6tables -D OUTPUT -o lo -j ACCEPT || true
+          }
+          trap restore_network EXIT
+          if [ -f ./gradlew ]; then
+            ./gradlew --no-daemon --offline clean :app:testDebugUnitTest :app:testReleaseUnitTest :app:assembleDebug :app:assembleRelease
+          else
+            gradle --no-daemon --offline clean :app:testDebugUnitTest :app:testReleaseUnitTest :app:assembleDebug :app:assembleRelease
+          fi
+          echo "CLEAN_BUILD_NETWORK_DISABLED_OK dependency_cache_warmed=true"
+
+      - name: Sign release APK with owner-managed keystore
+        id: sign_release
+        env:
+          KEYSTORE_BASE64: ${{ secrets.BATTLEZONE_RELEASE_KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.BATTLEZONE_RELEASE_KEY_ALIAS }}
+          KEYSTORE_PASSWORD: ${{ secrets.BATTLEZONE_RELEASE_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.BATTLEZONE_RELEASE_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "::warning::Production signing skipped. Configure the four BATTLEZONE_RELEASE_* repository secrets before distribution."
+            exit 0
+          fi
+          key_store="$RUNNER_TEMP/battlezone-release.jks"
+          trap 'rm -f "$key_store"' EXIT
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$key_store"
+          chmod 600 "$key_store"
+          release_apk="$(find "${{ steps.project.outputs.dir }}/app/build/outputs/apk/release" -maxdepth 1 -type f -name '*.apk' | head -n 1)"
+          test -n "$release_apk"
+          signed_apk="$RUNNER_TEMP/WILDBOUND-release-signed.apk"
+          cp "$release_apk" "$signed_apk"
+          apksigner="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          test -x "$apksigner"
+          "$apksigner" sign --ks "$key_store" --ks-key-alias "$KEY_ALIAS" --ks-pass env:KEYSTORE_PASSWORD --key-pass env:KEY_PASSWORD "$signed_apk"
+          "$apksigner" verify --verbose --print-certs "$signed_apk"
+          sha256sum "$signed_apk"
+          echo "signed_apk=$signed_apk" >> "$GITHUB_OUTPUT"
+
+      - name: Upload WILDBOUND debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: WILDBOUND-debug-APK
+          path: ${{ steps.project.outputs.dir }}/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload WILDBOUND unsigned release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: WILDBOUND-release-unsigned-APK
+          path: ${{ steps.project.outputs.dir }}/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload WILDBOUND signed production release APK
+        if: steps.sign_release.outputs.signed_apk != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: WILDBOUND-release-signed-APK
+          path: ${{ steps.sign_release.outputs.signed_apk }}
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Package patched Android source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "${{ steps.project.outputs.dir }}"
+          find . -type f \( -name '*.download' -o -name '*.replaced-backup' \) -delete
+          zip -qr "$GITHUB_WORKSPACE/WILDBOUND_Offline_Patched_Source.zip" . \
+            -x 'build/**' '**/build/**' '.gradle/**' '**/.gradle/**' '.kotlin/**' '**/.kotlin/**' '.git/**' '*/.git/*'
+          if zipinfo -1 "$GITHUB_WORKSPACE/WILDBOUND_Offline_Patched_Source.zip" | grep -qE '(^|/)\.git/'; then
+            echo "Git metadata leaked into the distributable source archive." >&2
+            exit 1
+          fi
+          sha256sum "$GITHUB_WORKSPACE/WILDBOUND_Offline_Patched_Source.zip"
+
+      - name: Upload patched WILDBOUND source
+        uses: actions/upload-artifact@v4
+        with:
+          name: WILDBOUND-Offline-Patched-Source
+          path: WILDBOUND_Offline_Patched_Source.zip
+          if-no-files-found: error
+          retention-days: 30
