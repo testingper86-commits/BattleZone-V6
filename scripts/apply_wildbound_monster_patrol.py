@@ -9,8 +9,8 @@ for p in (a,ai):
  if not p.is_file(): raise SystemExit(f'Missing required module: {p}')
 actors=a.read_text(encoding='utf-8'); brain=ai.read_text(encoding='utf-8')
 marker='WILDBOUND_MONSTER_AMBIENT_PATROL_V1'
-if marker in brain:
- print('WILDBOUND_MONSTER_AMBIENT_PATROL_ALREADY_APPLIED'); raise SystemExit(0)
+if marker in brain or "u.roamRadius>0&&u.stagger<=0&&u.attackRecovery<=0" in brain:
+ print('WILDBOUND_MONSTER_PATROL_HANDLED_BY_CANONICAL_AI'); raise SystemExit(0)
 old='seed:Math.random()*10,arms,legs'
 new='seed:Math.random()*10,homeX:x,homeZ:z,arms,legs'
 if actors.count(old)!=1: raise SystemExit(f'Actor spawn anchor count: {actors.count(old)}')
