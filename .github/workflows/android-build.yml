@@ -162,6 +162,8 @@ jobs:
           python3 scripts/test_wildbound_camera_control.py "$project_dir"
           python3 scripts/apply_wildbound_playable_prototype.py "$project_dir"
           python3 scripts/test_wildbound_playable_prototype.py "$project_dir"
+          python3 scripts/apply_wildbound_perfect_dodge.py "$project_dir"
+          python3 scripts/test_wildbound_perfect_dodge.py "$project_dir"
           python3 scripts/apply_wildbound_blackpine_wind.py "$project_dir"
           python3 scripts/test_wildbound_blackpine_wind.py "$project_dir"
           python3 scripts/test_wildbound_vertical_slice.py "$project_dir"

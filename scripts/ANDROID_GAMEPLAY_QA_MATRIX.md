@@ -115,3 +115,6 @@ QA-35 through QA-37 require physical-device verification. CI checks the source i
 | QA-42 | Blackpine wind | Compare low and ultra graphics while observing instanced canopy foliage for 2 minutes. | Canopy sway is smooth and time-based, instancing and quality density remain intact, and no sustained frame-time or thermal regression occurs. | Device video + Perfetto trace |
 | QA-43 | Rank persistence | Cross each 500 XP rank threshold, background/restart the app, and reopen the HUD. | Rank advances once, rank-up notification matches the rank catalog, and the saved rank/HUD remain consistent after reload including legacy saves. | Before/after HUD + local save snapshot |
 
+
+
+| QA-44 | Perfect dodge counter | Evade each standard monster's active telegraph at close range, then repeat outside counter range and during ordinary movement. | A close-range timed dodge cancels the pending strike, staggers/exposes the attacker, restores the configured ultimate charge and shows counter feedback; late/out-of-range dodges retain ordinary dodge behavior without a false counter. | 60 fps combat recording + combat event trace + before/after ultimate meter |
