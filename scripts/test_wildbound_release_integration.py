@@ -18,6 +18,8 @@ ai = read("js/wildbound/ai/monster-ai.js")
 ui = read("js/wildbound/ui/interface.js")
 world = read("js/wildbound/world/world.js")
 save = read("js/wildbound/backend/save.js")
+progression = read("js/wildbound/backend/progression.js")
+mission = read("js/wildbound/backend/mission.js")
 required_markers = {
     "premium headquarters": "WILDBOUND_PREMIUM_HEADQUARTERS_V1" in index,
     "monster telegraph combat": "WILDBOUND_MONSTER_TELEGRAPH_COMBAT_V1" in ai,
@@ -26,11 +28,11 @@ required_markers = {
     "boss windup": "WILDBOUND_HOLLOW_KING_PHASE_ONE_WINDUP_V1" in ai,
     "hunt tracking lifecycle": "WILDBOUND_HUNT_TRACKING_LIFECYCLE_V1" in runtime,
     "Blackpine canopy wind": "WILDBOUND_BLACKPINE_CANOPY_WIND_V1" in world,
-    "distinct hunt contract": "WILDBOUND_DISTINCT_HUNT_CONTRACT_V1" in save,
-    "persisted rank": "WILDBOUND_PERSISTED_RANK_PROGRESSION_V1" in save,
+    "distinct hunt contract": "WILDBOUND_DISTINCT_HUNT_CONTRACT_V1" in mission,
+    "persisted rank": "WILDBOUND_PERSISTED_RANK_PROGRESSION_V1" in progression,
     "perfect dodge": "WILDBOUND_PERFECT_DODGE_V1" in combat,
     "render recovery": "WILDBOUND_RENDER_RECOVERY_V1" in runtime,
-    "namespace final guard": "WILDBOUND_NAMESPACE_FINAL_GUARD_V1" in runtime,
+    "namespace final guard": "T=window.THREE" in runtime and "let t=T;" in runtime,
     "phase 10 headquarters": "WILDBOUND_PREMIUM_HEADQUARTERS_V1" in ui,
     "pooled VFX": "WILDBOUND_PHASE_11_13_VFX_AUDIO_PERFORMANCE_V1" in runtime,
     "audio lifecycle": "WILDBOUND_PHASE_11_13_VFX_AUDIO_PERFORMANCE_V1" in audio,
