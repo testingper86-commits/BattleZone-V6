@@ -14,7 +14,7 @@ for p in paths.values():
 r,c,a = (paths[k].read_text(encoding="utf-8") for k in ("runtime","combat","audio"))
 checks = {
  "bounded fixed-size particle pool": "const count=72" in r and "cursor++%count" in r,
- "particles use GPU buffer attributes and one draw object": "BufferAttribute(positions,3)" in r and "new T().Points(" in r,
+ "particles use GPU buffer attributes and one draw object": "BufferAttribute(positions,3)" in r and "new three.Points(" in r,
  "particle simulation updates in the main frame loop": "game.effects.update(dt)" in r,
  "hit and weak-point impacts have separate VFX": "W.bus.on('hit'" in r and "e.weak?18:9" in r,
  "monster death and boss phase have burst feedback": "W.bus.on('kill'" in r and "W.bus.on('boss-phase'" in r,
