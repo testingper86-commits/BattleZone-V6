@@ -118,3 +118,6 @@ QA-35 through QA-37 require physical-device verification. CI checks the source i
 
 
 | QA-44 | Perfect dodge counter | Evade each standard monster's active telegraph at close range, then repeat outside counter range and during ordinary movement. | A close-range timed dodge cancels the pending strike, staggers/exposes the attacker, restores the configured ultimate charge and shows counter feedback; late/out-of-range dodges retain ordinary dodge behavior without a false counter. | 60 fps combat recording + combat event trace + before/after ultimate meter |
+
+
+| QA-45 | Premium headquarters frontend | Open the lobby on short and wide landscape displays; inspect rank progress and field record; use keyboard focus and Android safe-area insets; enable reduced motion. | Rank progress reflects XP within each 500 XP tier; field record shows saved local stats and contract state; modal and panels remain reachable without clipping; keyboard focus is visible and reduced motion is honored; existing deploy, briefing, bestiary, inventory, skills and settings actions remain functional. | Device screenshots + screen recording + saved-state comparison |
