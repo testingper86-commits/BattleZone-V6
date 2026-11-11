@@ -58,12 +58,10 @@ if runtime.count(legacy_ui_anchor) == 1:
 elif runtime.count(animated_ui_anchor) == 1:
     runtime = runtime.replace(animated_ui_anchor,
         "window.addEventListener('resize',resize);W.bus.on('contract-complete',()=>{game.done=true});raf=requestAnimationFrame(lobbyLoop);", 1)
+elif "function makeScene(){let t=T;" in runtime and "W.main.ensureUi" in runtime:
+    print("WILDBOUND_CANONICAL_STARTUP_INITIALIZATION_ALREADY_SAFE")
 else:
     raise SystemExit("move lobby UI initialization out of renderer construction: expected one supported source anchor")
-runtime = one(runtime,
-    "function makeScene(){let t=T();game.THREE=t;",
-    "function makeScene(){let t=T();if(!t||!t.WebGLRenderer)throw new Error('The bundled Three.js engine did not load. Check the local libs/three.min.js asset.');game.THREE=t;",
-    "explicit Three.js dependency failure")
 runtime = one(runtime,
     "W.main.initialize=()=>{makeScene();W.main.setQuality(W.state.settings.quality||'high');W.ui.refresh()};W.main.resize=resize})();",
     """let uiInitialized=false;
