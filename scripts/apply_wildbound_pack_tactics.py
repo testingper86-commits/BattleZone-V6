@@ -37,4 +37,20 @@ W.ai={update(game,dt){
 })();
 """
 p.write_text(source,encoding='utf-8')
+ui=root/'app/src/main/assets/www/js/wildbound/ui/interface.js'
+css=root/'app/src/main/assets/www/css/wildbound.css'
+for f in (ui,css):
+ if not f.is_file(): raise SystemExit(f'Missing combat HUD dependency: {f}')
+u=ui.read_text(encoding='utf-8')
+u_marker='WILDBOUND_MONSTER_TELEGRAPH_HUD_V1'
+if u_marker not in u:
+ anchor="W.bus.on('boss-phase',p=>{let b=$('boss-warning');b.textContent=['','THE HOLLOW KING AWAKENS','THE VEIL SHATTERS','FINAL FORM · RUN'][p];b.classList.remove('hidden');setTimeout(()=>b.classList.add('hidden'),2200)});"
+ if u.count(anchor)!=1: raise SystemExit(f'monster warning HUD anchor count: {u.count(anchor)}')
+ handler=anchor+"W.bus.on('monster-telegraph',e=>{const b=$('boss-warning');b.textContent=e.kind==='boss'?'HOLLOW KING WINDUP · DODGE':e.kind==='brute'?'IRONMAW HEAVY STRIKE · DODGE':e.role==='flanker'?'FLANKING ANOMALY · WATCH YOUR SIDE':e.kind==='ranged'?'WRAITHCALLER CAST · BREAK LINE OF SIGHT':'GRAVE STALKER LUNGE · DODGE';b.classList.add('monster-warning');b.classList.remove('hidden');clearTimeout(b._monsterTimer);b._monsterTimer=setTimeout(()=>{b.classList.add('hidden');b.classList.remove('monster-warning')},Math.max(650,(e.remaining||.4)*1000+350))});/* WILDBOUND_MONSTER_TELEGRAPH_HUD_V1 */"
+ u=u.replace(anchor,handler,1);ui.write_text(u,encoding='utf-8')
+c=css.read_text(encoding='utf-8')
+c_marker='WILDBOUND_MONSTER_TELEGRAPH_STYLE_V1'
+if c_marker not in c:
+ c+='\n/* WILDBOUND_MONSTER_TELEGRAPH_STYLE_V1 */\n.boss-warning.monster-warning{color:#ffad69;text-shadow:0 0 12px #f36a32,0 0 30px #b43c3c;animation:monster-warning-pulse .22s ease-in-out 2 alternate}@keyframes monster-warning-pulse{from{transform:scale(.96);opacity:.78}to{transform:scale(1.04);opacity:1}}\n'
+ css.write_text(c,encoding='utf-8')
 print('WILDBOUND_PACK_TACTICS_PATCHED',p)
