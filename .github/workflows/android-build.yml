@@ -152,6 +152,8 @@ jobs:
           python3 scripts/test_wildbound_monster_patrol.py "$project_dir"
           python3 scripts/apply_wildbound_hunt_tracking.py "$project_dir"
           python3 scripts/test_wildbound_hunt_tracking.py "$project_dir"
+          python3 scripts/apply_wildbound_distinct_hunt_contract.py "$project_dir"
+          python3 scripts/test_wildbound_distinct_hunt_contract.py "$project_dir"
           python3 scripts/test_wildbound_real_scene_briefing.py "$project_dir"
           python3 scripts/test_wildbound_actor_constructors.py "$project_dir"
           python3 scripts/apply_wildbound_camera_control.py "$project_dir"
