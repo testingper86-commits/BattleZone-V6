@@ -160,6 +160,8 @@ jobs:
           project_dir="${{ steps.project.outputs.dir }}"
           python3 scripts/apply_wildbound_render_recovery.py "$project_dir"
           python3 scripts/test_wildbound_render_recovery.py "$project_dir"
+          python3 scripts/apply_wildbound_namespace_final_guard.py "$project_dir"
+          python3 scripts/test_wildbound_namespace_final_guard.py "$project_dir"
 
       - name: Create per-file asset provenance ledger
         shell: bash
