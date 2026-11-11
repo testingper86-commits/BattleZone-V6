@@ -2,14 +2,6 @@ name: Build WILDBOUND Offline Android APK
 
 on:
   workflow_dispatch:
-  push:
-    branches: [feature/offline-pairing-removal]
-    paths:
-      - 'BattleZone_V6_GitHub_Actions_Ready.zip'
-      - '.github/workflows/**'
-      - 'scripts/**'
-      - 'README.md'
-      - 'docs/**'
 
 permissions:
   contents: read
