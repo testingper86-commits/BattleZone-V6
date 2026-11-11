@@ -1,1 +1,21 @@
-IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwoiIiJCZWhhdmlvcmFsIFdJTERCT1VORCBBSSByZWdyZXNzaW9uIHRlc3RzIGV4ZWN1dGVkIGluIGEgcmVhbCBKYXZhU2NyaXB0IFZNLiIiIgpmcm9tIHBhdGhsaWIgaW1wb3J0IFBhdGgKaW1wb3J0IHN1YnByb2Nlc3MsIHN5cwpyb290ID0gUGF0aChzeXMuYXJndlsxXSBpZiBsZW4oc3lzLmFyZ3YpID4gMSBlbHNlICIuIikucmVzb2x2ZSgpCnNvdXJjZSA9IFBhdGgoX19maWxlX18pLnJlc29sdmUoKS5wYXJlbnRzWzFdIC8gInJ1bnRpbWUtdGVzdHMvd2lsZGJvdW5kLWFpLXJ1bnRpbWUudGVzdC5qcyIKaWYgbm90IHNvdXJjZS5pc19maWxlKCk6CiAgICByYWlzZSBTeXN0ZW1FeGl0KGYiTWlzc2luZyBBSSBydW50aW1lIGhhcm5lc3M6IHtzb3VyY2V9IikKd3d3ID0gcm9vdCAvICJhcHAvc3JjL21haW4vYXNzZXRzL3d3dyIKZm9yIHJlbGF0aXZlIGluICgi anMvd2lsZGJvdW5kL2FjdG9ycy9hY3RvcnMuanMiLCAianMvd2lsZGJvdW5kL2FpL21vbnN0ZXItYWkuaGV3IiwgImpzL3dpbGRib3VuZC9nYW1lcGxheS9jb21iYXQuanMiLCAianMvd2lsZGJvdW5kL3JlbmRlcmluZy9ydW50aW1lLmpzIiwgImpzL3dpbGRib3VuZC93b3JsZC93b3JsZC5qcyIpOgogICAgcGF0aCA9IHd3dyAvIHJlbGF0aXZlCiAgICBpZiBub3QgcGF0aC5pc19maWxlKCk6CiAgICAgICAgcmFpc2UgU3lzdGVtRXhpdChmIk1pc3NpbmcgV0lMREJPVU5EIG1vZHVsZToge3JlbGF0aXZlfSIpCiAgICBjaGVjayA9IHN1YnByb2Nlc3MucnVuKFsi bm9kZSIsICItLXNwZWxsIiwgc3RyKHBhdGgpXSwgY2FwdHVyZV9vdXRwdXQ9VHJ1ZSwgdGV4dD1UcnVlKQogICAgaWYgY2hlY2sucmV0dXJuY29kZToKICAgICAgICByYWlzZSBTeXN0ZW1FeGl0KGYiSmF2YVNjcmlwdCBzeW50YXggZmFpbGVkOiB7cmVsYXRpdmV9XG57Y2hlY2suc3RkZXJyfSIpCnJlc3VsdCA9IHN1YnByb2Nlc3MucnVuKFsi bm9kZSIsIHN0cihzb3VyY2UpLCBzdHIod3d3KV0sIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSkKaWYgcmVzdWx0LnJldHVybmNvZGU6CiAgICByYWlzZSBTeXN0ZW1FeGl0KHJlc3VsdC5zdGRvdXQgKyByZXN1bHQuc3RkZXJyKQpwcmludChyZXN1bHQuc3Rkb3V0LnN0cmlwKCkpCnByaW50KCJXSUxEQk9VTkRfQUlfUlVOVElNRV9SRUdSRVNTSU9OX09LIikK
+#!/usr/bin/env python3
+"""Behavioral WILDBOUND AI regression tests executed in a real JavaScript VM."""
+from pathlib import Path
+import subprocess, sys
+root = Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
+source = Path(__file__).resolve().parents[1] / "runtime-tests" / "wildbound-ai-runtime.test.js"
+if not source.is_file():
+    raise SystemExit(f"Missing AI runtime harness: {source}")
+www = root / "app/src/main/assets/www"
+for relative in ("js/wildbound/actors/actors.js", "js/wildbound/ai/monster-ai.js", "js/wildbound/gameplay/combat.js", "js/wildbound/rendering/runtime.js", "js/wildbound/world/world.js"):
+    path = www / relative
+    if not path.is_file():
+        raise SystemExit(f"Missing WILDBOUND module: {relative}")
+    check = subprocess.run(["node", "--check", str(path)], capture_output=True, text=True)
+    if check.returncode:
+        raise SystemExit(f"JavaScript syntax failed: {relative}\n{check.stderr}")
+result = subprocess.run(["node", str(source), str(www)], capture_output=True, text=True)
+if result.returncode:
+    raise SystemExit(result.stdout + result.stderr)
+print(result.stdout.strip())
+print("WILDBOUND_AI_RUNTIME_REGRESSION_OK")
