@@ -210,6 +210,7 @@ jobs:
           project_dir="${{ steps.project.outputs.dir }}"
           cd "$project_dir"
           python3 validate_project.py
+          python3 "$GITHUB_WORKSPACE/scripts/test_v6_build_hardening.py" .
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_offline_webview_security.py" .
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_offline_integrity.py"
           python3 "$GITHUB_WORKSPACE/scripts/test_v6_build_provenance.py"

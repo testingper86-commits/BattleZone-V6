@@ -177,7 +177,50 @@ new_helper = '''    private fun isTrustedAssetUri(uri: Uri): Boolean = OfflineAs
         uri.scheme, uri.host, uri.port, uri.userInfo, uri.path
     )'''
 if "OfflineAssetPolicy.isTrustedAssetUri" not in activity:
-    activity = one(activity, old_helper, new_helper, "centralized offline asset URI policy")
+    if old_helper in activity:
+        activity = activity.replace(old_helper, new_helper, 1)
+    elif "private fun isTrustedAssetUri(uri: Uri)" in activity:
+        # WebView recovery may have reformatted or replaced the legacy helper.
+        signature = "private fun isTrustedAssetUri(uri: Uri)"
+        start = activity.index(signature)
+        opening = activity.find("{", start)
+        if opening >= 0:
+            depth = 0
+            in_string = False
+            escaped = False
+            end = None
+            for index in range(opening, len(activity)):
+                char = activity[index]
+                if in_string:
+                    if escaped:
+                        escaped = False
+                    elif char == "\\":
+                        escaped = True
+                    elif char == '"':
+                        in_string = False
+                    continue
+                if char == '"':
+                    in_string = True
+                elif char == "{":
+                    depth += 1
+                elif char == "}":
+                    depth -= 1
+                    if depth == 0:
+                        end = index + 1
+                        break
+            if end is None:
+                raise SystemExit("centralized offline asset URI policy: existing helper is unclosed")
+            activity = activity[:start] + new_helper.strip() + activity[end:]
+        else:
+            line_end = activity.find("\n", start)
+            if line_end < 0:
+                raise SystemExit("centralized offline asset URI policy: expression helper has no line ending")
+            activity = activity[:start] + new_helper.strip() + activity[line_end:]
+    else:
+        helper_anchor = '    @SuppressLint("SetJavaScriptEnabled")'
+        activity = one(activity, helper_anchor, new_helper + "\n" + helper_anchor, "centralized offline asset URI policy")
+if "import android.net.Uri" not in activity:
+    activity = activity.replace("import android.app.Activity\n", "import android.app.Activity\nimport android.net.Uri\n", 1)
 
 policy_path = root / "app/src/main/java/com/example/battlezone/OfflineAssetPolicy.kt"
 policy_path.parent.mkdir(parents=True, exist_ok=True)

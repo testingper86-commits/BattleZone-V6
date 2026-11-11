@@ -24,12 +24,14 @@ mission = read("js/wildbound/backend/mission.js")
 startup_step = workflow.find("apply_wildbound_startup_recovery.py")
 security_step = workflow.find('apply_v6_offline_webview_security.py "$project_dir"')
 static_validation_step = workflow.find('test_v6_offline_webview_security.py\" .')
+build_hardening_test_step = workflow.find('test_v6_build_hardening.py\" .')
 validate_project_step = workflow.find("python3 validate_project.py")
 render_step = workflow.find("apply_wildbound_render_recovery.py")
 required_markers = {
     "final WebView security runs after startup recovery and before render recovery": startup_step >= 0 and security_step > startup_step and render_step > security_step,
     "obsolete pre-transformation WebView security pass is absent": "apply_v6_offline_webview_security.py _cloud_source" not in workflow,
     "final offline WebView test runs in the static validation gate": validate_project_step >= 0 and static_validation_step > validate_project_step,
+    "build-hardening regression runs in the static validation gate": validate_project_step >= 0 and build_hardening_test_step > validate_project_step,
     "premium headquarters": "WILDBOUND_PREMIUM_HEADQUARTERS_V1" in index,
     "monster telegraph combat": "WILDBOUND_MONSTER_TELEGRAPH_COMBAT_V1" in ai,
     "monster archetype profiles": "WILDBOUND_MONSTER_ARCHETYPE_PROFILES_V1" in ai,
