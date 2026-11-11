@@ -56,3 +56,8 @@ The hunter uses the already-bundled KayKit Animated Character v1.2 GLB and local
 ## Startup and screen lifecycle
 
 The Android WebView must never depend on successful WebGL creation to reveal the real WILDBOUND lobby. The frontend boot controller reveals the existing lobby first, initializes lobby controls independently of the renderer, and reports renderer/deployment exceptions in an in-lobby diagnostic panel with a local retry action. Failed renderer construction disposes partial state before another attempt. The Android shell surfaces main-document load/HTTP failures with a same-origin retry page. These repairs run after the canonical WILDBOUND transformation because that transformation replaces the HTML, runtime, and Android activity; applying older BattleZone screen patches before it would silently overwrite them. CI exercises both successful and failing startup paths and checks the final transformed files.
+
+
+## Final integration: VFX, audio lifecycle and mobile budgets
+
+The combat renderer adds a fixed 72-slot GPU point-particle pool. Hit strength, weak-point strikes, kills, boss phase changes and hunter dodges emit bounded bursts; particle buffers are reused and updated from the existing frame loop rather than creating one scene object per impact. The procedural Web Audio layer caps concurrent voices at 12, disconnects oscillator/gain nodes on completion, and resumes a suspended context after foregrounding or a user gesture. These changes preserve the local-only asset/runtime model and are installed after the canonical transformation and gameplay patches. Physical-device frame pacing, memory, audio-focus and thermal acceptance remain release gates.

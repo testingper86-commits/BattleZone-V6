@@ -121,3 +121,14 @@ QA-35 through QA-37 require physical-device verification. CI checks the source i
 
 
 | QA-45 | Premium headquarters frontend | Open the lobby on short and wide landscape displays; inspect rank progress and field record; use keyboard focus and Android safe-area insets; enable reduced motion. | Rank progress reflects XP within each 500 XP tier; field record shows saved local stats and contract state; modal and panels remain reachable without clipping; keyboard focus is visible and reduced motion is honored; existing deploy, briefing, bestiary, inventory, skills and settings actions remain functional. | Device screenshots + screen recording + saved-state comparison |
+
+
+## WILDBOUND final integration phases
+
+| ID | Area | Test | Expected result | Evidence |
+|---|---|---|---|---|
+| QA-46 | Combat VFX | Trigger normal/weak-point hits, kills, boss phase transitions and dodges on low/medium/high graphics profiles. | A bounded 72-particle pool produces distinct impact, execution, boss and dodge feedback; effects expire, reuse slots and do not grow scene object counts over repeated encounters. | 60 fps device recording + WebGL object/memory snapshot |
+| QA-47 | Audio lifecycle | Trigger combat cues, rapidly chain actions, background/foreground the app, mute/unmute SFX and repeat after Android audio focus changes. | Concurrent synth voices remain capped at 12, oscillator/gain nodes are disconnected after playback, audio context resumes only when permitted, and mute remains authoritative. | Device recording + Web Audio diagnostics + logcat |
+| QA-48 | Integrated release candidate | Install the final signed/unsigned candidate in airplane mode; complete the full vertical slice, restart, restore save and repeat a boss encounter. | All source transformations are present in the same APK; no phase patch is omitted or applied out of order; save, progression, boss unlock, VFX, audio and offline security remain intact. | APK SHA-256 + artifact provenance + complete device QA evidence |
+
+QA-46 through QA-48 require physical Android verification. Static CI checks are not a substitute for device evidence.
