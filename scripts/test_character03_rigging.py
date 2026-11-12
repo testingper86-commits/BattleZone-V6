@@ -21,6 +21,23 @@ def check(source, rigged):
     assert np.isfinite(weights).all() and np.all(weights >= 0)
     assert np.max(np.abs(weights.sum(axis=1)-1.0)) < 1e-5
     assert int(joints.max()) < len(skin[0]["joints"])
+    # Bind-pose identity: every joint global rest transform must cancel its inverse bind matrix.
+    skin = doc["skins"][0]
+    nodes = doc["nodes"]
+    parent_of = {}
+    def visit(node, parent=None):
+        parent_of[node] = parent
+        for child in nodes[node].get("children", []): visit(child, node)
+    visit(doc["scenes"][0]["nodes"][0])
+    ibm = read_accessor(doc, binary, skin["inverseBindMatrices"]).reshape(-1, 4, 4)
+    for index, node_id in enumerate(skin["joints"]):
+        translation = np.zeros(3, dtype=np.float64); current = node_id
+        while current is not None:
+            translation += np.asarray(nodes[current].get("translation", [0, 0, 0]), dtype=np.float64)
+            current = parent_of.get(current)
+        global_matrix = np.eye(4, dtype=np.float64); global_matrix[:3, 3] = translation
+        inverse_bind = np.asarray(ibm[index], dtype=np.float64).T
+        assert np.max(np.abs(global_matrix @ inverse_bind - np.eye(4))) < 1e-5, nodes[node_id]["name"]
     for key in ("POSITION","NORMAL","TEXCOORD_0"):
         assert read_accessor(original,obin,original["meshes"][0]["primitives"][0]["attributes"][key]).tobytes() == read_accessor(doc,binary,attrs[key]).tobytes()
     assert original["images"] == doc["images"]

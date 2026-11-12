@@ -56,7 +56,7 @@ def read_accessor(d,b,i):
 def skin_weights(pos):
  parent_pos={n:np.asarray(p,np.float32) for n,_,p,_ in BONES};caps=[]
  for name,parent,p,sigma in BONES:
-  end=np.asarray(p,np.float32);start=parent_pos[parent] if parent else np.array((0,-.99,0),np.float32);ab=end-start;caps.append((start,ab,float(ab@ab) or 1e-8,sigma,BI[name]))
+  end=np.asarray(p,np.float32);start=parent_pos[parent] if parent else np.array((0,0,0),np.float32);ab=end-start;caps.append((start,ab,float(ab@ab) or 1e-8,sigma,BI[name]))
  ji=np.empty((len(pos),4),np.uint16);we=np.empty((len(pos),4),np.float32);boneids=np.asarray([c[4] for c in caps],np.uint16)
  for st in range(0,len(pos),24000):
   p=pos[st:st+24000];score=np.empty((len(p),len(caps)),np.float32)
@@ -106,7 +106,7 @@ def build(src:Path,dst:Path):
  if rotation is not None:node["rotation"]=rotation
  ids={}
  for name,parent,p,sigma in BONES:
-  ids[name]=len(d["nodes"]);pp=next(x[2] for x in BONES if x[0]==parent) if parent else (0,-.99,0);local=[p[i]-pp[i] for i in range(3)];d["nodes"].append({"name":name,"translation":local,"children":[]})
+  ids[name]=len(d["nodes"]);pp=next(x[2] for x in BONES if x[0]==parent) if parent else (0,0,0);local=[p[i]-pp[i] for i in range(3)];d["nodes"].append({"name":name,"translation":local,"children":[]})
  for name,parent,p,sigma in BONES:d["nodes"][skroot if parent is None else ids[parent]].setdefault("children",[]).append(ids[name])
  jv=view(d,b,ji.astype("<u2").tobytes(),34962);wv=view(d,b,we.astype("<f4").tobytes(),34962)
  prim["attributes"]["JOINTS_0"]=accessor(d,jv,5123,len(pos),"VEC4");prim["attributes"]["WEIGHTS_0"]=accessor(d,wv,5126,len(pos),"VEC4")
