@@ -2,104 +2,22 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import process from 'node:process';
-import { NodeIO } from '@gltf-transform/core';
-
-const fail = (message) => { console.error(`FAIL: ${message}`); process.exitCode = 1; };
-const file = process.argv[2];
-if (!file) {
-  console.error('Usage: node character-assets/validate_glb.mjs <model.glb> [--require-rig] [--require-animation]');
-  process.exit(2);
-}
-const absolute = path.resolve(file);
-if (!fs.existsSync(absolute) || !fs.statSync(absolute).isFile()) {
-  console.error(`Input file does not exist: ${absolute}`);
-  process.exit(2);
-}
-const requireRig = process.argv.includes('--require-rig');
-const requireAnimation = process.argv.includes('--require-animation');
-try {
-  const io = new NodeIO();
-  const doc = await io.read(absolute);
-  const root = doc.getRoot();
-  const meshes = root.listMeshes();
-  const skins = root.listSkins();
-  const nodes = root.listNodes();
-  const animations = root.listAnimations();
-  const issues = [];
-  if (meshes.length === 0) issues.push('no meshes found');
-  if (requireRig && skins.length === 0) issues.push('no skins found');
-  if (requireAnimation && animations.length === 0) issues.push('no animations found');
-  for (const [index, skin] of skins.entries()) {
-    const joints = skin.listJoints();
-    if (joints.length === 0) issues.push(`skin ${index} has no joints`);
-    const seen = new Set();
-    for (const joint of joints) {
-      if (!nodes.includes(joint)) issues.push(`skin ${index} references a node outside the document`);
-      if (seen.has(joint)) issues.push(`skin ${index} contains a duplicate joint`);
-      seen.add(joint);
-    }
-    const inverseBind = skin.getInverseBindMatrices();
-    if (inverseBind) {
-      const values = inverseBind.getArray();
-      if (!values || Array.from(values).some((n) => !Number.isFinite(n))) issues.push(`skin ${index} has non-finite inverse bind matrices`);
-      if (values && values.length !== joints.length * 16) issues.push(`skin ${index} inverse bind matrix count does not match joints`);
-    }
-  }
-  let primitiveCount = 0;
-  let jointAccessorCount = 0;
-  let weightAccessorCount = 0;
-  for (const [meshIndex, mesh] of meshes.entries()) {
-    for (const [primitiveIndex, primitive] of mesh.listPrimitives().entries()) {
-      primitiveCount++;
-      const position = primitive.getAttribute('POSITION');
-      if (!position) issues.push(`mesh ${meshIndex} primitive ${primitiveIndex} has no POSITION`);
-      const joints = [primitive.getAttribute('JOINTS_0'), primitive.getAttribute('JOINTS_1')].filter(Boolean);
-      const weights = [primitive.getAttribute('WEIGHTS_0'), primitive.getAttribute('WEIGHTS_1')].filter(Boolean);
-      if (joints.length !== weights.length) issues.push(`mesh ${meshIndex} primitive ${primitiveIndex} has unmatched JOINTS/WEIGHTS attributes`);
-      if (joints.length && !primitive.getMesh().getParentNode()?.getSkin()) issues.push(`mesh ${meshIndex} primitive ${primitiveIndex} has joint attributes but no node skin binding`);
-      for (let set = 0; set < weights.length; set++) {
-        const j = joints[set].getArray();
-        const w = weights[set].getArray();
-        if (!j || !w || j.length !== w.length) { issues.push(`mesh ${meshIndex} primitive ${primitiveIndex} has malformed joint/weight accessors`); continue; }
-        jointAccessorCount++;
-        weightAccessorCount++;
-        for (let k = 0; k < w.length; k += 4) {
-          const sum = w[k] + w[k + 1] + w[k + 2] + w[k + 3];
-          if (![w[k],w[k+1],w[k+2],w[k+3],sum].every(Number.isFinite)) { issues.push(`mesh ${meshIndex} primitive ${primitiveIndex} has non-finite skin weights`); break; }
-          if ([w[k],w[k+1],w[k+2],w[k+3]].some((v) => v < -1e-6)) { issues.push(`mesh ${meshIndex} primitive ${primitiveIndex} has negative skin weights`); break; }
-          if (sum > 1e-5 && Math.abs(sum - 1) > 0.025) { issues.push(`mesh ${meshIndex} primitive ${primitiveIndex} has non-normalized skin weights (sum ${sum})`); break; }
-        }
-        const jointCount = primitive.getMesh().getParentNode()?.getSkin()?.listJoints().length ?? 0;
-        for (const value of j) if (value >= jointCount) { issues.push(`mesh ${meshIndex} primitive ${primitiveIndex} has a joint index outside the bound skin`); break; }
-      }
-    }
-  }
-  const clipData = animations.map((animation) => {
-    const channels = animation.listChannels();
-    let duration = 0;
-    for (const channel of channels) {
-      const sampler = channel.getSampler();
-      const input = sampler?.getInput();
-      if (input) {
-        const values = input.getArray();
-        if (values?.length) duration = Math.max(duration, Number(values[values.length - 1]));
-      }
-    }
-    if (channels.length === 0) issues.push(`animation ${animation.getName() || '(unnamed)'} has no channels`);
-    return {name: animation.getName() || '(unnamed)', channels: channels.length, durationSeconds: Number(duration.toFixed(4))};
-  });
-  const stat = fs.statSync(absolute);
-  const sha256 = crypto.createHash('sha256').update(fs.readFileSync(absolute)).digest('hex');
-  const report = {
-    file: path.basename(absolute), bytes: stat.size, sha256,
-    meshes: meshes.length, primitives: primitiveCount, nodes: nodes.length,
-    skins: skins.length, jointsPerSkin: skins.map((skin) => skin.listJoints().length),
-    jointAccessors: jointAccessorCount, weightAccessors: weightAccessorCount,
-    animations: clipData, issues
-  };
-  console.log(JSON.stringify(report, null, 2));
-  if (issues.length) process.exitCode = 1;
-} catch (error) {
-  fail(error instanceof Error ? error.stack || error.message : String(error));
-}
+const args=process.argv.slice(2),file=args.find(x=>!x.startsWith('--'));
+if(!file){console.error('Usage: node character-assets/validate_glb.mjs <model.glb> [--require-rig] [--require-animation]');process.exit(2);}
+const absolute=path.resolve(file);
+if(!fs.existsSync(absolute)||!fs.statSync(absolute).isFile()){console.error('Input file does not exist: '+absolute);process.exit(2);}
+const issues=[],issue=x=>issues.push(x);
+const comps={5120:[1,(b,o)=>b.readInt8(o),v=>Math.max(v/127,-1)],5121:[1,(b,o)=>b.readUInt8(o),v=>v/255],5122:[2,(b,o)=>b.readInt16LE(o),v=>Math.max(v/32767,-1)],5123:[2,(b,o)=>b.readUInt16LE(o),v=>v/65535],5125:[4,(b,o)=>b.readUInt32LE(o),v=>v/4294967295],5126:[4,(b,o)=>b.readFloatLE(o),v=>v]};
+const widths={SCALAR:1,VEC2:2,VEC3:3,VEC4:4,MAT2:4,MAT3:9,MAT4:16};
+function parse(buf){if(buf.length<20||buf.toString('ascii',0,4)!=='glTF'||buf.readUInt32LE(4)!==2||buf.readUInt32LE(8)!==buf.length)throw Error('Invalid GLB 2.0 header/length');let off=12,j=null,bin=Buffer.alloc(0);while(off+8<=buf.length){const n=buf.readUInt32LE(off),t=buf.readUInt32LE(off+4);off+=8;if(n>buf.length-off)throw Error('GLB chunk out of bounds');const c=buf.subarray(off,off+n);off+=n;if(t===0x4e4f534a)j=JSON.parse(c.toString('utf8').replace(/[\\u0000\\u0020]+$/g,''));else if(t===0x004e4942)bin=c;}if(!j)throw Error('Missing GLB JSON chunk');return {j,bin};}
+function accessor(g,b,i){const a=g.accessors?.[i],v=a&&g.bufferViews?.[a.bufferView],c=a&&comps[a.componentType],w=a&&widths[a.type];if(!a||!v||v.buffer!==0||!c||!w||!Number.isInteger(a.count)||a.count<0)throw Error('Malformed/unsupported accessor '+i);const [size,read,norm]=c,elem=size*w,stride=v.byteStride??elem,start=(v.byteOffset??0)+(a.byteOffset??0),end=start+(a.count?((a.count-1)*stride+elem):0);if(stride<elem||stride%size||start<0||end>b.length||end>(v.byteOffset??0)+v.byteLength)throw Error('Accessor '+i+' exceeds or misaligns bufferView');return {count:a.count,width:w,get(r,k){const x=read(b,start+r*stride+k*size);return a.normalized?norm(x):x;}};}
+try{
+const bytes=fs.readFileSync(absolute),{j:g,bin}=parse(bytes),meshes=g.meshes??[],nodes=g.nodes??[],skins=g.skins??[],animations=g.animations??[];
+if(!meshes.length)issue('No meshes found');if(args.includes('--require-rig')&&!skins.length)issue('No skins found');if(args.includes('--require-animation')&&!animations.length)issue('No animations found');
+for(const [si,s] of skins.entries()){const seen=new Set();if(!s.joints?.length)issue('Skin '+si+' has no joints');for(const ni of s.joints??[]){if(!Number.isInteger(ni)||ni<0||ni>=nodes.length)issue('Skin '+si+' has invalid joint node '+ni);if(seen.has(ni))issue('Skin '+si+' has duplicate joint '+ni);seen.add(ni);}if(s.inverseBindMatrices!=null)try{const a=accessor(g,bin,s.inverseBindMatrices);if(a.width!==16||a.count!==s.joints.length)issue('Skin '+si+' inverse-bind matrix count/type mismatch');for(let r=0;r<a.count;r++)for(let k=0;k<16;k++)if(!Number.isFinite(a.get(r,k)))issue('Skin '+si+' has non-finite inverse-bind values');}catch(e){issue('Skin '+si+' inverse-bind matrices: '+e.message);}}
+let primitives=0,skinnedBindings=0;const meshBindings=[];
+for(const [ni,n] of nodes.entries()){if(n.mesh==null)continue;if(!meshes[n.mesh]){issue('Node '+ni+' references missing mesh '+n.mesh);continue;}const skin=n.skin==null?null:skins[n.skin];if(n.skin!=null&&!skin)issue('Node '+ni+' references missing skin '+n.skin);meshBindings.push({node:ni,mesh:n.mesh,skin:n.skin??null});for(const [pi,p] of (meshes[n.mesh].primitives??[]).entries()){primitives++;const at=p.attributes??{};let vertexCount=0;if(at.POSITION==null)issue('Mesh '+n.mesh+' primitive '+pi+' has no POSITION');else try{const a=accessor(g,bin,at.POSITION);vertexCount=a.count;if(a.width!==3)issue('POSITION is not VEC3');}catch(e){issue('POSITION: '+e.message);}const js=[0,1].filter(k=>at['JOINTS_'+k]!=null),ws=[0,1].filter(k=>at['WEIGHTS_'+k]!=null);if(js.join(',')!==ws.join(','))issue('JOINTS/WEIGHTS sets do not match on node '+ni+' primitive '+pi);if((js.length||ws.length)&&!skin)issue('Skin attributes without node skin binding on node '+ni+' primitive '+pi);if(skin&&!js.length)issue('Skinned node '+ni+' primitive '+pi+' has no skin attributes');if(skin&&js.length){skinnedBindings++;for(const k of js)try{const ja=accessor(g,bin,at['JOINTS_'+k]),wa=accessor(g,bin,at['WEIGHTS_'+k]);if(ja.width!==4||wa.width!==4||ja.count!==vertexCount||wa.count!==vertexCount)issue('Invalid skin attribute dimensions on node '+ni+' primitive '+pi);for(let r=0;r<Math.min(ja.count,wa.count);r++){let sum=0;for(let c=0;c<4;c++){const ji=ja.get(r,c),wt=wa.get(r,c);if(!Number.isInteger(ji)||ji<0||ji>=skin.joints.length)issue('Joint index outside skin at vertex '+r+' node '+ni);if(!Number.isFinite(wt)||wt< -1e-6)issue('Invalid skin weight at vertex '+r+' node '+ni);sum+=wt;}if(sum>1e-5&&Math.abs(sum-1)>.025)issue('Non-normalized weights at vertex '+r+' node '+ni+' sum '+sum.toFixed(5));}}catch(e){issue('Skin attributes: '+e.message);}}}}
+for(const [ai,a] of animations.entries()){if(!a.channels?.length)issue('Animation '+(a.name||ai)+' has no channels');for(const [ci,ch] of (a.channels??[]).entries()){const s=a.samplers?.[ch.sampler];if(!s){issue('Animation '+(a.name||ai)+' channel '+ci+' missing sampler');continue;}if(!nodes[ch.target?.node])issue('Animation '+(a.name||ai)+' channel '+ci+' missing target node');if(!['translation','rotation','scale','weights'].includes(ch.target?.path))issue('Animation '+(a.name||ai)+' channel '+ci+' invalid target path');try{const a=accessor(g,bin,s.input);if(a.width!==1||!a.count)issue('Animation '+(ai)+' invalid time accessor');let prev=-Infinity;for(let r=0;r<a.count;r++){const t=a.get(r,0);if(!Number.isFinite(t)||t<prev)issue('Animation '+ai+' has invalid key times');prev=t;}}catch(e){issue('Animation '+ai+' input: '+e.message);}}}
+const report={file:path.basename(absolute),bytes:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex'),meshes:meshes.length,primitives,nodes:nodes.length,skins:skins.length,jointsPerSkin:skins.map(s=>s.joints?.length??0),skinnedPrimitiveBindings,meshBindings,animations:animations.map(a=>({name:a.name||'(unnamed)',channels:a.channels?.length??0})),issues};
+console.log(JSON.stringify(report,null,2));if(issues.length)process.exitCode=1;
+}catch(e){console.error('FAIL: '+(e.stack||e.message||String(e)));process.exitCode=1;}

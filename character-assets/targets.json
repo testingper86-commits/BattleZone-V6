@@ -6,17 +6,81 @@
     "blender": false,
     "runtimeIntegration": false,
     "ownerApprovalRequiredBeforeIntegration": true,
-    "retargetCoverageMinimum": 0.5
+    "retargetCoverageMinimum": 0.5,
+    "validation": "GLB 2.0 structure, mesh-node-skin binding, inverse bind matrices, normalized weights, joint indices and animation sampler/channel checks"
   },
-  "animationPriorities": ["idle", "walk", "jog", "run", "sprint", "dodge", "fighting_idle", "punch", "kick", "weapon_attack", "death"],
+  "animationPriorities": [
+    "idle",
+    "walk",
+    "jog",
+    "run",
+    "sprint",
+    "dodge",
+    "fighting_idle",
+    "punch",
+    "kick",
+    "weapon_attack",
+    "death"
+  ],
   "assets": [
-    {"id":"01","name":"Villain Doom","source":"villain doom.zip","status":"SOURCE_AUDIT_REQUIRED","expectedFormat":"GLB_OR_GLTF"},
-    {"id":"02","name":"Malfoy Draconia","source":"harry-potter-malfoy-draconia-3d-model-dl.zip","status":"SOURCE_AUDIT_REQUIRED","expectedFormat":"FBX_OR_GLB","excludeBlenderProject":true},
-    {"id":"03","name":"Nier Automata Furry (2B)","source":"2b-nier-automata-furry-3d-model.zip","status":"PRIOR_RIG_REQUIRES_REVALIDATION","expectedFormat":"GLB"},
-    {"id":"04","name":"Anime Girl","source":"anime_girl_nsfw.glb","status":"SOURCE_AUDITED_UNRIGGED_REPORTED","expectedFormat":"GLB"},
-    {"id":"05","name":"High Knight","source":"high-knight-game-character.zip","status":"SOURCE_AUDITED_RIG_REQUIRES_VALIDATION","expectedFormat":"FBX"},
-    {"id":"06","name":"Jack of Blades","source":"jack-of-blades.zip","status":"RIG_STATUS_UNKNOWN","expectedFormat":"FBX"},
-    {"id":"07","name":"Latina Swimsuit Baddie","source":"latina-swimsuit-baddie.zip","status":"SOURCE_AUDITED_UNRIGGED_REPORTED","expectedFormat":"GLB"},
-    {"id":"08","name":"Animated Female Fighter","source":"animated-female-fighter-3d-model-rigged-game.zip","status":"RIG_STATUS_UNKNOWN","expectedFormat":"FBX"}
+    {
+      "id": "01",
+      "name": "Villain Doom",
+      "source": "villain doom.zip",
+      "status": "SOURCE_AUDITED_RIG_REQUIRES_NODE_BINDING_REVIEW",
+      "expectedFormat": "GLTF_OR_GLB"
+    },
+    {
+      "id": "02",
+      "name": "Malfoy Draconia",
+      "source": "harry-potter-malfoy-draconia-3d-model-dl.zip",
+      "status": "FBX_SOURCE_PRESENT_RIG_NOT_DECODED",
+      "expectedFormat": "FBX_OR_GLB",
+      "excludeBlenderProject": true
+    },
+    {
+      "id": "03",
+      "name": "Nier Automata Furry (2B)",
+      "source": "2b-nier-automata-furry-3d-model.zip",
+      "status": "PRIOR_21_JOINT_8_CLIP_RIG_REQUIRES_FULL_REVALIDATION",
+      "expectedFormat": "GLB",
+      "validatedArtifact": "Character03_Rigged.glb",
+      "validationScope": "structural only; visual deformation and playback unverified"
+    },
+    {
+      "id": "04",
+      "name": "Anime Girl",
+      "source": "anime_girl_nsfw.glb",
+      "status": "STRUCTURALLY_CONFIRMED_UNRIGGED_25_MESHES",
+      "expectedFormat": "GLB"
+    },
+    {
+      "id": "05",
+      "name": "High Knight",
+      "source": "high-knight-game-character.zip",
+      "status": "FBX_SOURCE_PRESENT_RIG_NOT_DECODED",
+      "expectedFormat": "FBX"
+    },
+    {
+      "id": "06",
+      "name": "Jack of Blades",
+      "source": "jack-of-blades.zip",
+      "status": "FBX_SOURCE_PRESENT_RIG_NOT_DECODED",
+      "expectedFormat": "FBX"
+    },
+    {
+      "id": "07",
+      "name": "Latina Swimsuit Baddie",
+      "source": "latina-swimsuit-baddie.zip",
+      "status": "SOURCE_AUDITED_UNRIGGED",
+      "expectedFormat": "GLB"
+    },
+    {
+      "id": "08",
+      "name": "Animated Female Fighter",
+      "source": "animated-female-fighter-3d-model-rigged-game.zip",
+      "status": "FBX_SOURCE_PRESENT_RIG_NOT_DECODED",
+      "expectedFormat": "FBX"
+    }
   ]
 }
