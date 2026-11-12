@@ -68,11 +68,37 @@ def verified_generated_assets(root:Path)->tuple[dict[str,dict],list[str]]:
     if not verified: raise ValueError("Procedural asset provenance manifest contains no assets")
     return verified,["PROCEDURAL_ASSET_PROVENANCE.json"]
 
+def verified_wildbound_models(root:Path)->tuple[set[str],list[str]]:
+    bundle=root/"models/wildbound"; manifest_path=bundle/"manifest.json"; license_path=bundle/"LICENSE.txt"; provenance_path=bundle/"PROVENANCE.md"
+    evidence=["models/wildbound/LICENSE.txt","models/wildbound/PROVENANCE.md","models/wildbound/manifest.json"]
+    if not all(path.is_file() for path in (manifest_path,license_path,provenance_path)): return set(),[]
+    if not has_cc0(license_path): raise ValueError("WILDBOUND model bundle license does not explicitly declare CC0")
+    provenance=provenance_path.read_text(encoding="utf-8",errors="ignore").lower()
+    if "3dassets.dev" not in provenance or "cc0" not in provenance or "sha-256" not in provenance: raise ValueError("WILDBOUND model provenance is incomplete")
+    data=json.loads(manifest_path.read_text(encoding="utf-8"))
+    if data.get("schema")!="wildbound-cc0-model-bundle-v1" or data.get("source")!="3DAssets.dev": raise ValueError("Unrecognized WILDBOUND model provenance schema")
+    required={"hunter/hunter.glb","monsters/stalker.glb","monsters/wraithcaller.glb","monsters/ironmaw.glb","monsters/hollow_king.glb","environment/canopy_01.glb","environment/canopy_02.glb","environment/deadwood.glb","environment/shrub.glb","environment/fern.glb","environment/rock.glb","environment/fern_cluster.glb"}
+    rows=data.get("models",[]); records={row.get("path"):row for row in rows}
+    if set(records)!=required or len(rows)!=len(required): raise ValueError("WILDBOUND model manifest does not exactly cover the required 12 GLBs")
+    verified=set()
+    for relative,row in records.items():
+        rel=PurePosixPath(relative)
+        if rel.is_absolute() or ".." in rel.parts: raise ValueError(f"Unsafe WILDBOUND model path: {relative}")
+        path=bundle.joinpath(*rel.parts)
+        if not path.is_file(): raise ValueError(f"WILDBOUND model is missing: {relative}")
+        if row.get("license")!="CC0 1.0 Universal" or not row.get("license_url","").startswith("https://creativecommons.org/publicdomain/zero/"): raise ValueError(f"WILDBOUND model license is not CC0: {relative}")
+        if not row.get("source","").startswith("https://3dassets.dev/assets/") or not row.get("download","").startswith("https://cdn.3dassets.dev/assets/"): raise ValueError(f"WILDBOUND model source URL is missing: {relative}")
+        if not row.get("ai_generated") or not row.get("ai_model"): raise ValueError(f"WILDBOUND model AI provenance disclosure is missing: {relative}")
+        if row.get("bytes")!=path.stat().st_size or row.get("sha256")!=sha256_file(path): raise ValueError(f"WILDBOUND model SHA-256 or size mismatch: {relative}")
+        verified.add("models/wildbound/"+relative)
+    return verified,evidence
+
 def build_ledger(assets_root:Path)->dict:
     root=assets_root.resolve()
     if not root.is_dir(): raise ValueError(f"Asset root does not exist: {root}")
     voice_verified,voice_evidence=verified_voice_files(root)
     generated_verified,generated_evidence=verified_generated_assets(root)
+    wildbound_verified,wildbound_evidence=verified_wildbound_models(root)
     rows=[]
     for path in sorted(p for p in root.rglob("*") if p.is_file() and p.suffix.lower() in BINARY_EXTENSIONS):
         rel=path.relative_to(root).as_posix()
@@ -85,6 +111,8 @@ def build_ledger(assets_root:Path)->dict:
             if has_cc0(license_path): license_name="CC0-1.0"; status="verified_cc0"; evidence=["models/characters/kaykit_v1_2/License.txt"]; note="Package-local license explicitly states Creative Commons Zero."
         elif rel in voice_verified:
             license_name="CC0-1.0"; status="verified_cc0"; evidence=voice_evidence; note="CC0 license, creator/source provenance, credits and per-file SHA-256 manifest verified."
+        elif rel in wildbound_verified:
+            license_name="CC0-1.0"; status="verified_cc0"; evidence=wildbound_evidence; note="CC0 model license, per-model source/AI disclosure and exact SHA-256 manifest verified."
         elif rel in generated_verified:
             license_name="original_project_generated"; status="verified_original"; evidence=generated_evidence; note="Original deterministic procedural artwork; per-file SHA-256 and generator version verified; no third-party source media used."
         rows.append({"path":rel,"size_bytes":path.stat().st_size,"sha256":sha256_file(path),"license":license_name,"status":status,"evidence":evidence,"note":note})

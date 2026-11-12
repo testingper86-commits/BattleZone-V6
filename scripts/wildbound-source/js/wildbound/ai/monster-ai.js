@@ -17,7 +17,7 @@ W.ai={update(game,dt){
   state.attackRecovery=Math.max(0,(state.attackRecovery||0)-dt);
   state.hitFlash=Math.max(0,(state.hitFlash||0)-dt);
   if(state.body&&state.body.material&&state.body.material.emissive)state.body.material.emissive.setHex(state.hitFlash>0?0x7d3027:0x000000);
-  const dx=player.position.x-monster.position.x,dz=player.position.z-monster.position.z,distance=W.physics.distance2D(player.position,monster.position),kind=state.kind||'melee',notice=state.noticeRange||(W.CONFIG&&W.CONFIG.AI&&W.CONFIG.AI.detect)||26,reach=state.attackReach||state.range*1.25;
+  const dx=player.position.x-monster.position.x,dz=player.position.z-monster.position.z,distance=W.physics.distance2D(player.position,monster.position),kind=state.kind||'melee',notice=state.noticeRange||(W.CONFIG&&W.CONFIG.AI&&W.CONFIG.AI.detect)||26,reach=state.attackReach||state.range*1.25;monster.rotation.y=Math.atan2(dx,dz);
   if(distance>=notice){
    state.attackState='patrol';
    if(state.roamRadius>0&&state.stagger<=0&&state.attackRecovery<=0){

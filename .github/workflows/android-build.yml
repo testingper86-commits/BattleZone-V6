@@ -136,6 +136,7 @@ jobs:
           python3 scripts/test_v6_procedural_asset_replacement.py
           python3 scripts/apply_wildbound_transformation.py "$project_dir"
           python3 scripts/sync_wildbound_sources.py "$project_dir"
+          python3 scripts/test_wildbound_model_assets.py "$project_dir"
           python3 scripts/apply_wildbound_premium_headquarters.py "$project_dir"
           python3 scripts/test_wildbound_premium_headquarters.py "$project_dir"
           python3 scripts/apply_wildbound_monster_telegraph.py "$project_dir"
