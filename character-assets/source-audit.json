@@ -1,0 +1,102 @@
+{
+  "project": "WILDBOUND",
+  "auditScope": "Local source-file structural audit. FBX files located but not decoded by this runtime; no visual or Android playback claim.",
+  "assets": [
+    {
+      "id": "01",
+      "name": "Villain Doom",
+      "format": "glTF",
+      "meshes": 11,
+      "nodes": 166,
+      "skins": 9,
+      "jointCounts": [
+        1,
+        1,
+        128,
+        128,
+        128,
+        128,
+        128,
+        128,
+        128
+      ],
+      "animations": 0,
+      "notes": "Seven body mesh nodes bind to 128-joint skins; two eye mesh nodes are unskinned. Skeleton/skin data exists; retargeting remains."
+    },
+    {
+      "id": "02",
+      "name": "Malfoy Draconia",
+      "format": "Binary FBX",
+      "notes": "Source FBX located in nested archive; rig and animation structure not decoded."
+    },
+    {
+      "id": "03",
+      "name": "Nier Automata (2B)",
+      "format": "GLB",
+      "meshes": 1,
+      "nodes": 24,
+      "skins": 1,
+      "jointCounts": [
+        21
+      ],
+      "animations": 8,
+      "animationNames": [
+        "Idle",
+        "Walk",
+        "Run",
+        "Crouch",
+        "Fight",
+        "Punch",
+        "Shoot",
+        "Emote"
+      ],
+      "notes": "Existing rigged milestone revalidated structurally; no complete 178-clip bank or visual/Android playback verification."
+    },
+    {
+      "id": "04",
+      "name": "Anime Girl",
+      "format": "GLB",
+      "meshes": 25,
+      "nodes": 38,
+      "skins": 0,
+      "animations": 0,
+      "notes": "Unrigged; needs skeleton and skin weights."
+    },
+    {
+      "id": "05",
+      "name": "High Knight",
+      "format": "ASCII FBX",
+      "notes": "Source FBX located; rig and animation structure not decoded."
+    },
+    {
+      "id": "06",
+      "name": "Jack of Blades",
+      "format": "Binary FBX",
+      "notes": "Source FBX located; rig and animation structure not decoded."
+    },
+    {
+      "id": "07",
+      "name": "Latina Swimsuit Baddie",
+      "format": "GLB",
+      "meshes": 1,
+      "nodes": 2,
+      "skins": 0,
+      "animations": 0,
+      "notes": "Unrigged; needs skeleton and skin weights."
+    },
+    {
+      "id": "08",
+      "name": "Animated Female Fighter",
+      "format": "Binary FBX",
+      "notes": "Source FBX located; rig and animation structure not decoded."
+    }
+  ],
+  "verifiedFacts": {
+    "sourceArchivesLocated": 8,
+    "glbOrGltfStructurallyInspected": 4,
+    "fbxFilesLocated": 4,
+    "existingRiggedCharacterMilestones": 2,
+    "newlyCompletedCharacterExports": 0,
+    "visualPlaybackVerified": 0
+  }
+}
