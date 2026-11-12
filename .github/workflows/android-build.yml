@@ -143,6 +143,7 @@ jobs:
           python3 scripts/apply_wildbound_monster_archetypes.py "$project_dir"
           python3 scripts/test_wildbound_monster_telegraph.py "$project_dir"
           python3 scripts/test_wildbound_monster_archetypes.py "$project_dir"
+          python3 scripts/test_wildbound_creature_motion.py "$project_dir"
           python3 scripts/apply_wildbound_hollow_king_windup.py "$project_dir"
           python3 scripts/test_wildbound_hollow_king_windup.py "$project_dir"
           python3 scripts/apply_wildbound_monster_patrol.py "$project_dir"
