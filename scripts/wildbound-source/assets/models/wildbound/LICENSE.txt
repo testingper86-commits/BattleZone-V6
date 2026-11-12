@@ -1,0 +1,3 @@
+All bundled GLB models are published under CC0 1.0 Universal by 3DAssets.dev.
+CC0 legal text: https://creativecommons.org/publicdomain/zero/1.0/
+Each exact asset source URL, catalogue record, model statistics, AI-generation disclosure, and SHA-256 digest is recorded in manifest.json.

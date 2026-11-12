@@ -1,0 +1,3 @@
+# V6 Tactical Command Interface
+
+The canonical Android build applies the tactical UI patch after the existing offline, gameplay, reliability, squad-command and lobby patches. It adds twelve screens and preserves the existing Statistics and Match History views. The UI reuses the real local profile, cosmetic shop, map selection, squad AI orders, match history and settings handlers. Combat state is read from the live game loop; opening the hub pauses the simulation scheduler and closing it resumes. After Action Report reads the latest saved offline match record and shows an explicit empty state when none exists. No online service or remote asset is added. The patch is idempotent and has a dedicated CI regression suite.
